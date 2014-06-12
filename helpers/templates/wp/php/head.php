@@ -1,33 +1,4 @@
 <?php
-defined('WPINC') or die;
-?>
-
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<link rel="shortcut icon" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/favicon.ico">
-	<link rel="apple-touch-icon-precomposed" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-152.png">
-	<meta name="msapplication-TileColor" content="#FFFFFF">
-	<meta name="msapplication-TileImage" content="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-144.png">
-	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-152.png">
-	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-144.png">
-	<link rel="apple-touch-icon-precomposed" sizes="120x120" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-120.png">
-	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-114.png">
-	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-72.png">
-	<link rel="apple-touch-icon-precomposed" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-57.png">
-	<link rel="icon" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-32.png" sizes="32x32">
-
-	<title><?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?></title>
-
-	<script type="text/javascript">
-		if (typeof Solo == 'undefined') { var Solo = {}; }
-		if (typeof Solo.loadScripts == 'undefined') { Solo.loadScripts = []; }
-	</script>
-
-<?php
-
 use Awf\Document\Document;
 use Awf\Uri\Uri;
 
@@ -47,9 +18,8 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 
 // Template scripts
 ?>
-	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery.js'?>"></script>
-	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/akjqnamespace.min.js"></script>
-	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery-migrate.js'?>"></script>
+	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/jquery.min.js"></script>
+	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/jquery-migrate.min.js"></script>
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/bootstrap.min.js"></script>
 <?php
 // Scripts after the template ones
@@ -60,11 +30,6 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 		echo "\t<script type=\"{$params['mime']}\" src=\"$url\"></script>\n";
 	}
 }
-
-// onLoad scripts
-?>
-	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/solo/loadscripts.min.js"></script>
-<?php
 
 // Script declarations
 if(!empty($scriptDeclarations)) foreach($scriptDeclarations as $type => $content)
@@ -105,11 +70,3 @@ if(!empty($styleDeclarations)) foreach($styleDeclarations as $type => $content)
 {
 	echo "\t<style type=\"$type\">\n$content\n</style>";
 }
-?>
-	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/html5shiv.min.js"></script>
-	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/respond.min.js"></script>
-	<![endif]-->
-</head>
-<body>

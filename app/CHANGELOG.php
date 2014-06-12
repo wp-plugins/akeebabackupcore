@@ -1,9 +1,5 @@
 <?php die();?>
-Akeeba Solo 1.0.b4
-================================================================================
-! Installation wouldn't get past the database page
-
-Akeeba Solo 1.0.b3 - 2014/05/05
+Akeeba Solo 1.0.b3
 ================================================================================
 ! Configuration file changed from config.json to config.php – expect some turbulence after update
 + You can now change the date/time format for the Start column in the Manage Backups page

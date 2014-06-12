@@ -269,11 +269,11 @@ else
 
         <?php
         $this->container->application->getDocument()->addScriptDeclaration( <<<JS
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		$('#abschedulingCheckTabs a:first').tab('show');
-	}(akeeba.jQuery));
-};
+    (function($) {
+        $(document).ready(function(){
+            $('#abschedulingCheckTabs a:first').tab('show');
+        });
+    })(akeeba.jQuery);
 JS
         );
         ?>

@@ -249,33 +249,32 @@ $config = \AEFactory::getConfiguration();
 <script type="text/javascript" language="javascript">
 // Callback routine to close the browser dialog
 var akeeba_browser_callback = null;
+(function($) {
+$(document).ready(function(){
+	// Initialise the translations
+	Solo.Configuration.translations['UI-BROWSE'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_BROWSE')) ?>';
+	Solo.Configuration.translations['UI-ROOT'] = '<?php echo Escape::escapeJS(Text::_('SOLO_COMMON_LBL_ROOT')) ?>';
 
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		// Initialise the translations
-		Solo.Configuration.translations['UI-BROWSE'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_BROWSE')) ?>';
-		Solo.Configuration.translations['UI-ROOT'] = '<?php echo Escape::escapeJS(Text::_('SOLO_COMMON_LBL_ROOT')) ?>';
+	// Push some custom URLs
+	Solo.Configuration.URLs['browser'] = '<?php echo Escape::escapeJS($router->route('index.php?view=browser&tmpl=component&processfolder=1&folder=')) ?>';
+	Solo.System.params.AjaxURL = '<?php echo Escape::escapeJS($router->route('index.php?view=wizard&task=ajax')) ?>';
 
-		// Push some custom URLs
-		Solo.Configuration.URLs['browser'] = '<?php echo Escape::escapeJS($router->route('index.php?view=browser&tmpl=component&processfolder=1&folder=')) ?>';
-		Solo.System.params.AjaxURL = '<?php echo Escape::escapeJS($router->route('index.php?view=wizard&task=ajax')) ?>';
+	// Setup buttons
+	$('#btnBrowse').click(function(e){
+		var element = $(document.getElementById('var[akeeba.platform.newroot]'));
+		var folder = element.val();
+		Solo.Configuration.onBrowser(folder, element);
+		e.preventDefault();
+		return false;
+	})
 
-		// Setup buttons
-		$('#btnBrowse').click(function(e){
-			var element = $(document.getElementById('var[akeeba.platform.newroot]'));
-			var folder = element.val();
-			Solo.Configuration.onBrowser(folder, element);
-			e.preventDefault();
-			return false;
-		})
-
-		$('#btnPythia').click(function(e){
-			var element = $(document.getElementById('var[akeeba.platform.newroot]'));
-			var folder = element.val();
-			Solo.Wizard.autodetect(folder);
-			e.preventDefault();
-			return false;
-		})
-	}(akeeba.jQuery));
-};
+	$('#btnPythia').click(function(e){
+		var element = $(document.getElementById('var[akeeba.platform.newroot]'));
+		var folder = element.val();
+		Solo.Wizard.autodetect(folder);
+		e.preventDefault();
+		return false;
+	})
+});
+})(akeeba.jQuery);
 </script>

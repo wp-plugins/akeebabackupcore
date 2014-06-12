@@ -10,6 +10,8 @@ namespace Awf\Hal;
 /**
  * Implementation of the Hypertext Application Language links in PHP. This is
  * actually a collection of links.
+ *
+ * @see http://stateless.co/hal_specification.html
  */
 class Links
 {
@@ -44,7 +46,7 @@ class Links
 		{
 			$this->_links[$rel] = $link;
 		}
-		elseif (array_key_exists($rel, $this->_links) && !$overwrite)
+		else
 		{
 			if (!is_array($this->_links[$rel]))
 			{
@@ -52,10 +54,6 @@ class Links
 			}
 
 			$this->_links[$rel][] = $link;
-		}
-		else
-		{
-			return false;
 		}
 	}
 

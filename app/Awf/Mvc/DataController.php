@@ -9,6 +9,7 @@ namespace Awf\Mvc;
 
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Inflector\Inflector;
 use Awf\Input\Input;
 use Awf\Mvc\Controller;
@@ -21,7 +22,7 @@ use Awf\Text\Text;
  */
 class DataController extends Controller
 {
-	public function __construct($container = array())
+	public function __construct(Container $container)
 	{
 		parent::__construct($container);
 
@@ -74,6 +75,12 @@ class DataController extends Controller
 		// By default, a plural view means 'browse' and a singular view means 'edit'
 		$view = $this->input->getCmd('view', null);
 		$task = Inflector::isPlural($view) ? 'browse' : 'edit';
+
+		// If the task is 'edit' but there's no logged in user switch to a 'read' task
+		if (($task == 'edit') && !$this->container->userManager->getUser()->getId())
+		{
+			$task = 'read';
+		}
 
 		// Check if there is an id passed in the request
 		$id = $this->input->get('id', null, 'int');
@@ -151,6 +158,8 @@ class DataController extends Controller
 	 * then the item layout is used to render the result.
 	 *
 	 * @return  void
+	 *
+	 * @throws \RuntimeException When the item is not found
 	 */
 	public function read()
 	{
@@ -158,9 +167,16 @@ class DataController extends Controller
 		/** @var DataModel $model */
 		$model = $this->getModel();
 
+		// If there is no record loaded, try loading a record based on the id passed in the input object
 		if (!$model->getId())
 		{
 			$ids = $this->getIDsFromRequest($model, true);
+
+			if ($model->getId() != reset($ids))
+			{
+				$key = $this->container->application_name . '_ERR_' . $model->getName() . '_NOTFOUND';
+				throw new \RuntimeException(Text::_($key), 404);
+			}
 		}
 
 		// Set the layout to item, if it's not set in the URL
@@ -845,7 +861,7 @@ class DataController extends Controller
 		if ($loadRecord && !empty($ids))
 		{
 			$id = reset($ids);
-			$model->find($id);
+			$model->find(array('id' => $id));
 		}
 
 		return $ids;

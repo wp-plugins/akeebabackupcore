@@ -1,16 +1,41 @@
 <?php include __DIR__ . '/php/menu.php';
 $this->outputHTTPHeaders();
-
-if (defined('AKEEBA_SOLOWP_OBFLAG'))
-{
-	include __DIR__ . '/php/head.php';
-}
-else
-{
-	include __DIR__ . '/php/head_wp.php';
-}
-
 ?>
+<?php if (defined('AKEEBA_SOLOWP_OBFLAG')): ?>
+<html>
+<head>
+<?php endif; ?>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<?php if (defined('AKEEBA_SOLOWP_OBFLAG')): ?>
+		<?php // Favicons size reference: https://github.com/audreyr/favicon-cheat-sheet ?>
+		<link rel="shortcut icon" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-152.png">
+		<meta name="msapplication-TileColor" content="#FFFFFF">
+		<meta name="msapplication-TileImage" content="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-144.png">
+		<link rel="apple-touch-icon-precomposed" sizes="152x152" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-152.png">
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-144.png">
+		<link rel="apple-touch-icon-precomposed" sizes="120x120" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-120.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-114.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-72.png">
+		<link rel="apple-touch-icon-precomposed" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-57.png">
+		<link rel="icon" href="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-32.png" sizes="32x32">
+
+		<title><?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?></title>
+	<?php endif; ?>
+
+	<?php include __DIR__ . '/php/head.php' ?>
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+	<![endif]-->
+<?php if (defined('AKEEBA_SOLOWP_OBFLAG')): ?>
+	</head>
+	<body>
+<?php endif; ?>
 <div class="akeeba-bootstrap akeeba-wp">
 <?php if (\Awf\Application\Application::getInstance()->getContainer()->input->getCmd('tmpl', '') != 'component'): ?>
 	<div class="navbar navbar-default navbar-static-top" role="navigation">

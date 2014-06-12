@@ -11,8 +11,34 @@
 
 namespace Awf\Mvc\DataModel;
 
+use Awf\Mvc\DataModel;
 use Awf\Utils\Collection as BaseCollection;
 
+/**
+ * A collection of data models. You can enumerate it like an array, use it everywhere a collection is expected (e.g. a
+ * foreach loop) and even implements a countable interface. You can also batch-apply DataModel methods on it thanks to
+ * its magic __call() method, hence the type-hinting below.
+ *
+ * @method void setFieldValue(string $name, mixed $value = '')
+ * @method void archive()
+ * @method void save(mixed $data, string $orderingFilter = '', bool $ignore = null)
+ * @method void push(mixed $data, string $orderingFilter = '', bool $ignore = null, array $relations = null)
+ * @method void bind(mixed $data, array $ignore = array())
+ * @method void check()
+ * @method void reorder(string $where = '')
+ * @method void delete(mixed $id = null)
+ * @method void trash(mixed $id)
+ * @method void forceDelete(mixed $id = null)
+ * @method void lock(int $userId = null)
+ * @method void move(int $delta, string $where = '')
+ * @method void publish()
+ * @method void restore(mixed $id)
+ * @method void touch(int $userId = null)
+ * @method void unlock()
+ * @method void unpublish()
+ *
+ * @package Awf\Mvc\DataModel
+ */
 class Collection extends BaseCollection
 {
 	/**
@@ -37,12 +63,27 @@ class Collection extends BaseCollection
 		}, $default);
 	}
 
+	public function removeById($key)
+	{
+		if ($key instanceof DataModel)
+		{
+			$key = $key->getId();
+		}
+
+		$index = array_search($key, $this->modelKeys());
+
+		if ($index !== false)
+		{
+			unset($this->items[$index]);
+		}
+	}
+
 	/**
 	 * Add an item to the collection.
 	 *
 	 * @param  mixed  $item
 	 *
-*@return Collection
+	 * @return Collection
 	 */
 	public function add($item)
 	{
@@ -68,7 +109,7 @@ class Collection extends BaseCollection
 	 *
 	 * @param  string  $key
 	 *
-*@return Collection
+	 * @return Collection
 	 */
 	public function fetch($key)
 	{
@@ -223,4 +264,63 @@ class Collection extends BaseCollection
 		return new BaseCollection($this->items);
 	}
 
-} 
+	/**
+	 * Magic method which allows you to run a DataModel method to all items in the collection.
+	 *
+	 * For example, you can do $collection->save('foobar' => 1) to update the 'foobar' column to 1 across all items in
+	 * the collection.
+	 *
+	 * IMPORTANT: The return value of the method call is not returned back to you!
+	 *
+	 * @param string $name       The method to call
+	 * @param array  $arguments  The arguments to the method
+	 */
+	function __call($name, $arguments)
+	{
+		if (empty($this))
+		{
+			return;
+		}
+
+		if (method_exists('Awf\Mvc\DataModel', $name))
+		{
+			foreach ($this as $item)
+			{
+				switch (count($arguments))
+				{
+					case 0:
+						$item->$name();
+						break;
+
+					case 1:
+						$item->$name($arguments[0]);
+						break;
+
+					case 2:
+						$item->$name($arguments[0], $arguments[1]);
+						break;
+
+					case 3:
+						$item->$name($arguments[0], $arguments[1], $arguments[2]);
+						break;
+
+					case 4:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3]);
+						break;
+
+					case 5:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4]);
+						break;
+
+					case 6:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5]);
+						break;
+
+					default:
+						call_user_func_array(array($item, $name), $arguments);
+						break;
+				}
+			}
+		}
+	}
+}

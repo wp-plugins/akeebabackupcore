@@ -263,75 +263,76 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 
 <?php if (!empty($this->configUrl) || !empty($this->backupUrl)): ?>
 <script type="text/javascript">
-Solo.loadScripts[Solo.loadScripts.length] = function () {
 	(function($){
-		<?php if (!empty($this->configUrl)): ?>
-			$.get('<?php echo $this->configUrl?>', function(data){
-				$('#config-readable-error').css('display', 'block');
-			});
-		<?php endif; ?>
-		<?php if (!empty($this->backupUrl)): ?>
-			$.get('<?php echo $this->backupUrl?>', function(data){
-				$('#backup-readable-error').css('display', 'block');
-			});
-		<?php endif; ?>
-		<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
-			$.get('<?php echo $router->route('index.php?view=main&format=raw&task=getUpdateInformation&' . $this->getContainer()->session->getCsrfToken()->getValue() . '=1'); ?>', function(msg){
-				// Initialize
-				var junk = null;
-				var message = "";
 
-				// Get rid of junk before the data
-				var valid_pos = msg.indexOf('###');
+	$(document).ready(function(){
+	<?php if (!empty($this->configUrl)): ?>
+		$.get('<?php echo $this->configUrl?>', function(data){
+			$('#config-readable-error').css('display', 'block');
+		});
+	<?php endif; ?>
+	<?php if (!empty($this->backupUrl)): ?>
+		$.get('<?php echo $this->backupUrl?>', function(data){
+			$('#backup-readable-error').css('display', 'block');
+		});
+	<?php endif; ?>
+	<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
+		$.get('<?php echo $router->route('index.php?view=main&format=raw&task=getUpdateInformation&' . $this->getContainer()->session->getCsrfToken()->getValue() . '=1'); ?>', function(msg){
+			// Initialize
+			var junk = null;
+			var message = "";
 
-				if (valid_pos == -1)
-				{
-					return;
-				}
-				else if( valid_pos != 0 )
-				{
-					// Data is prefixed with junk
-					junk = msg.substr(0, valid_pos);
-					message = msg.substr(valid_pos);
-				}
-				else
-				{
-					message = msg;
-				}
+			// Get rid of junk before the data
+			var valid_pos = msg.indexOf('###');
 
-				message = message.substr(3); // Remove triple hash in the beginning
+			if (valid_pos == -1)
+			{
+				return;
+			}
+			else if( valid_pos != 0 )
+			{
+				// Data is prefixed with junk
+				junk = msg.substr(0, valid_pos);
+				message = msg.substr(valid_pos);
+			}
+			else
+			{
+				message = msg;
+			}
 
-				// Get of rid of junk after the data
-				valid_pos = message.lastIndexOf('###');
-				message = message.substr(0, valid_pos); // Remove triple hash in the end
+			message = message.substr(3); // Remove triple hash in the beginning
 
-				try
-				{
-					var data = JSON.parse(message);
-				}
-				catch(err)
-				{
-					return;
-				}
+			// Get of rid of junk after the data
+			valid_pos = message.lastIndexOf('###');
+			message = message.substr(0, valid_pos); // Remove triple hash in the end
 
-				if (data.hasUpdate)
-				{
-					$('#soloUpdateNotification').html(data.noticeHTML);
-					$('#soloUpdateAvailable').show();
-				}
-				else
-				{
-					$('#soloUpdateUpToDate').show();
-				}
-			})
-		<?php endif; ?>
+			try
+			{
+				var data = JSON.parse(message);
+			}
+			catch(err)
+			{
+				return;
+			}
 
-	}(akeeba.jQuery));
-};
+			if (data.hasUpdate)
+			{
+				$('#soloUpdateNotification').html(data.noticeHTML);
+				$('#soloUpdateAvailable').show();
+			}
+			else
+			{
+				$('#soloUpdateUpToDate').show();
+			}
+		})
+	<?php endif; ?>
+	});
+
 	function soloFeatureNotInCore()
 	{
 		alert('<?php echo Text::_('SOLO_MAIN_ERR_NOTINCORE')?>');
 	}
 
+	}(akeeba.jQuery));
 </script>
 <?php endif; ?>

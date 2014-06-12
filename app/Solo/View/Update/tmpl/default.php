@@ -13,7 +13,6 @@ $router = $this->container->router;
 
 $releaseNotes = $this->updateInfo->get('releasenotes');
 $infoUrl = $this->updateInfo->get('infourl');
-$requirePlatformName = $this->container->segment->get('platformNameForUpdates', 'php');
 
 ?>
 
@@ -59,13 +58,7 @@ $requirePlatformName = $this->container->segment->get('platformNameForUpdates', 
 	<div class="alert alert-danger">
 		<h4>
 			<span class="glyphicon glyphicon-ban-circle"></span>
-			<?php if (empty($requirePlatformName) || ($requirePlatformName == 'php')): ?>
 			<?php echo Text::_('SOLO_UPDATE_PLATFORM_HEAD') ?>
-			<?php elseif (empty($requirePlatformName) || ($requirePlatformName == 'wordpress')): ?>
-			<?php echo Text::_('SOLO_UPDATE_WORDPRESS_PLATFORM_HEAD') ?>
-			<?php elseif (empty($requirePlatformName) || ($requirePlatformName == 'joomla')): ?>
-			<?php echo Text::_('SOLO_UPDATE_JOOMLA_PLATFORM_HEAD') ?>
-			<?php endif; ?>
 		</h4>
 	</div>
 <?php else: ?>

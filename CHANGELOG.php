@@ -1,10 +1,5 @@
 <?php die(); ?>
-Akeeba Backup for WordPress 1.0.b4
-================================================================================
-~ Reorganised JS and CSS loading to use WordPress' semantics
-# [MEDIUM] Update page would always report that the PHP version is too old and refuse to update
-
-Akeeba Backup for WordPress 1.0.b3 - 2014/05/05
+Akeeba Backup for WordPress 1.0.b3
 ================================================================================
 ! Configuration file changed from config.json to config.php – expect some turbulence after update
 + You can now change the date/time format for the Start column in the Manage Backups page

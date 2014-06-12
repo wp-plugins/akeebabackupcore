@@ -17,10 +17,21 @@ use Awf\Date\Date;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
+use Awf\Mvc\DataModel\Collection;
+use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
 /**
- * Data-aware model
+ * Data-aware model, implementing a convenient ORM
+ *
+ * Type hinting -- start
+ *
+ * @method DataModel hasOne() hasOne(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel belongsTo() belongsTo(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel hasMany() hasMany(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel belongsToMany() belongsToMany(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null, string $pivotTable = null, string $pivotLocalKey = null, string $pivotForeignKey = null)
+ *
+ * Type hinting -- end
  *
  * @package Awf\Mvc
  */
@@ -74,6 +85,18 @@ class DataModel extends Model
 	/** @var   array  A collection of custom, additional where clauses to apply during buildQuery */
 	protected $whereClauses = array();
 
+	/** @var   RelationManager  The relation manager of this model */
+	protected $relationManager = null;
+
+	/** @var   array  A list of all eager loaded relations and their attached callbacks */
+	protected $eagerRelations = array();
+
+	/** @var   array  A list of the relation filter definitions for this model */
+	protected $relationFilters = array();
+
+	/** @var   array  A list of the relations which will be auto-touched by save() and touch() methods */
+	protected $touches = array();
+
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
@@ -90,6 +113,7 @@ class DataModel extends Model
 	 * behaviours			Array. A list of behaviour names to instantiate and attach to the behavioursDispatcher.
 	 * fillable_fields		Array. Which fields should be auto-filled from the model state (by extent, the request)?
 	 * guarded_fields		Array. Which fields should never be auto-filled from the model state (by extent, the request)?
+	 * relations			Array (hashed). The relations to autoload on model creation.
 	 *
 	 * Setting either fillable_fields or guarded_fields turns on automatic filling of fields in the constructor. If both
 	 * are set only guarded_fields is taken into account. Fields are not filled automatically outside the constructor.
@@ -260,6 +284,37 @@ class DataModel extends Model
 			}
 		}
 
+		// Create a relation manager
+		$this->relationManager = new RelationManager($this);
+
+		// Do I have a list of relations?
+		if (isset($this->config['relations']) && is_array($this->config['relations']))
+		{
+			foreach ($this->config['relations'] as $name => $relConfig)
+			{
+				if (!is_array($relConfig))
+				{
+					continue;
+				}
+
+				$defaultRelConfig = array(
+					'type'				=> 'hasOne',
+					'foreignModelClass'	=> null,
+					'localKey'			=> null,
+					'foreignKey'		=> null,
+					'pivotTable'		=> null,
+					'pivotLocalKey'		=> null,
+					'pivotForeignKey'	=> null,
+				);
+
+				$relConfig = array_merge($defaultRelConfig, $relConfig);
+
+				$this->relationManager->addRelation($name, $relConfig['type'], $relConfig['foreignModelClass'],
+					$relConfig['localKey'],	$relConfig['foreignKey'], $relConfig['pivotTable'],
+					$relConfig['pivotLocalKey'], $relConfig['pivotForeignKey']);
+			}
+		}
+
 		// Initialise the data model
 		$this->reset();
 	}
@@ -426,10 +481,11 @@ class DataModel extends Model
 	 * Reset the record data
 	 *
 	 * @param   boolean $useDefaults Should I use the default values? Default: yes
+	 * @param   boolean $resetRelations Should I reset the relations too? Default: no
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
-	public function reset($useDefaults = true)
+	public function reset($useDefaults = true, $resetRelations = false)
 	{
 		$this->recordData = array();
 
@@ -445,6 +501,14 @@ class DataModel extends Model
 			}
 		}
 
+		if ($resetRelations)
+		{
+			$this->relationManager->resetRelations();
+			$this->eagerRelations = array();
+		}
+
+		$this->relationFilters = array();
+
 		return $this;
 	}
 
@@ -455,7 +519,7 @@ class DataModel extends Model
 	 * @param   string $name
 	 * @param   mixed  $arguments
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function __call($name, $arguments)
 	{
@@ -468,6 +532,11 @@ class DataModel extends Model
 
 				return $this;
 			}
+		}
+
+		if ($this->relationManager->isMagicMethod($name))
+		{
+			return call_user_func_array(array($this->relationManager, $name), $arguments);
 		}
 
 		$arg1 = array_shift($arguments);
@@ -487,7 +556,7 @@ class DataModel extends Model
 	 *
 	 * @param   string $name The name of the field / state variable to retrieve
 	 *
-	 * @return  DataModel|mixed
+	 * @return  static|mixed
 	 */
 	public function __get($name)
 	{
@@ -509,6 +578,10 @@ class DataModel extends Model
 			$name = $this->aliasFields[$name];
 
 			return $this->getFieldValue($name);
+		}
+		elseif ($this->relationManager->isMagicProperty($name))
+		{
+			return $this->relationManager->$name;
 		}
 		// If $name is not a field name, get the value of a state variable
 		else
@@ -806,6 +879,29 @@ class DataModel extends Model
 			$this->reorder($orderingFilter ? $db->qn($orderingFilter) . ' = ' . $db->q($filterValue) : '');
 		}
 
+		// One more thing... Touch all relations in the $touches array
+		if (!empty($this->touches))
+		{
+			foreach ($this->touches as $relation)
+			{
+				$records = $this->getRelations()->getData($relation);
+
+				if (!empty($records))
+				{
+					if ($records instanceof DataModel)
+					{
+						$records = array($records);
+					}
+
+					/** @var DataModel $record */
+					foreach ($records as $record)
+					{
+						$record->touch();
+					}
+				}
+			}
+		}
+
 		// Finally, call the onAfterSave event
 		if (method_exists($this, 'onAfterSave'))
 		{
@@ -818,13 +914,68 @@ class DataModel extends Model
 	}
 
 	/**
+	 * Save a record, creating it if it doesn't exist or updating it if it exists. By default it uses the currently set
+	 * data, unless you provide a $data array. On top of that, it also saves all specified relations. If $relations is
+	 * null it will save all relations known to this model.
+	 *
+	 * @param   null|array $data           [Optional] Data to bind
+	 * @param   string     $orderingFilter A WHERE clause used to apply table item reordering
+	 * @param   array      $ignore         A list of fields to ignore when binding $data
+	 * @param   array      $relations      Which relations to save with the model's record. Leave null for all relations
+	 *
+	 * @return $this Self, for chaining
+	 */
+	public function push($data = null, $orderingFilter = '', $ignore = null, $relations = null)
+	{
+		// Store the model's $touches definition
+		$touches = $this->touches;
+
+		// If $relations is non-null, remove $relations from $this->touches. Since $relations will be saved, they are
+		// implicitly touched. We don't want to double-touch those records, do we?
+		if (is_array($relations))
+		{
+			$this->touches = array_diff($this->touches, $relations);
+		}
+		// Otherwise empty $this->touches completely as we'll be pushing all relations
+		else
+		{
+			$this->touches = array();
+		}
+
+		// Save this record
+		$this->save($data, $orderingFilter, $ignore);
+
+		// Push all relations specified (or all relations if $relations is null)
+		$allRelations = $this->getRelations()->getRelationNames();
+
+		if (!empty($allRelations))
+		{
+			foreach ($allRelations as $relationName)
+			{
+				if (!is_null($relations) && !in_array($relationName, $allRelations))
+				{
+					continue;
+				}
+
+				$this->getRelations()->save($relationName);
+			}
+		}
+
+		// Restore the model's $touches definition
+		$this->touches = $touches;
+
+		// Return self for chaining
+		return $this;
+	}
+
+	/**
 	 * Method to bind an associative array or object to the DataModel instance. This
 	 * method optionally takes an array of properties to ignore when binding.
 	 *
 	 * @param   mixed $data   An associative array or object to bind to the DataModel instance.
 	 * @param   mixed $ignore An optional array or space separated list of properties to ignore while binding.
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \InvalidArgumentException
 	 * @throws    \Exception
@@ -876,7 +1027,7 @@ class DataModel extends Model
 	/**
 	 * Check the data for validity. By default it only checks for fields declared as NOT NULL
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws \RuntimeException  When the data bound to this record is invalid
 	 */
@@ -897,7 +1048,7 @@ class DataModel extends Model
 
 			$value = $this->$fieldName;
 
-			if (($field->Null == 'NO') && empty($value) && !in_array($fieldName, $this->fieldsSkipChecks))
+			if (($field->Null == 'NO') && empty($value) && !is_numeric($value) && !in_array($fieldName, $this->fieldsSkipChecks))
 			{
 				$text = $this->container->application->getName() . '_' . Inflector::singularize($this->getName()) . '_ERR_'
 					. $fieldName . '_EMPTY';
@@ -914,7 +1065,7 @@ class DataModel extends Model
 	 *
 	 * @param   string $where The WHERE clause of the SQL used to fetch the order
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \UnexpectedValueException
 	 */
@@ -1027,7 +1178,7 @@ class DataModel extends Model
 		// Get a "count all" query
 		$db = $this->getDbo();
 		$query = $this->buildQuery(true);
-		$query->select('COUNT(*)');
+		$query->select(null)->select('COUNT(*)');
 
 		// Run the "before build query" hook and behaviours
 		if (method_exists($this, 'buildCountQuery'))
@@ -1104,7 +1255,7 @@ class DataModel extends Model
 	/**
 	 * Returns a DataCollection iterator based on your currently set Model state
 	 *
-	 * @param   boolean $overrideLimits Should I ingore limits set in the Model?
+	 * @param   boolean $overrideLimits Should I ignore limits set in the Model?
 	 * @param   integer $limitstart     How many items to skip from the start, only when $overrideLimits = true
 	 * @param   integer $limit          How many items to return, only when $overrideLimits = true
 	 *
@@ -1118,7 +1269,11 @@ class DataModel extends Model
 			$limit = $this->getState('limit', 0);
 		}
 
-		return DataCollection::make($this->getItemsArray($limitstart, $limit));
+		$dataCollection = DataCollection::make($this->getItemsArray($limitstart, $limit));
+
+		$this->eagerLoad($dataCollection, null);
+
+		return $dataCollection;
 	}
 
 	/**
@@ -1151,6 +1306,8 @@ class DataModel extends Model
 			$item = new $className($this->container);
 			$item->bind($data);
 			$items[$item->getId()] = $item;
+			$item->relationManager = clone $this->relationManager;
+			$item->relationManager->rebase($item);
 		}
 
 		if (method_exists($this, 'onAfterGetItemsArray'))
@@ -1256,7 +1413,7 @@ class DataModel extends Model
 	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \RuntimeException  When the row is not found
 	 */
@@ -1278,7 +1435,7 @@ class DataModel extends Model
 	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
 	public function find($keys = null)
 	{
@@ -1347,7 +1504,12 @@ class DataModel extends Model
 		// Apply key filters
 		foreach ($keys as $filterKey => $filterValue)
 		{
-			if (array_key_exists('id', $this->recordData))
+			if ($filterKey == 'id')
+			{
+				$filterKey = $this->getIdFieldName();
+			}
+
+			if (array_key_exists($filterKey, $this->recordData))
 			{
 				$query->where($db->qn($filterKey) . ' = ' . $db->q($filterValue));
 			}
@@ -1440,7 +1602,7 @@ class DataModel extends Model
 	 *
 	 * @param   array $data Data for the newly created item
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function firstOrCreate($data)
 	{
@@ -1460,7 +1622,7 @@ class DataModel extends Model
 	 *
 	 * @param   array $data The data to use in the new record
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
 	public function create($data)
 	{
@@ -1470,7 +1632,7 @@ class DataModel extends Model
 	/**
 	 * Return the first item found or throw a \RuntimeException
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 *
 	 * @throws  \RuntimeException
 	 */
@@ -1489,7 +1651,7 @@ class DataModel extends Model
 	/**
 	 * Return the first item found or create a new, blank one
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function firstOrNew()
 	{
@@ -1583,7 +1745,7 @@ class DataModel extends Model
 	 * @param   string  $where   WHERE clause to use for limiting the selection of rows to compact the
 	 *                           ordering values.
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \UnexpectedValueException  If the table does not support reordering
 	 * @throws  \RuntimeException  If the record is not loaded
@@ -2226,6 +2388,387 @@ class DataModel extends Model
 	public function whereRaw($rawWhereClause)
 	{
 		$this->whereClauses[] = $rawWhereClause;
+
+		return $this;
+	}
+
+	/**
+	 * Returns the relations manager of the model
+	 *
+	 * @return RelationManager
+	 */
+	public function &getRelations()
+	{
+		return $this->relationManager;
+	}
+
+	/**
+	 * Instructs the model to eager load the specified relations. The $relations array can have the format:
+	 *
+	 * array('relation1', 'relation2')
+	 * 		Eager load relation1 and relation2 without any callbacks
+	 * array('relation1' => $callable1, 'relation2' => $callable2)
+	 * 		Eager load relation1 with callback $callable1 etc
+	 * array('relation1', 'relation2' => $callable2)
+	 * 		Eager load relation1 without a callback, relation2 with callback $callable2
+	 *
+	 * The callback must have the signature function(\Awf\Database\Query $query) and doesn't return a value. It is
+	 * supposed to modify the query directly.
+	 *
+	 * Please note that eager loaded relations produce their queries without going through the respective model. Instead
+	 * they generate a SQL query directly, then map the loaded results into a DataCollection.
+	 *
+	 * @param array $relations The relations to eager load. See above for more information.
+	 *
+	 * @return $this For chaining
+	 */
+	public function with(array $relations)
+	{
+		if (empty($relations))
+		{
+			$this->eagerRelations = array();
+			return $this;
+		}
+
+		$knownRelations = $this->relationManager->getRelationNames();
+
+		foreach ($relations as $k => $v)
+		{
+			if (is_callable($v))
+			{
+				$relName = $k;
+				$callback = $v;
+			}
+			else
+			{
+				$relName = $v;
+				$callback = null;
+			}
+
+			if (in_array($relName, $knownRelations))
+			{
+				$this->eagerRelations[$relName] = $callback;
+			}
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Filter the model based on the fulfilment of relations. For example:
+	 * $posts->has('comments', '>=', 10)->get();
+	 * will return all posts with at least 10 comments.
+	 *
+	 * @param string $relation The relation to query
+	 * @param string $operator The comparison operator. Same operators as the where() method.
+	 * @param mixed  $value    The value(s) to compare against.
+	 * @param bool   $replace  When true (default) any existing relation filters for the same relation will be replaced
+	 *
+	 * @return $this
+	 */
+	public function has($relation, $operator = '>=', $value = 1, $replace = true)
+	{
+		// Make sure the Filters behaviour is added to the model
+		if (!$this->behavioursDispatcher->hasObserverClass('Awf\Mvc\DataModel\Behaviour\RelationFilters'))
+		{
+			$this->addBehaviour('relationFilters');
+		}
+
+		$filter = array(
+			'relation'	=> $relation,
+			'method'	=> $operator,
+			'operator'	=> $operator,
+			'value'		=> $value
+		);
+
+		// Handle method aliases
+		switch ($operator)
+		{
+			case '<>':
+				$filter['method'] = 'search';
+				$filter['operator'] = '!=';
+				break;
+
+			case 'lt':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<';
+				break;
+
+			case 'le':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<=';
+				break;
+
+			case 'gt':
+				$filter['method'] = 'search';
+				$filter['operator'] = '>';
+				break;
+
+			case 'ge':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<=';
+				break;
+
+			case 'eq':
+				$filter['method'] = 'search';
+				$filter['operator'] = '=';
+				break;
+
+			case 'neq':
+			case 'ne':
+				$filter['method'] = 'search';
+				$filter['operator'] = '!=';
+				break;
+
+			case '<':
+			case '!<':
+			case '<=':
+			case '!<=':
+			case '>':
+			case '!>':
+			case '>=':
+			case '!>=':
+			case '!=':
+			case '=':
+				$filter['method'] = 'search';
+				$filter['operator'] = $operator;
+				break;
+
+			case 'like':
+			case '~':
+			case '%':
+				$filter['method'] = 'partial';
+				break;
+
+			case '==':
+			case '=[]':
+			case '=()':
+			case 'in':
+				$filter['method'] = 'exact';
+				break;
+
+			case '()':
+			case '[]':
+			case '[)':
+			case '(]':
+				$filter['method'] = 'inside';
+				break;
+
+			case ')(':
+			case ')[':
+			case '](':
+			case '][':
+				$filter['method'] = 'outside';
+				break;
+
+			case '*=':
+			case 'every':
+				$filter['method'] = 'interval';
+				break;
+
+			case '?=':
+				$filter['method'] = 'search';
+				break;
+
+			case 'callback':
+				$filter['method'] = 'callback';
+				$filter['operator'] = 'callback';
+				break;
+		}
+
+		// Handle real methods
+		switch ($filter['method'])
+		{
+			case 'between':
+			case 'outside':
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the from and to values from the $value array
+					if (isset($value['from']) && isset($value['to']))
+					{
+						$filter['from'] = $value['from'];
+						$filter['to'] = $value['to'];
+					}
+					else
+					{
+						$filter['from'] = array_shift($value);
+						$filter['to'] = array_shift($value);
+					}
+
+					unset($filter['value']);
+				}
+				else
+				{
+					// $value is not a from/to array. Treat as = (between) or != (outside)
+					if (is_array($value))
+					{
+						$value = array_shift($value);
+					}
+
+					$filter['value'] = $value;
+					$filter['method'] = 'search';
+					$filter['operator'] = ($filter['method'] == 'between') ? '=' : '!=';
+				}
+
+				break;
+
+			case 'interval':
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the value and interval from the $value array
+					if (isset($value['value']) && isset($value['interval']))
+					{
+						$filter['value'] = $value['value'];
+						$filter['interval'] = $value['interval'];
+					}
+					else
+					{
+						$filter['value'] = array_shift($value);
+						$filter['interval'] = array_shift($value);
+					}
+				}
+				else
+				{
+					// $value is not a value/interval array. Treat as =
+					if (is_array($value))
+					{
+						$value = array_shift($value);
+					}
+
+					$filter['value'] = $value;
+					$filter['method'] = 'search';
+					$filter['operator'] = '=';
+				}
+				break;
+
+			case 'search':
+				// We don't have to do anything if the operator is already set
+				if (isset($filter['operator']))
+				{
+					break;
+				}
+
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the operator and value from the $value array
+					if (isset($value['operator']) && isset($value['value']))
+					{
+						$filter['operator'] = $value['operator'];
+						$filter['value'] = $value['value'];
+					}
+					else
+					{
+						$filter['operator'] = array_shift($value);
+						$filter['value'] = array_shift($value);
+					}
+				}
+				break;
+
+			case 'callback':
+				if (!is_callable($filter['value']))
+				{
+					$filter['method'] = 'search';
+					$filter['operator'] = '=';
+					$filter['value'] = 1;
+				}
+				break;
+		}
+
+		if ($replace && !empty($this->relationFilters))
+		{
+			foreach ($this->relationFilters as $k => $v)
+			{
+				if ($v['relation'] == $relation)
+				{
+					unset ($this->relationFilters[$k]);
+				}
+			}
+		}
+
+		$this->relationFilters[] = $filter;
+
+		return $this;
+	}
+
+	/**
+	 * Advanced model filtering on the fulfilment of relations. Unlike has() you can provide your own callback which
+	 * modifies the COUNT subquery used to compare against the relation. The $callBack has the signature
+	 * function(\Awf\Database\Query $query)
+	 * and MUST return a string. The $query you are passed is the COUNT subquery of the relation, e.g.
+	 * SELECT COUNT(*) FROM #__comments AS reltbl WHERE reltbl.user_id = user_id
+	 * You have to return a WHERE clause for the model's query, e.g.
+	 * (SELECT COUNT(*) FROM #__comments AS reltbl WHERE reltbl.user_id = user_id) BETWEEN 1 AND 20
+	 *
+	 * @param string   $relation The relation to query against
+	 * @param callable $callBack The callback to use for filtering
+	 * @param bool     $replace  When true (default) any existing relation filters for the same relation will be replaced
+	 *
+	 * @return $this
+	 */
+	public function whereHas($relation, callable $callBack, $replace = true)
+	{
+		$this->has($relation, 'callback', $callBack);
+
+		return $this;
+	}
+
+	/**
+	 * Gets the relation filter definitions, for use by the RelationFilters behaviour
+	 *
+	 * @return array
+	 */
+	public function getRelationFilters()
+	{
+		return $this->relationFilters;
+	}
+
+	/**
+	 * Returns the list of relations which are touched by save() and touch()
+	 *
+	 * @return array
+	 */
+	public function &getTouches()
+	{
+		return $this->touches;
+	}
+
+	/**
+	 * Eager loads the provided relations and assigns their data to a data collection
+	 *
+	 * @param Collection $dataCollection The data collection on which the eager loaded relations will be applied
+	 * @param array|null $relations      The relations to eager load. Leave empty to use the already defined relations
+	 *
+	 * @return $this for chaining
+	 */
+	public function eagerLoad(Collection &$dataCollection, $relations = null)
+	{
+		if (empty($relations))
+		{
+			$relations = $this->eagerRelations;
+		}
+
+		// Apply eager loaded relations
+		if ($dataCollection->count() && !empty($relations))
+		{
+			foreach ($relations as $relation => $callback)
+			{
+				// Did they give us a relation name without a callback?
+				if (!is_callable($callback) && is_string($callback) && !empty($callback))
+				{
+					$relation = $callback;
+					$callback = null;
+				}
+
+				$relationData = $this->relationManager->getData($relation, $callback, $dataCollection);
+
+				/** @var DataModel $item */
+				foreach ($dataCollection as $item)
+				{
+					$foreignKeyMap = $this->getRelations()->getForeignKeyMap($relation);
+					$item->getRelations()->setDataFromCollection($relation, $relationData, $foreignKeyMap);
+				}
+			}
+		}
 
 		return $this;
 	}

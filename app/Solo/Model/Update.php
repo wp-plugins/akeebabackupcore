@@ -333,59 +333,25 @@ class Update extends Model
 		if (!empty($platforms))
 		{
 			$phpVersionParts = explode('.', PHP_VERSION, 3);
-			$currentPHPVersion = $phpVersionParts[0] . '.' . $phpVersionParts[1];
+			$currentPlatform = $phpVersionParts[0] . '.' . $phpVersionParts[1];
 
 			$platformFound = false;
 
-			$requirePlatformName = $this->container->segment->get('platformNameForUpdates', 'php');
-			$currentPlatform = $this->container->segment->get('platformVersionForUpdates', $currentPHPVersion);
-
-			// Check for the platform
 			foreach ($platforms as $platform)
 			{
 				$platform = trim($platform);
 				$platform = strtolower($platform);
 				$platformParts = explode('/', $platform, 2);
 
-				if ($platformParts[0] != $requirePlatformName)
+				if ($platformParts[0] != 'php')
 				{
 					continue;
 				}
 
-				if ((substr($platformParts[1], -1) == '+') && version_compare($currentPlatform, substr($platformParts[1], 0, -1), 'ge'))
+				if ($platformParts[1] == $currentPlatform)
 				{
 					$this->updateInfo->set('platformMatch', 1);
 					$platformFound = true;
-				}
-				elseif ($platformParts[1] == $currentPlatform)
-				{
-					$this->updateInfo->set('platformMatch', 1);
-					$platformFound = true;
-				}
-			}
-
-			// If we are running inside a CMS perform a second check for the PHP version
-			if ($platformFound && ($requirePlatformName != 'php'))
-			{
-				$this->updateInfo->set('platformMatch', 0);
-				$platformFound = false;
-
-				foreach ($platforms as $platform)
-				{
-					$platform = trim($platform);
-					$platform = strtolower($platform);
-					$platformParts = explode('/', $platform, 2);
-
-					if ($platformParts[0] != 'php')
-					{
-						continue;
-					}
-
-					if ($platformParts[1] == $currentPHPVersion)
-					{
-						$this->updateInfo->set('platformMatch', 1);
-						$platformFound = true;
-					}
 				}
 			}
 

@@ -701,8 +701,16 @@ abstract class Query
 
 				$tables = '( ' . (string) $tables . ' ) AS ' . $this->quoteName($subQueryAlias);
 			}
+			elseif (!empty($subQueryAlias) && is_string($tables))
+			{
+				$tables = $tables . ' AS ' . $this->quoteName($subQueryAlias);
+			}
 
 			$this->from = new QueryElement('FROM', $tables);
+		}
+		elseif (empty($tables))
+		{
+			$this->from = null;
 		}
 		else
 		{
@@ -1122,6 +1130,10 @@ abstract class Query
 		if (is_null($this->select))
 		{
 			$this->select = new QueryElement('SELECT', $columns);
+		}
+		elseif (empty($columns))
+		{
+			$this->select = null;
 		}
 		else
 		{

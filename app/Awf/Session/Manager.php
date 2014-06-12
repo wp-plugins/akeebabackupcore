@@ -146,7 +146,10 @@ class Manager
 	 */
 	public function start()
 	{
-		return session_start();
+		if (!$this->isStarted())
+		{
+			return @session_start();
+		}
 	}
 
 	/**
@@ -158,7 +161,7 @@ class Manager
 	 */
 	public function clear()
 	{
-		return session_unset();
+		@session_unset();
 	}
 
 	/**
@@ -170,7 +173,7 @@ class Manager
 	 */
 	public function commit()
 	{
-		return session_write_close();
+		@session_write_close();
 	}
 
 	/**
@@ -186,9 +189,12 @@ class Manager
 		{
 			$this->start();
 		}
+
 		$this->clear();
 
-		return session_destroy();
+		$ret = @session_destroy();
+
+		return $ret;
 	}
 
 	/**
@@ -346,6 +352,7 @@ class Manager
 	public function regenerateId()
 	{
 		$result = session_regenerate_id(true);
+
 		if ($result && $this->csrf_token)
 		{
 			$this->csrf_token->regenerateValue();
@@ -466,7 +473,13 @@ class Manager
 	 */
 	public function getStatus()
 	{
+		if (function_exists('session_status'))
+		{
+			return session_status();
+		}
+
 		$sid = session_id();
+
 		if (empty($sid))
 		{
 			return PHP_SESSION_NONE;

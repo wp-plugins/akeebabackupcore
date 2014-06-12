@@ -92,17 +92,17 @@ $router = $this->container->router;
 </div>
 
 <script type="text/javascript" language="javascript">
-Solo.loadScripts[Solo.loadScripts.length] = function () {
+	Solo.Restore.password = '<?php echo $this->password; ?>';
+	Solo.Restore.ajaxURL = '<?php echo \Awf\Uri\Uri::base(false, $this->container) ?>restore.php';
+	Solo.Restore.mainURL = '<?php echo $router->route('index.php')?>';
+
+	Solo.Restore.translations['UI-LASTRESPONSE'] = '<?php echo \Solo\Helper\Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
+
+	Solo.Restore.errorCallback = Solo.Restore.errorCallbackDefault;
+
 	(function($){
-		Solo.Restore.password = '<?php echo $this->password; ?>';
-		Solo.Restore.ajaxURL = '<?php echo \Awf\Uri\Uri::base(false, $this->container) ?>restore.php';
-		Solo.Restore.mainURL = '<?php echo $router->route('index.php')?>';
-
-		Solo.Restore.translations['UI-LASTRESPONSE'] = '<?php echo \Solo\Helper\Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
-
-		Solo.Restore.errorCallback = Solo.Restore.errorCallbackDefault;
-
+	$(document).ready(function(){
 		Solo.Restore.pingRestoration();
+	});
 	}(akeeba.jQuery));
-};
 </script>

@@ -321,41 +321,41 @@ $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 </div>
 
 <script type="application/javascript">
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		Solo.Backup.returnUrl = '<?php echo Escape::escapeJS($this->returnURL) ?>';
-		Solo.Backup.isSTW = <?php echo $this->isSTW ? 'true' : 'false' ?>;
-		Solo.Backup.maxExecutionTime = '<?php echo $this->maxexec ?>';
-		Solo.Backup.runtimeBias = '<?php echo $this->bias ?>';
-		Solo.Backup.domains = JSON.parse("<?php echo $this->domains ?>");
-		Solo.System.params.AjaxURL = '<?php echo $router->route('index.php?view=backup&task=ajax')?>';
-		Solo.System.params.useIFrame = <?php echo $this->useIframe ?>;
-		Solo.Backup.srpInfo = JSON.parse('<?php echo Escape::escapeJS(json_encode($this->srpInfo)) ?>');
-		Solo.Backup.default_descr = '<?php echo $this->default_descr ?>';
-		Solo.Backup.config_angiekey = '<?php echo $this->angieKey ?>';
-		Solo.Backup.jpsKey = '<?php echo $this->jpsKey ?>';
+(function($){
+$(document).ready(function(){
+	Solo.Backup.returnUrl = '<?php echo Escape::escapeJS($this->returnURL) ?>';
+	Solo.Backup.isSTW = <?php echo $this->isSTW ? 'true' : 'false' ?>;
+	Solo.Backup.maxExecutionTime = '<?php echo $this->maxexec ?>';
+	Solo.Backup.runtimeBias = '<?php echo $this->bias ?>';
+	Solo.Backup.domains = JSON.parse("<?php echo $this->domains ?>");
+	Solo.System.params.AjaxURL = '<?php echo $router->route('index.php?view=backup&task=ajax')?>';
+	Solo.System.params.useIFrame = <?php echo $this->useIframe ?>;
+	Solo.Backup.srpInfo = JSON.parse('<?php echo Escape::escapeJS(json_encode($this->srpInfo)) ?>');
+	Solo.Backup.default_descr = '<?php echo $this->default_descr ?>';
+	Solo.Backup.config_angiekey = '<?php echo $this->angieKey ?>';
+	Solo.Backup.jpsKey = '<?php echo $this->jpsKey ?>';
 
-		// Work around Safari which ignores autocomplete=off (FOR CRYING OUT LOUD!)
-		setTimeout('Solo.Backup.restoreDefaultOptions();', 500);
+	// Work around Safari which ignores autocomplete=off (FOR CRYING OUT LOUD!)
+	setTimeout('Solo.Backup.restoreDefaultOptions();', 500);
 
-		// Create a function for saving the editor's contents
-		akeeba_comment_editor_save = function() {
-		}
+	// Create a function for saving the editor's contents
+	akeeba_comment_editor_save = function() {
+	}
 
-		// Push translations
-		Solo.Backup.translations['UI-LASTRESPONSE']			= '<?php echo Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
-		Solo.Backup.translations['UI-STW-CONTINUE']			= '<?php echo Escape::escapeJS(Text::_('STW_MSG_CONTINUE')) ?>';
+	// Push translations
+	Solo.Backup.translations['UI-LASTRESPONSE']			= '<?php echo Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
+	Solo.Backup.translations['UI-STW-CONTINUE']			= '<?php echo Escape::escapeJS(Text::_('STW_MSG_CONTINUE')) ?>';
 
-		<?php if (!$this->unwritableOutput && ($this->autoStart || (isset($this->srpInfo['tag']) && ($this->srpInfo['tag'] == 'restorepoint')))):?>
+	<?php if (!$this->unwritableOutput && ($this->autoStart || (isset($this->srpInfo['tag']) && ($this->srpInfo['tag'] == 'restorepoint')))):?>
+	Solo.Backup.start();
+	<?php else: ?>
+	$('#backup-start').bind("click", function(e){
 		Solo.Backup.start();
-		<?php else: ?>
-		$('#backup-start').bind("click", function(e){
-			Solo.Backup.start();
-		});
+	});
 
-		$('#backup-default').click(Solo.Backup.restoreDefaultOptions);
-		<?php endif; ?>
+	$('#backup-default').click(Solo.Backup.restoreDefaultOptions);
+	<?php endif; ?>
 
-	}(akeeba.jQuery));
-};
+});
+}(akeeba.jQuery));
 </script>

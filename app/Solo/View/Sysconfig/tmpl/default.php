@@ -14,11 +14,11 @@ $config = $this->container->appConfig;
 $router = $this->container->router;
 
 $headJavascript = <<< JS
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		Solo.Setup.init();
-	}(akeeba.jQuery));
-};
+(function($) {
+$( document ).ready(function() {
+  Solo.Setup.init();
+});
+})(akeeba.jQuery);
 JS;
 
 $this->container->application->getDocument()->addScript(\Awf\Uri\Uri::base(false, $this->container) . '/media/js/solo/setup.js');
@@ -715,8 +715,8 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 	// Callback routine to close the browser dialog
 	var akeeba_browser_callback = null;
 
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
+	(function($) {
+	$(document).ready(function(){
 		// Initialise the translations
 		Solo.Setup.translations['UI-BROWSE'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_BROWSE')) ?>';
 		Solo.Setup.translations['UI-REFRESH'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_REFRESH')) ?>';
@@ -735,8 +735,8 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 
 		// Enable fancy switches
 		$(".toggleSwitch").bootstrapSwitch();
-	}(akeeba.jQuery));
-};
+	})
+	})(akeeba.jQuery);
 </script>
 
 <?php

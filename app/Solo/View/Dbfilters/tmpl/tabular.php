@@ -71,44 +71,44 @@ $router = $this->container->router;
 </fieldset>
 
 <script type="text/javascript">
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		Solo.System.params.AjaxURL = '<?php echo Escape::escapeJS($router->route('index.php?view=dbfilters&task=ajax&format=raw')) ?>';
+(function($){
+$(document).ready(function(){
+	Solo.System.params.AjaxURL = '<?php echo Escape::escapeJS($router->route('index.php?view=dbfilters&task=ajax&format=raw')) ?>';
 
-		/**
-		 * AJAX error callback
-		 *
-		 * @param   msg  The error message to show
-		 */
-		Solo.System.params.errorCallback = function(msg)
+    /**
+     * AJAX error callback
+	 *
+	 * @param   msg  The error message to show
+     */
+	Solo.System.params.errorCallback = function(msg)
+	{
+		$('#dialogLabel').html('<?php echo Escape::escapeJS(Text::_('CONFIG_UI_AJAXERRORDLG_TITLE')) ?>');
+		$('#dialogBody').html('');
+		var alertBox = $(document.createElement('div')).addClass('alert alert-danger');
+		alertBox.html('<?php echo Escape::escapeJS(Text::_('CONFIG_UI_AJAXERRORDLG_TEXT')) ?><br><pre>' + msg + '</pre>');
+		alertBox.appendTo($('#dialogBody'));
+		$('#dialog').modal({backdrop: 'static', keyboard: false});
+	}
+
+	// Push translations
+	Solo.Dbfilters.translations['UI-ROOT'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIROOT')) ?>';
+	Solo.Dbfilters.translations['UI-ERROR-FILTER'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIERRORFILTER')) ?>';
+	<?php
+		$filters = array('tables', 'tabledata');
+		foreach($filters as $type)
 		{
-			$('#dialogLabel').html('<?php echo Escape::escapeJS(Text::_('CONFIG_UI_AJAXERRORDLG_TITLE')) ?>');
-			$('#dialogBody').html('');
-			var alertBox = $(document.createElement('div')).addClass('alert alert-danger');
-			alertBox.html('<?php echo Escape::escapeJS(Text::_('CONFIG_UI_AJAXERRORDLG_TEXT')) ?><br><pre>' + msg + '</pre>');
-			alertBox.appendTo($('#dialogBody'));
-			$('#dialog').modal({backdrop: 'static', keyboard: false});
+			echo "\tSolo.Dbfilters.translations['UI-FILTERTYPE-" . strtoupper($type)."'] = '".
+				Escape::escapeJS(Text::_('DBFILTER_TYPE_' . $type)) . "';\n";
 		}
+	?>
 
-		// Push translations
-		Solo.Dbfilters.translations['UI-ROOT'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIROOT')) ?>';
-		Solo.Dbfilters.translations['UI-ERROR-FILTER'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIERRORFILTER')) ?>';
-		<?php
-			$filters = array('tables', 'tabledata');
-			foreach($filters as $type)
-			{
-				echo "\tSolo.Dbfilters.translations['UI-FILTERTYPE-" . strtoupper($type)."'] = '".
-					Escape::escapeJS(Text::_('DBFILTER_TYPE_' . $type)) . "';\n";
-			}
-		?>
+	// Push the location to the loading image file
+	Solo.Dbfilters.loadingGif = '<?php echo \Awf\Uri\Uri::base(false, $this->container) . 'media/loading.gif' ?>';
 
-		// Push the location to the loading image file
-		Solo.Dbfilters.loadingGif = '<?php echo \Awf\Uri\Uri::base(false, $this->container) . 'media/loading.gif' ?>';
+	// Bootstrap the page display
+	var data = eval(<?php echo Escape::escapeJS($this->json,"'"); ?>);
 
-		// Bootstrap the page display
-		var data = eval(<?php echo Escape::escapeJS($this->json,"'"); ?>);
-
-		Solo.Dbfilters.renderTab(data);
-	}(akeeba.jQuery));
-};
+	Solo.Dbfilters.renderTab(data);
+});
+}(akeeba.jQuery));
 </script>

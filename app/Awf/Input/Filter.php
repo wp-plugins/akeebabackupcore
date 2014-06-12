@@ -211,6 +211,10 @@ class Filter
 				$result = (string)preg_replace('/[\x00-\x1F\x7F<>"\'%&]/', '', $source);
 				break;
 
+			case 'RAW':
+				return $source;
+				break;
+
 			default:
 				// Are we dealing with an array?
 				if (is_array($source))
@@ -533,7 +537,8 @@ class Filter
 			$attrSubSet = explode('=', trim($attrSet[$i]), 2);
 
 			// Take the last attribute in case there is an attribute with no value
-			$attrSubSet[0] = array_pop(explode(' ', trim($attrSubSet[0])));
+			$explodedAttrSet = explode(' ', trim($attrSubSet[0]));
+			$attrSubSet[0] = array_pop($explodedAttrSet);
 
 			// Remove all "non-regular" attribute names
 			// AND blacklisted attributes
@@ -631,10 +636,13 @@ class Filter
 		$source = strtr($source, $ttr);
 
 		// Convert decimal
-		$source = preg_replace('/&#(\d+);/me', "utf8_encode(chr(\\1))", $source); // decimal notation
+		$source = preg_replace_callback('/&#(\d+);/m', 'utf8_encode', $source);  // decimal notation
 
 		// Convert hex
-		$source = preg_replace('/&#x([a-f0-9]+);/mei', "utf8_encode(chr(0x\\1))", $source); // hex notation
+		$source = preg_replace_callback('/&#x([a-f0-9]+);/mi',
+			function($x) {
+				return utf8_encode(chr('0x' . $x));
+			}, $source); // hex notation
 		return $source;
 	}
 

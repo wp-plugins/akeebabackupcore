@@ -73,29 +73,27 @@ $config = \AEFactory::getConfiguration();
 </div>
 
 <script type="text/javascript">
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
-		Solo.System.params.AjaxURL = '<?php echo $router->route('index.php?view=wizard&task=ajax')?>';
+		akeeba.jQuery(document).ready(function($){
+			Solo.System.params.AjaxURL = '<?php echo $router->route('index.php?view=wizard&task=ajax')?>';
 
-		Solo.Wizard.translation['UI-TRYAJAX'] 				= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_TRYAJAX')) ?>';
-		Solo.Wizard.translation['UI-TRYIFRAME'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_TRYIFRAME')) ?>';
-		Solo.Wizard.translation['UI-CANTUSEAJAX'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTUSEAJAX')) ?>';
-		Solo.Wizard.translation['UI-MINEXECTRY'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_MINEXECTRY')) ?>';
-		Solo.Wizard.translation['UI-CANTDETERMINEMINEXEC'] 	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDETERMINEMINEXEC')) ?>';
-		Solo.Wizard.translation['UI-SAVEMINEXEC'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_SAVEMINEXEC')) ?>';
-		Solo.Wizard.translation['UI-CANTSAVEMINEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTSAVEMINEXEC')) ?>';
-		Solo.Wizard.translation['UI-CANTFIXDIRECTORIES'] 	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTFIXDIRECTORIES')) ?>';
-		Solo.Wizard.translation['UI-CANTDBOPT'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDBOPT')) ?>';
-		Solo.Wizard.translation['UI-EXECTOOLOW'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_EXECTOOLOW')) ?>';
-		Solo.Wizard.translation['UI-MAXEXECTRY'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_MINEXECTRY')) ?>';
-		Solo.Wizard.translation['UI-SAVINGMAXEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_SAVINGMAXEXEC')) ?>';
-		Solo.Wizard.translation['UI-CANTSAVEMAXEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTSAVEMAXEXEC')) ?>';
-		Solo.Wizard.translation['UI-CANTDETERMINEPARTSIZE']	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDETERMINEPARTSIZE')) ?>';
-		Solo.Wizard.translation['UI-PARTSIZE'] 				= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_PARTSIZE')) ?>';
+			Solo.Wizard.translation['UI-TRYAJAX'] 				= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_TRYAJAX')) ?>';
+			Solo.Wizard.translation['UI-TRYIFRAME'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_TRYIFRAME')) ?>';
+			Solo.Wizard.translation['UI-CANTUSEAJAX'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTUSEAJAX')) ?>';
+			Solo.Wizard.translation['UI-MINEXECTRY'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_MINEXECTRY')) ?>';
+			Solo.Wizard.translation['UI-CANTDETERMINEMINEXEC'] 	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDETERMINEMINEXEC')) ?>';
+			Solo.Wizard.translation['UI-SAVEMINEXEC'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_SAVEMINEXEC')) ?>';
+			Solo.Wizard.translation['UI-CANTSAVEMINEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTSAVEMINEXEC')) ?>';
+			Solo.Wizard.translation['UI-CANTFIXDIRECTORIES'] 	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTFIXDIRECTORIES')) ?>';
+			Solo.Wizard.translation['UI-CANTDBOPT'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDBOPT')) ?>';
+			Solo.Wizard.translation['UI-EXECTOOLOW'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_EXECTOOLOW')) ?>';
+			Solo.Wizard.translation['UI-MAXEXECTRY'] 			= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_MINEXECTRY')) ?>';
+			Solo.Wizard.translation['UI-SAVINGMAXEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_SAVINGMAXEXEC')) ?>';
+			Solo.Wizard.translation['UI-CANTSAVEMAXEXEC'] 		= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTSAVEMAXEXEC')) ?>';
+			Solo.Wizard.translation['UI-CANTDETERMINEPARTSIZE']	= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_CANTDETERMINEPARTSIZE')) ?>';
+			Solo.Wizard.translation['UI-PARTSIZE'] 				= '<?php echo Escape::escapeJS(Text::_('AKEEBA_WIZARD_UI_PARTSIZE')) ?>';
 
-		Solo.Backup.translations['UI-LASTRESPONSE']			= '<?php echo Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
+			Solo.Backup.translations['UI-LASTRESPONSE']			= '<?php echo Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
 
-		Solo.Wizard.boot();
-	}(akeeba.jQuery));
-};
+			Solo.Wizard.boot();
+		});
 </script>

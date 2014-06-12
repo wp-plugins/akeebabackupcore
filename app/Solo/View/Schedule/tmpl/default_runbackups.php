@@ -269,11 +269,11 @@ use Awf\Text\Text;
 
             <?php
             $this->container->application->getDocument()->addScriptDeclaration( <<<JS
-Solo.loadScripts[Solo.loadScripts.length] = function () {
-	(function($){
+(function($) {
+    $(document).ready(function(){
         $('#abschedulingTabs a:first').tab('show');
-	}(akeeba.jQuery));
-};
+    });
+})(akeeba.jQuery);
 JS
             );
             ?>

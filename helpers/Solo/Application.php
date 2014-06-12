@@ -23,11 +23,6 @@ class Application extends \Awf\Application\Application
 		// Put a small marker to indicate that we run inside another CMS
 		$this->container->segment->set('insideCMS', true);
 
-		// Get the target platform information for updates
-		$platformVersion = function_exists('get_bloginfo') ? get_bloginfo('version') : '0.0';
-		$this->container->segment->set('platformNameForUpdates', 'wordpress');
-		$this->container->segment->set('platformVersionForUpdates', $platformVersion);
-
 		// If the PHP session save path is not writeable we will use the 'session' subdirectory inside our tmp directory
 		$sessionPath = $this->container->session->getSavePath();
 
@@ -42,8 +37,8 @@ class Application extends \Awf\Application\Application
 		$this->setTemplate('wp');
 
 		// Load the extra language files
-		Text::loadLanguage('en-GB', 'akeeba', '.com_akeeba.ini', false);
-		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', true);
+		Text::loadLanguage('en-GB', 'akeeba', '.com_akeeba.ini', false, $this->container->languagePath);
+		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', true, $this->container->languagePath);
 
 		$configPath = $this->container->appConfig->getDefaultPath();
 

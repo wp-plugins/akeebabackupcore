@@ -11,6 +11,8 @@ use Awf\Hal\Render\RenderInterface;
 /**
  * Implementation of the Hypertext Application Language document in PHP. It can
  * be used to provide hypermedia in a web service context.
+ *
+ * @see http://stateless.co/hal_specification.html
  */
 class Document
 {
@@ -133,7 +135,7 @@ class Document
 	 */
 	public function addEmbedded($rel, Document $document, $overwrite = true)
 	{
-		if (!array_key_exists($rel, $this->_embedded) || !$overwrite)
+		if (!array_key_exists($rel, $this->_embedded) || $overwrite)
 		{
 			$this->_embedded[$rel] = $document;
 
