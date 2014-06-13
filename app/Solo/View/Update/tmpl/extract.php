@@ -66,14 +66,14 @@ $token = $this->container->session->getCsrfToken()->getValue();
 </div>
 
 <script type="text/javascript">
-	(function($) {
-	$(document).ready(function(){
+Solo.loadScripts[Solo.loadScripts.length] = function () {
+	(function($){
 		Solo.System.params.AjaxURL = '<?php echo \Awf\Uri\Uri::base(false, $this->container) ?>restore.php';
 		Solo.Update.finaliseUrl = '<?php echo $router->route('index.php?view=update&task=finalise'); ?>';
 		Solo.System.errorCallback = Solo.Update.extractErrorCallback;
 		Solo.Update.errorCallback = Solo.Update.extractErrorCallback;
 		Solo.System.params.password = '<?php echo $this->getModel()->getState('update_password', '') ?>';
 		Solo.Update.pingExtract();
-	});
-	})(akeeba.jQuery);
+	}(akeeba.jQuery));
+};
 </script>

@@ -208,7 +208,7 @@ try
 				}
 			},
 		'application_name'	=> 'Solo',
-		'filesystemBase' => AKEEBA_SOLOWP_PATH,
+		'filesystemBase' => AKEEBA_SOLOWP_PATH . '/app',
 		'updateStreamURL' => 'http://cdn.akeebabackup.com/updates/backupwpcore.ini',
 		'changelogPath'	=> AKEEBA_SOLOWP_PATH . 'CHANGELOG.php',
 	));

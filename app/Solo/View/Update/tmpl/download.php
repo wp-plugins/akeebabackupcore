@@ -44,8 +44,8 @@ $token = $this->container->session->getCsrfToken()->getValue();
 </div>
 
 <script type="text/javascript">
-	(function($) {
-	$(document).ready(function(){
+Solo.loadScripts[Solo.loadScripts.length] = function () {
+	(function($){
 		Solo.System.errorCallback = Solo.Update.downloadErrorCallback;
 		Solo.Update.errorCallback = Solo.Update.downloadErrorCallback;
 		Solo.Update.translations['ERR_INVALIDDOWNLOADID'] = '<?php \Solo\Helper\Escape::escapeJS(Text::_('')) ?>';
@@ -53,6 +53,6 @@ $token = $this->container->session->getCsrfToken()->getValue();
 		Solo.Update.nextStepUrl = '<?php echo $router->route('index.php?view=update&task=extract&token=' . $token); ?>';
 		Solo.System.params.errorCallback = Solo.Update.downloadErrorCallback;
 		Solo.Update.startDownload();
-	});
-	})(akeeba.jQuery);
+	}(akeeba.jQuery));
+};
 </script>

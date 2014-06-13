@@ -37,10 +37,11 @@ abstract class DataControllerDefault extends DataController
 		'remotefiles'	=> array('*' => array('configure')),
 		'restore'		=> array('*' => array('configure')),
 		's3import'		=> array('*' => array('configure')),
-		'schedule'		=> array('*' => array('configure')),
-		'sysconfig'		=> array('*' => array('configure')),
+		'schedule'		=> array('*' => array('backup')),
+		'sysconfig'		=> array('*' => array('configure', 'backup', 'download')),
+		'update'		=> array('*' => array('configure', 'backup', 'download')),
 		'upload'		=> array('*' => array('configure')),
-		'users'			=> array('*' => array('configure')),
+		'users'			=> array('*' => array('configure', 'backup', 'download')),
 		'wizard'		=> array('*' => array('configure')),
 	);
 

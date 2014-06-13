@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 3.9
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -123,23 +123,34 @@ version of the license published by the Free Software Foundation. This license g
 WordPress' license; in fact, GPLv3 is simply a newer version of the same GPLv2 license WordPress is using, one which
 protects your interests even more.
 
-= Weren't you Joomla! developers? What are you guys doing here? =
+= I thought Akeeba Backup was a Joomla! extension? =
 
-That's a fair point. Even though our company was building Joomla! components we have always considered ourselves to be
-*PHP developers*. We've been using WordPress for client sites and personal sites for years. We were just not as involved
-with the WordPress community. Our backup engine was designed to be compatible with any PHP-based site right from the
-start. So, here's your answer: we are PHP developers specialised in backup, security and frameworks, spanning multiple
-CMS.
+Almost. Akeeba Backup was originally only published for Joomla!, however the backup engine was CMS-agnostic. Both
+the WordPress plugin and Joomla! extension by the Akeeba Backup are developed by us. The backup engine is shared among
+them but everything else is optimised for the CMS each solution is designed to run in.
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. A control panel interface puts everything you need under your fingertips.
+2. Akeeba Backup automatically configures itself for optimal performance on your site.
+3. Click on Backup Now, sit back and your backup is taken in a snap.
+4. Managing backups is dead simple. And see just how fast backups are!
+5. Advanced users can tweak Akeeba Backup to their liking
+6. Excluding directories uses an intuitive file manager. No need to fiddle with unsightly directory names!
+7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.0.0 =
+* [HIGH] Leftover jQuery files from 1.0.b2 and earlier would be loaded in the stable release
+* [HIGH] Missing Javascript file errors when WordPress' debug mode is enabled
+
+= 1.0.0 =
+* [HIGH] WordPress Plugins page would report the Core version as an update to the Professional release, leading to loss of functionality
+
+= 1.0.b4 =
+* Reorganised JS and CSS loading to use WordPress' semantics
+* [MEDIUM] Update page would always report that the PHP version is too old and refuse to update
 
 = 1.0.b3 =
 * Configuration file changed from config.json to config.php – expect some turbulence after update
@@ -169,5 +180,8 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Upgrade Notice ==
 
-= 1.0 =
-Initial version
+= 1.0.1 =
+Fixes a packaging issue which would cause version 1.0.0 to fail working at all
+
+= 1.0.b4 =
+First public beta made available on WordPress.org

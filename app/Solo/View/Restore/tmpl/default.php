@@ -197,8 +197,8 @@ $router = $this->container->router;
 	// Callback routine to close the browser dialog
 	var akeeba_browser_callback = null;
 
+Solo.loadScripts[Solo.loadScripts.length] = function () {
 	(function($){
-	akeeba.jQuery(document).ready(function ($) {
 		// Initialise the translations
 		Solo.Configuration.translations['UI-BROWSE'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_BROWSE')) ?>';
 		Solo.Configuration.translations['UI-CONFIG'] = '<?php echo Escape::escapeJS(Text::_('CONFIG_UI_CONFIG')) ?>';
@@ -237,6 +237,6 @@ $router = $this->container->router;
 		$('#procengine').change(onProcEngineChange);
 
 		onProcEngineChange();
-	});
 	}(akeeba.jQuery));
+};
 </script>

@@ -27,9 +27,9 @@ class Main extends Model
 
 		$query = $db->getQuery(true)
 			->select(array(
-				$db->nq('id') . ' as ' . $db->nq('value'),
-				$db->nq('description') . ' as ' . $db->nq('text'),
-			))->from($db->nq('#__ak_profiles'));
+				$db->qn('id') . ' as ' . $db->qn('value'),
+				$db->qn('description') . ' as ' . $db->qn('text'),
+			))->from($db->qn('#__ak_profiles'));
 		$db->setQuery($query);
 
 		$records = $db->loadAssocList();
@@ -699,5 +699,74 @@ ENDBODY;
 		}
 
 		return $datetime;
+	}
+
+	/**
+	 * Performs any post-upgrade actions
+	 *
+	 * @return bool True if we took any actions, false otherwise
+	 */
+	public function postUpgradeActions()
+	{
+		// Check the last update_version stored in the database
+		$db = $this->container->db;
+
+		$query = $db->getQuery(true)
+			->select($db->qn('data'))
+			->from($db->qn('#__ak_params'))
+			->where($db->qn('tag') . ' = ' . $db->q('update_version'));
+
+		try
+		{
+			$lastVersion = $db->setQuery($query, 0, 1)->loadResult();
+		}
+		catch (\Exception $e)
+		{
+			$lastVersion = null;
+		}
+
+		// If it's our current version we don't have to do anything, just return
+		if ($lastVersion == AKEEBA_VERSION)
+		{
+			return false;
+		}
+
+		// Load and execute the PostUpgradeScript class
+		if (class_exists('\\Solo\\PostUpgradeScript'))
+		{
+			$upgradeScript = new \Solo\PostUpgradeScript($this->container);
+			$upgradeScript->execute();
+		}
+
+		// Remove the old update_version from the database
+		$query = $db->getQuery(true)
+			->delete($db->qn('#__ak_params'))
+			->where($db->qn('tag') . ' = ' . $db->q('update_version'));
+
+		try
+		{
+			$db->setQuery($query)->execute();
+		}
+		catch (\Exception $e)
+		{
+			// Don't panic
+		}
+
+		// Insert the new update_version to the database
+		$query = $db->getQuery(true)
+			->insert($db->qn('#__ak_params'))
+			->columns(array($db->qn('tag'), $db->qn('data')))
+			->values($db->q('update_version') . ', ' . $db->q(AKEEBA_VERSION));
+
+		try
+		{
+			$db->setQuery($query)->execute();
+		}
+		catch (\Exception $e)
+		{
+			// Don't panic
+		}
+
+		return true;
 	}
 }

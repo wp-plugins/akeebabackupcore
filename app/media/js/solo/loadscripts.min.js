@@ -1,0 +1,1 @@
+if(typeof Solo=="undefined"){var Solo={}}if(typeof Solo.loadScripts=="undefined"){Solo.loadScripts=[]}(function(a){akeeba.jQuery(document).ready(function(){for(i=0;i<Solo.loadScripts.length;i++){Solo.loadScripts[i]()}})}(akeeba.jQuery));

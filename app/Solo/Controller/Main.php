@@ -32,8 +32,20 @@ class Main extends ControllerDefault
 		/** @var \Solo\Model\Main $model */
 		$model = $this->getModel();
 
+		// Run the update scripts, if necessary
+		if ($model->postUpgradeActions())
+		{
+			$url = $this->container->router->route('index.php?view=main');
+			$this->container->application->redirect($url);
+		}
+
+		// Apply settings encryption preferences
 		$model->checkEngineSettingsEncryption();
+
+		// Update magic configuration parameters
 		$model->updateMagicParameters();
+
+		// Flag stuck backups
 		$model->flagStuckBackups();
 
 		return true;

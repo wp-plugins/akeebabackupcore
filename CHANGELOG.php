@@ -1,5 +1,19 @@
 <?php die(); ?>
-Akeeba Backup for WordPress 1.0.b3
+Akeeba Backup for WordPress 1.0.0
+================================================================================
+# [HIGH] Leftover jQuery files from 1.0.b2 and earlier would be loaded in the stable release
+# [HIGH] Missing Javascript file errors when WordPress' debug mode is enabled
+
+Akeeba Backup for WordPress 1.0.0
+================================================================================
+# [HIGH] WordPress Plugins page would report the Core version as an update to the Professional release, leading to loss of functionality
+
+Akeeba Backup for WordPress 1.0.b4
+================================================================================
+~ Reorganised JS and CSS loading to use WordPress' semantics
+# [MEDIUM] Update page would always report that the PHP version is too old and refuse to update
+
+Akeeba Backup for WordPress 1.0.b3 - 2014/05/05
 ================================================================================
 ! Configuration file changed from config.json to config.php – expect some turbulence after update
 + You can now change the date/time format for the Start column in the Manage Backups page

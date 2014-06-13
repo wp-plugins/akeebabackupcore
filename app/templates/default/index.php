@@ -21,6 +21,11 @@ $this->outputHTTPHeaders();
 
 	<title><?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?></title>
 
+	<script type="text/javascript">
+		if (typeof Solo == 'undefined') { var Solo = {}; }
+		if (typeof Solo.loadScripts == 'undefined') { Solo.loadScripts = []; }
+	</script>
+
 <?php include __DIR__ . '/php/head.php' ?>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -104,6 +109,12 @@ $this->outputHTTPHeaders();
 <?php endif; ?>
 <script type="text/javascript">
 	akeeba.jQuery('.hasTooltip').tooltip();
+	akeeba.jQuery(document).ready(function(){
+		for (i = 0; i < Solo.loadScripts.length; i++)
+		{
+			Solo.loadScripts[i]();
+		}
+	});
 </script>
 </body>
 </html>

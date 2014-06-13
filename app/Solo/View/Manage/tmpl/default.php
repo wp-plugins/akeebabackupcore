@@ -368,19 +368,23 @@ HTML;
 		}
 	}
 
-	// Enable tootip popovers
-	akeeba.jQuery('[rel="popover"]').popover({
-		trigger: 'manual',
-		animate: false,
-		html: true,
-		placement: 'bottom',
-		template: '<div class="popover akeeba-bootstrap-popover" onmouseover="akeeba.jQuery(this).mouseleave(function() {akeeba.jQuery(this).hide(); });"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
-	})
-		.click(function (e) {
-			e.preventDefault();
-		})
-		.mouseenter(function (e) {
-			akeeba.jQuery('div.popover').remove();
-			akeeba.jQuery(this).popover('show');
-		});
+	Solo.loadScripts[Solo.loadScripts.length] = function () {
+		(function($){
+			// Enable tootip popovers
+			akeeba.jQuery('[rel="popover"]').popover({
+				trigger: 'manual',
+				animate: false,
+				html: true,
+				placement: 'bottom',
+				template: '<div class="popover akeeba-bootstrap-popover" onmouseover="akeeba.jQuery(this).mouseleave(function() {akeeba.jQuery(this).hide(); });"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
+			})
+				.click(function (e) {
+					e.preventDefault();
+				})
+				.mouseenter(function (e) {
+					akeeba.jQuery('div.popover').remove();
+					akeeba.jQuery(this).popover('show');
+				});
+		}(akeeba.jQuery));
+	};
 </script>

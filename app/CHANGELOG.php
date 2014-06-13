@@ -1,5 +1,24 @@
 <?php die();?>
-Akeeba Solo 1.0.b3
+Akeeba Solo 1.0.1
+================================================================================
+! Packaging error making it impossible to go past the database setup page
+
+Akeeba Solo 1.0.0
+================================================================================
+~ Only users with all privileges can manage the users list (prevents users with the configuration privilege from escalating their privileges)
+~ Only users with all privileges can access the system configuration
+~ Only users with all privileges can access the updater
+# [HIGH] Using a database password with special characters didn't allow you to proceed with the installation
+
+Akeeba Solo 1.0.b5
+================================================================================
+! The CDN was serving the wrong package instead of 1.0.b4, one which didn't include the installation issue fix
+
+Akeeba Solo 1.0.b4 - 2014/05/15
+================================================================================
+! Installation wouldn't get past the database page
+
+Akeeba Solo 1.0.b3 - 2014/05/05
 ================================================================================
 ! Configuration file changed from config.json to config.php – expect some turbulence after update
 + You can now change the date/time format for the Start column in the Manage Backups page

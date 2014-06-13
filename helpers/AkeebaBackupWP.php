@@ -13,7 +13,14 @@ class AkeebaBackupWP
 	/** @var string The name of the main plugin file */
 	public static $fileName = 'akeebabackupwp.php';
 
+	/** @var string Absolute filename to self */
 	public static $absoluteFileName = null;
+
+	/** @var array List of all JS files we can possibly load */
+	public static $jsFiles = array();
+
+	/** @var array List of all CSS files we can possibly load */
+	public static $cssFiles = array();
 
 	/**
 	 * Store the unquoted request variables to prevent WordPress from killing JSON requests.
@@ -115,7 +122,9 @@ class AkeebaBackupWP
 			return;
 		}
 
-		add_menu_page('Akeeba Backup', 'Akeeba Backup', 'manage_options', self::$absoluteFileName, array('AkeebaBackupWP', 'boot'), plugins_url('app/media/logo/solo-24-white.png', self::$absoluteFileName));
+		$page_hook_suffix = add_menu_page('Akeeba Backup', 'Akeeba Backup', 'manage_options', self::$absoluteFileName, array('AkeebaBackupWP', 'boot'), plugins_url('app/media/logo/solo-24-white.png', self::$absoluteFileName));
+
+		//add_action('admin_print_scripts-' . $page_hook_suffix, array(__CLASS__, 'adminPrintScripts'));
 	}
 
 	/**
@@ -156,5 +165,37 @@ class AkeebaBackupWP
 		}
 
 		include_once dirname(self::$absoluteFileName) . '/helpers/bootstrap.php';
+	}
+
+	/**
+	 * Enqueues a Javascript file for loading
+	 *
+	 * @param   string  $url  The URL of the Javascript file to load
+	 */
+	public static function enqueueScript($url)
+	{
+		if (!defined('AKEEBA_VERSION'))
+		{
+			@include_once dirname(self::$absoluteFileName) . '/app/version.php';
+		}
+
+		$handle = 'akjs' . md5($url);
+		wp_enqueue_script($handle, $url, array('jquery', 'jquery-migrate'), AKEEBA_VERSION, false);
+	}
+
+	/**
+	 * Enqueues a CSS file for loading
+	 *
+	 * @param   string  $url  The URL of the CSS file to load
+	 */
+	public static function enqueueStyle($url)
+	{
+		if (!defined('AKEEBA_VERSION'))
+		{
+			@include_once dirname(self::$absoluteFileName) . '/app/version.php';
+		}
+
+		$handle = 'akcss' . md5($url);
+		wp_enqueue_style($handle, $url, array(), AKEEBA_VERSION);
 	}
 }
