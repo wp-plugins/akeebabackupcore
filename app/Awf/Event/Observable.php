@@ -7,7 +7,13 @@
 
 namespace Awf\Event;
 
-
+/**
+ * Interface Observable
+ *
+ * @package Awf\Event
+ *
+ * @codeCoverageIgnore
+ */
 interface Observable
 {
 	/**
@@ -36,5 +42,5 @@ interface Observable
 	 *
 	 * @return  array
 	 */
-	public function trigger($event, $args = array());
+	public function trigger($event, array $args = array());
 } 

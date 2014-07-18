@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc;
 
-
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
@@ -38,7 +37,6 @@ class DataController extends Controller
 			$this->viewName = Inflector::pluralize($this->view);
 		}
 	}
-
 
 	/**
 	 * Executes a given controller task. The onBefore<task> and onAfter<task> methods are called automatically if they
@@ -206,6 +204,16 @@ class DataController extends Controller
 			$this->layout = 'form';
 		}
 
+		// Get temporary data from the session, set if the save failed and we're redirected back here
+		$sessionKey = $this->container->application_name . '_' . $this->viewName;
+		$itemData = $this->container->segment->getFlash($sessionKey);
+
+		if (!empty($itemData))
+		{
+			$model->bind($itemData);
+		}
+
+		// Display the edit form
 		$this->display();
 	}
 
@@ -233,7 +241,7 @@ class DataController extends Controller
 		catch (\Exception $e)
 		{
 			// Redirect on error
-			if ($customURL = $this->input->get('returnurl', '', 'string'))
+			if ($customURL = $this->input->getBase64('returnurl', ''))
 			{
 				$customURL = base64_decode($customURL);
 			}
@@ -251,6 +259,16 @@ class DataController extends Controller
 			$this->layout = 'form';
 		}
 
+		// Get temporary data from the session, set if the save failed and we're redirected back here
+		$sessionKey = $this->container->application_name . '_' . $this->viewName;
+		$itemData = $this->container->segment->getFlash($sessionKey);
+
+		if (!empty($itemData))
+		{
+			$model->bind($itemData);
+		}
+
+		// Display the edit form
 		$this->display();
 	}
 
@@ -273,7 +291,7 @@ class DataController extends Controller
 		$id = $this->input->get('id', 0, 'int');
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -314,7 +332,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -350,7 +368,7 @@ class DataController extends Controller
 
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -377,7 +395,7 @@ class DataController extends Controller
 
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -407,7 +425,7 @@ class DataController extends Controller
 		$this->container->segment->remove($model->getHash() . 'savedata');
 
 		// Redirect to the display task
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -508,7 +526,7 @@ class DataController extends Controller
 		$model->reorder();
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -547,7 +565,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -594,7 +612,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -643,7 +661,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -695,7 +713,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -716,7 +734,7 @@ class DataController extends Controller
 	/**
 	 * Common method to handle apply and save tasks
 	 *
-	 * @return  void
+	 * @return  bool True on success
 	 */
 	protected function applySave()
 	{
@@ -748,6 +766,7 @@ class DataController extends Controller
 				$this->onBeforeApplySave($data);
 			}
 
+			// Save the data
 			$model->save($data);
 
 			if ($id != 0)
@@ -771,10 +790,15 @@ class DataController extends Controller
 
 		if (!$status)
 		{
+			// Cache the item data in the session. We may need to reuse them if the save fails.
+			$itemData = $model->getData();
+			$sessionKey = $this->container->application_name . '_' . $this->viewName;
+			$this->container->segment->setFlash($sessionKey, $itemData);
+
 			// Redirect on error
 			$id = $model->getId();
 
-			if ($customURL = $this->input->get('returnurl', '', 'string'))
+			if ($customURL = $this->input->getBase64('returnurl', ''))
 			{
 				$customURL = base64_decode($customURL);
 			}
@@ -808,10 +832,10 @@ class DataController extends Controller
 	 * Returns a named Model object. Makes sure that the Model is a database-aware model, throwing an exception
 	 * otherwise, when $name is null.
 	 *
-	 * @param   string  $name    The Model name. If null we'll use the modelName
+	 * @param   string $name     The Model name. If null we'll use the modelName
 	 *                           variable or, if it's empty, the same name as
 	 *                           the Controller
-	 * @param   array   $config  Configuration parameters to the Model. If skipped
+	 * @param   array  $config   Configuration parameters to the Model. If skipped
 	 *                           we will use $this->config
 	 *
 	 * @return  DataModel  The instance of the Model known to this Controller
@@ -832,6 +856,11 @@ class DataController extends Controller
 
 	/**
 	 * Gets the list of IDs from the request data
+	 *
+	 * @param DataModel $model      The model where the record will be loaded
+	 * @param bool      $loadRecord When true, the record matching the *first* ID found will be loaded into $model
+	 *
+	 * @return array
 	 */
 	public function getIDsFromRequest(DataModel &$model, $loadRecord = true)
 	{
@@ -865,5 +894,234 @@ class DataController extends Controller
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * Calls a global observer event to handle the onBefore/onAfter events of the Controller. The name of the observer
+	 * events has the format onController<Predicate><Task> e.g. onControllerBeforeBrowse. The event handler must have
+	 * the following signature:
+	 *
+	 * function(string $controllerName): bool
+	 *
+	 * The $controllerName is the name of this controller. The return value of the event handler is true (continue
+	 * processing) or false (abort operation). Please note that only a boolean false (not a null, empty array or 0) will
+	 * trigger process abortion.
+	 *
+	 * @param string $task The task to fire the event for
+	 * @param string $when The event predicate: before|after
+	 *
+	 * @return bool True to continue execution, false to abort
+	 *
+	 * @throws \Exception
+	 */
+	protected function callObserverEvent($task, $when = 'before')
+	{
+		// The even name is something like onControllerBeforeBrowse
+		$eventName = 'onController' . ucfirst(strtolower($when)) . ucfirst(strtolower($task));
+
+		// Get the results
+		$results = $this->container->eventDispatcher->trigger('onController', array($this->getName()));
+
+		// If any of the results is a boolean false, return false.
+		if (!empty($results) && is_array($results))
+		{
+			foreach ($results as $result)
+			{
+				if ($result === false)
+				{
+					return false;
+				}
+			}
+		}
+
+		// Otherwise return true
+		return true;
+	}
+
+	/**
+	 * Fires before executing the browse task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeBrowse()
+	{
+		return $this->callObserverEvent('browse', 'before');
+	}
+
+	/**
+	 * Fires before executing the read task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeRead()
+	{
+		return $this->callObserverEvent('read', 'before');
+	}
+
+	/**
+	 * Fires before executing the add task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeAdd()
+	{
+		return $this->callObserverEvent('add', 'before');
+	}
+
+	/**
+	 * Fires before executing the edit task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeEdit()
+	{
+		return $this->callObserverEvent('edit', 'before');
+	}
+
+	/**
+	 * Fires before executing the apply task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeApply()
+	{
+		return $this->callObserverEvent('apply', 'before');
+	}
+
+	/**
+	 * Fires before executing the copy task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeCopy()
+	{
+		return $this->callObserverEvent('copy', 'before');
+	}
+
+	/**
+	 * Fires before executing the save task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeSave()
+	{
+		return $this->callObserverEvent('save', 'before');
+	}
+
+	/**
+	 * Fires before executing the savenew task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeSavenew()
+	{
+		return $this->callObserverEvent('savenew', 'before');
+	}
+
+	/**
+	 * Fires before executing the canceltask. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeCancel()
+	{
+		return $this->callObserverEvent('cancel', 'before');
+	}
+
+	/**
+	 * Fires before executing the publish task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforePublish()
+	{
+		return $this->callObserverEvent('publish', 'before');
+	}
+
+	/**
+	 * Fires before executing the unpublish task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeUnpublish()
+	{
+		return $this->callObserverEvent('unpublish', 'before');
+	}
+
+	/**
+	 * Fires before executing the archive task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeArchive()
+	{
+		return $this->callObserverEvent('archive', 'before');
+	}
+
+	/**
+	 * Fires before executing the trash task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeTrash()
+	{
+		return $this->callObserverEvent('trash', 'before');
+	}
+
+	/**
+	 * Fires before executing the saveorder task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeSaveorder()
+	{
+		return $this->callObserverEvent('saveorder', 'before');
+	}
+
+	/**
+	 * Fires before executing the orderdown task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeOrderdown()
+	{
+		return $this->callObserverEvent('orderdown', 'before');
+	}
+
+	/**
+	 * Fires before executing the orderup task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeOrderup()
+	{
+		return $this->callObserverEvent('orderup', 'before');
+	}
+
+	/**
+	 * Fires before executing the remove task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	protected function onBeforeRemove()
+	{
+		return $this->callObserverEvent('remove', 'before');
 	}
 } 

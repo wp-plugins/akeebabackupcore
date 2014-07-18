@@ -264,7 +264,7 @@ abstract class Application
 		{
 			$type = $this->getContainer()->input->getCmd('format', 'html');
 
-			$instance = Document::getInstance($type, $this);
+			$instance = Document::getInstance($type, $this->container);
 		}
 
 		return $instance;
@@ -482,7 +482,8 @@ abstract class Application
 	{
 		if (!empty($template))
 		{
-			$templatePath = (defined('APATH_THEMES') ? APATH_THEMES : $this->container->templatePath) . '/' . $template;
+			$templatePath = $this->container->templatePath . '/' . $template;
+
 			if (!is_dir($templatePath))
 			{
 				$template = null;

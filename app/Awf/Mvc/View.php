@@ -170,7 +170,7 @@ class View
 	 *                                 Inside it you can have an 'mvc_option' array with the following options:<br/>
 	 *                                 name: the name (optional) of the view (defaults to the view class name suffix).<br/>
 	 *                                 escape: the name (optional) of the function to use for escaping strings<br/>
-	 *                                 template_plath: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>
+	 *                                 template_path: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>
 	 *                                 layout: the layout (optional) to use to display the view<br/>
 	 *
 	 * @return  View
@@ -212,7 +212,24 @@ class View
 
 		$templatePath = $this->container->templatePath;
 		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
-		$this->addTemplatePath('template', $fallback);
+		$this->addTemplatePath($fallback);
+
+		// Get extra directories through event dispatchers
+		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', array($this->getName()));
+
+		if (is_array($extraPathsResults) && !empty($extraPathsResults))
+		{
+			foreach ($extraPathsResults as $somePaths)
+			{
+				if (!empty($somePaths))
+				{
+					foreach ($somePaths as $aPath)
+					{
+						$this->addTemplatePath($aPath);
+					}
+				}
+			}
+		}
 
 		$this->baseurl = Uri::base(true, $this->container);
 	}
@@ -238,7 +255,7 @@ class View
 		$this->addTemplatePath($fallback);
 
 		// Get extra directories through event dispatchers
-		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', $this->getName());
+		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', array($this->getName()));
 
 		if (is_array($extraPathsResults) && !empty($extraPathsResults))
 		{
@@ -248,7 +265,7 @@ class View
 				{
 					foreach ($somePaths as $aPath)
 					{
-						$this->addTemplatePath($path);
+						$this->addTemplatePath($aPath);
 					}
 				}
 			}

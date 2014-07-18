@@ -11,6 +11,7 @@ use Awf\Application\Application;
 use Awf\Database\Driver;
 use Awf\Pimple\Pimple;
 use Awf\Session;
+use Awf\Utils\Phpfunc;
 
 /**
  * Dependency injection container for Awf's Application
@@ -52,6 +53,7 @@ class Container extends Pimple
 
 		parent::__construct($values);
 
+		// Application service
 		if (!isset($this['application']))
 		{
 			$this['application'] = function (Container $c)
@@ -60,6 +62,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Application Configuration service
 		if (!isset($this['appConfig']))
 		{
 			$this['appConfig'] = function (Container $c)
@@ -68,6 +71,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Database Driver service
 		if (!isset($this['db']))
 		{
 			$this['db'] = function (Container $c)
@@ -76,6 +80,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Application Dispatcher service
 		if (!isset($this['dispatcher']))
 		{
 			$this['dispatcher'] = function (Container $c)
@@ -91,6 +96,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Application Event Dispatcher service
 		if (!isset($this['eventDispatcher']))
 		{
 			$this['eventDispatcher'] = function (Container $c)
@@ -99,6 +105,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Filesystem Abstraction Layer service
 		if (!isset($this['fileSystem']))
 		{
 			$this['fileSystem'] = function (Container $c)
@@ -107,6 +114,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Input Access service
 		if (!isset($this['input']))
 		{
 			$this['input'] = function (Container $c)
@@ -115,6 +123,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Mailer Object service
 		if (!isset($this['mailer']))
 		{
 			$this['mailer'] = $this->factory(function (Container $c)
@@ -123,6 +132,7 @@ class Container extends Pimple
 			});
 		}
 
+		// Application Router service
 		if (!isset($this['router']))
 		{
 			$this['router'] = function (Container $c)
@@ -131,6 +141,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Session Manager service
 		if (!isset($this['session']))
 		{
 			$this['session'] = function ()
@@ -139,7 +150,7 @@ class Container extends Pimple
 					new Session\SegmentFactory,
 					new Session\CsrfTokenFactory(
 						new Session\Randval(
-							new Session\Phpfunc
+							new Phpfunc()
 						)
 					),
 					$_COOKIE
@@ -147,6 +158,7 @@ class Container extends Pimple
 			};
 		}
 
+		// Application Session Segment service
 		if (!isset($this['segment']))
 		{
 			$this['segment'] = function (Container $c)
@@ -160,6 +172,7 @@ class Container extends Pimple
 			};
 		}
 
+		// User Manager service
 		if (!isset($this['userManager']))
 		{
 			$this['userManager'] = function (Container $c)
