@@ -1,8 +1,13 @@
 <?php die(); ?>
-Akeeba Backup for WordPress 1.0.0
+Akeeba Backup for WordPress 1.0.3
+================================================================================
+! [HIGH] Packaging error leading to fatal error (white page)
+
+Akeeba Backup for WordPress 1.0.2
 ================================================================================
 # [HIGH] Leftover jQuery files from 1.0.b2 and earlier would be loaded in the stable release
 # [HIGH] Missing Javascript file errors when WordPress' debug mode is enabled
+# [HIGH] [PRO] ANGIE: restoring off-site directories leads to unworkable permissions (0341) in their subdirectories due to a typo
 
 Akeeba Backup for WordPress 1.0.0
 ================================================================================

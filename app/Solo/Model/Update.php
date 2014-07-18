@@ -607,7 +607,7 @@ class Update extends Model
 	public function createRestorationINI()
 	{
 		// Get a password
-		$randVal = new Randval(new \Awf\Session\Phpfunc());
+		$randVal = new Randval(new \Awf\Utils\Phpfunc());
 		$password = base64_encode($randVal->generate(32));
 
 		$fs = $this->container->fileSystem;

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 3.9
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -41,6 +41,7 @@ Features:
 and much, much more!
 
 Indicative uses:
+
 * Security backups
 * Creating dev sites to test new ideas, make site redesigns or troubleshoot issues
 * Transfer a site you created locally to a live server
@@ -141,9 +142,13 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 == Changelog ==
 
-= 1.0.0 =
+= 1.0.3 =
+* [HIGH] Packaging error leading to fatal error (white page)
+
+= 1.0.2 =
 * [HIGH] Leftover jQuery files from 1.0.b2 and earlier would be loaded in the stable release
 * [HIGH] Missing Javascript file errors when WordPress' debug mode is enabled
+* [HIGH] [PRO] ANGIE: restoring off-site directories leads to unworkable permissions (0341) in their subdirectories due to a typo
 
 = 1.0.0 =
 * [HIGH] WordPress Plugins page would report the Core version as an update to the Professional release, leading to loss of functionality
@@ -179,6 +184,10 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Javascript related issues affecting upgraders have been fixed.
+A high priority issue regarding the permissions of restored off-site directories has been fixed.
 
 = 1.0.1 =
 Fixes a packaging issue which would cause version 1.0.0 to fail working at all

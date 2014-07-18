@@ -406,7 +406,7 @@ HTML;
 	 */
 	protected function createEngineSettingsKeyFile($secretKeyFile)
 	{
-		$randValue = new \Awf\Session\Randval(new \Awf\Session\Phpfunc());
+		$randValue = new \Awf\Session\Randval(new \Awf\Utils\Phpfunc());
 		$key = $randValue->generate(32);
 
 		$encodedKey = base64_encode($key);

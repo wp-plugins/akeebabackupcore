@@ -9,7 +9,7 @@ foreach (array(
 	'success'	=> 'success',
 	'info'		=> 'info',
 	) as $type => $class):
-	$messages = $this->getApplication()->getMessageQueueFor($type);
+	$messages = $this->getContainer()->application->getMessageQueueFor($type);
 
 	if(!empty($messages)):
 		$class = "alert-$class";
@@ -23,4 +23,4 @@ foreach (array(
 <?php
 	endif;
 endforeach;
-$this->getApplication()->clearMessageQueue();
+$this->getContainer()->application->clearMessageQueue();

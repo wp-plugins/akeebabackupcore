@@ -7,7 +7,7 @@
 
 namespace Solo;
 
-use Awf\Application\TrasparentAuthentication;
+use Awf\Application\TransparentAuthentication;
 use Awf\Filesystem\Factory;
 use Awf\Router\Router;
 use Awf\Text\Text;
@@ -140,7 +140,7 @@ class Application extends \Awf\Application\Application
 		if (!in_array($view, array('login', 'setup', 'json', 'remote', 'ftpbrowser', 'sftpbrowser')) && !$manager->getUser()->getId())
 		{
 			// Try to perform transparent authentication
-			$transparentAuth = new TrasparentAuthentication($this);
+			$transparentAuth = new TransparentAuthentication($this->container);
 			$credentials = $transparentAuth->getTransparentAuthenticationCredentials();
 
 			if (!is_null($credentials))

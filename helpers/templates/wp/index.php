@@ -22,7 +22,7 @@ else
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="<?php echo $this->getApplication()->getContainer()->router->route('index.php') ?>">
+				<a class="navbar-brand" href="<?php echo $this->getContainer()->router->route('index.php') ?>">
 					<img src="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-256.png" class="img-responsive2">
 					<?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?>
 					<small class="text-<?php echo AKEEBA_PRO ? 'danger' : 'muted' ?>"><?php echo AKEEBA_PRO ? 'Pro' : 'Core' ?></small>

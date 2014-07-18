@@ -103,7 +103,7 @@ class Restore extends Model
 	function createRestorationFile()
 	{
 		// Get a password
-		$randVal = new Randval(new \Awf\Session\Phpfunc());
+		$randVal = new Randval(new \Awf\Utils\Phpfunc());
 		$this->password = base64_encode($randVal->generate(32));
 		$this->setState('password', $this->password);
 

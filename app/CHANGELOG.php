@@ -1,4 +1,20 @@
 <?php die();?>
+Akeeba Solo 1.0.3
+================================================================================
+! [HIGH] Packaging error leading to fatal error (white page)
+
+Akeeba Solo 1.0.2
+================================================================================
+# [HIGH] Sometimes no instructions shown in Setup when the config.php file cannot be saved
+# [HIGH] Incorrect config.php file contents shown in Setup when the config.php file cannot be saved
+# [HIGH] Fatal error under PHP 5.3.5
+# [HIGH] Could not login under PHP 5.3.3 up to and including 5.3.5 due to database issue caused by unencoded binary salt
+# [HIGH] [PRO] ANGIE: restoring off-site directories leads to unworkable permissions (0341) in their subdirectories due to a typo
+# [MEDIUM] Error thrown when MB lang is not the default, preventing setup to continue
+# [LOW] Do not complain if config.php is web accessible but it returns no contents (that's not a major security risk)
+# [LOW] You were told that the config.php file wasn't written to disk even when it really was
+# [LOW] You are given a blocking error when you have not defined db connection information for a files only backup and vice versa
+
 Akeeba Solo 1.0.1
 ================================================================================
 ! Packaging error making it impossible to go past the database setup page

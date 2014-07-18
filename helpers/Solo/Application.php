@@ -7,7 +7,7 @@
 
 namespace Solo;
 
-use Awf\Application\TrasparentAuthentication;
+use Awf\Application\TransparentAuthentication;
 use Awf\Filesystem\Factory;
 use Awf\Router\Router;
 use Awf\Text\Text;

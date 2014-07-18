@@ -267,7 +267,10 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 	(function($){
 		<?php if (!empty($this->configUrl)): ?>
 			$.get('<?php echo $this->configUrl?>', function(data){
-				$('#config-readable-error').css('display', 'block');
+				if (data.length > 0)
+				{
+					$('#config-readable-error').css('display', 'block');
+				}
 			});
 		<?php endif; ?>
 		<?php if (!empty($this->backupUrl)): ?>

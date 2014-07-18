@@ -1,3 +1,6 @@
+<?php
+/** @var \Awf\Document\Document $this */
+?>
 <?php include __DIR__ . '/php/menu.php';
 $this->outputHTTPHeaders();
 ?>
@@ -64,7 +67,7 @@ $this->outputHTTPHeaders();
 			<div class="navbar-collapse collapse">
 				<?php if (\Awf\Application\Application::getInstance()->getContainer()->userManager->getUser()->getId()): ?>
 				<form class="navbar-form navbar-right" role="logout">
-					<a href="<?php echo $this->getApplication()->getContainer()->router->route('index.php?view=login&task=logout') ?>" class="btn btn-sm btn-default hasTooltip" title="<?php echo \Awf\Text\Text::sprintf('SOLO_LOGIN_LBL_LOGOUT', \Awf\Application\Application::getInstance()->getContainer()->userManager->getUser()->getUsername()) ?>" data-toggle="tooltip" data-placement="bottom">
+					<a href="<?php echo $this->getContainer()->router->route('index.php?view=login&task=logout') ?>" class="btn btn-sm btn-default hasTooltip" title="<?php echo \Awf\Text\Text::sprintf('SOLO_LOGIN_LBL_LOGOUT', \Awf\Application\Application::getInstance()->getContainer()->userManager->getUser()->getUsername()) ?>" data-toggle="tooltip" data-placement="bottom">
 						<span class="glyphicon glyphicon-log-out"></span>
 						<span class="hidden-lg hidden-md hidden-sm"><?php echo \Awf\Text\Text::sprintf('SOLO_LOGIN_LBL_LOGOUT', \Awf\Application\Application::getInstance()->getContainer()->userManager->getUser()->getUsername()) ?></span>
 					</a>
