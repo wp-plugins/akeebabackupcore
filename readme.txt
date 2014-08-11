@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 3.9
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -141,6 +141,9 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.0.4 =
+* [HIGH] Packaging error leads to error pages when trying to access Professional features from the Core release.
 
 = 1.0.3 =
 * [HIGH] Packaging error leading to fatal error (white page)

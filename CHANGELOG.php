@@ -1,4 +1,9 @@
 <?php die(); ?>
+
+Akeeba Backup for WordPress 1.0.4
+================================================================================
+* [HIGH] Packaging error leads to error pages when trying to access Professional features from the Core release.
+
 Akeeba Backup for WordPress 1.0.3
 ================================================================================
 ! [HIGH] Packaging error leading to fatal error (white page)

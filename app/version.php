@@ -1,4 +1,4 @@
 <?php
 define('AKEEBA_PRO', '1');
-define('AKEEBA_VERSION', '1.0.3');
-define('AKEEBA_DATE', '2014-07-18');
+define('AKEEBA_VERSION', '1.0.4');
+define('AKEEBA_DATE', '2014-08-11');
