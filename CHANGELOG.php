@@ -1,5 +1,9 @@
 <?php die(); ?>
 
+Akeeba Backup for WordPress 1.0.5
+================================================================================
+* [HIGH] Apparently the SVN issue causing the packaging problem with 1.0.2, 1.0.3 and 1.0.4 is still unresolved and we still get white pages for some Professional features. We now reset the SVN repository, hoprefully fixing the issue.
+
 Akeeba Backup for WordPress 1.0.4
 ================================================================================
 * [HIGH] Packaging error leads to error pages when trying to access Professional features from the Core release.
