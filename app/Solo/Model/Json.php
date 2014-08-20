@@ -158,12 +158,42 @@ class Json extends Model
 					$body = $request->body;
 				}
 
+				$authorised = true;
 				$body = rtrim($body, chr(0));
-				$request->body = json_decode($body);
 
-				if (is_null($request->body))
+				// Make sure it looks like a valid JSON string and is at least 12 characters (minimum valid message length)
+				if ((strlen($body) < 12) || (substr($body, 0, 1) != '{') || (substr($body, -1) != '}'))
 				{
-					// Decryption failed. The user is an imposter! Go away, hacker!
+					$authorised = false;
+				}
+
+				// Try to JSON decode the body
+				if ($authorised)
+				{
+					$request->body = $this->json_decode($body);
+
+					if (is_null($request->body))
+					{
+						$authorised = false;
+					}
+					elseif (!is_object($request->body))
+					{
+						$authorised = false;
+					}
+				}
+
+				// Make sure there is a requested method
+				if ($authorised)
+				{
+					if (!isset($request->body->method) || empty($request->body->method))
+					{
+						$authorised = false;
+					}
+				}
+
+				if (!$authorised)
+				{
+					// Decryption failed. The user is an impostor! Go away, hacker!
 					$this->data = 'Authentication failed';
 					$this->status = self::STATUS_NOT_AUTH;
 					$this->encapsulation = self::ENCAPSULATION_RAW;
@@ -363,7 +393,8 @@ class Json extends Model
 		$defConfig = array(
 			'profile'     => 1,
 			'description' => '',
-			'comment'     => ''
+			'comment'     => '',
+			'backupid'    => null,
 		);
 
 		$config = array_merge($defConfig, $config);
@@ -385,6 +416,29 @@ class Json extends Model
 			$profile = 1;
 		}
 
+		if (strtoupper($backupid) == '[DEFAULT]')
+		{
+			$db = $this->container->db;
+			$query = $db->getQuery(true)
+				->select('MAX(' . $db->qn('id') . ')')
+				->from($db->qn('#__ak_stats'));
+
+			try
+			{
+				$maxId = $db->setQuery($query)->loadResult();
+			}
+			catch (\Exception $e)
+			{
+				$maxId = 0;
+			}
+
+			$backupid = 'id' . ($maxId + 1);
+		}
+		elseif (empty($backupid))
+		{
+			$backupid = null;
+		}
+
 		$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
 		$session->profile = $profile;
 
@@ -401,9 +455,17 @@ class Json extends Model
 		\AECoreKettenrad::reset(array(
 			'maxrun' => 0
 		));
-		\AEUtilTempvars::reset(AKEEBA_BACKUP_ORIGIN);
 
-		$kettenrad = \AECoreKettenrad::load(AKEEBA_BACKUP_ORIGIN);
+		\AEUtilTempfiles::deleteTempFiles();
+
+		$tempVarsTag = AKEEBA_BACKUP_ORIGIN;
+		$tempVarsTag .= empty($backupid) ? '' : ('.' . $backupid);
+
+		\AEUtilTempvars::reset($tempVarsTag);
+
+		$kettenrad = \AECoreKettenrad::load(AKEEBA_BACKUP_ORIGIN, $backupid);
+		$kettenrad->setBackupId($backupid);
+
 		$options = array(
 			'description' => $description,
 			'comment'     => $comment, // Note: $comment is set by extract() further above
@@ -411,7 +473,7 @@ class Json extends Model
 		);
 		$kettenrad->setup($options); // Setting up the engine
 		$array = $kettenrad->tick(); // Initializes the init domain
-		\AECoreKettenrad::save(AKEEBA_BACKUP_ORIGIN);
+		\AECoreKettenrad::save(AKEEBA_BACKUP_ORIGIN, $backupid);
 
 		$array = $kettenrad->getStatusArray();
 		if ($array['Error'] != '')
@@ -435,7 +497,8 @@ class Json extends Model
 	{
 		$defConfig = array(
 			'profile' => null,
-			'tag'     => AKEEBA_BACKUP_ORIGIN
+			'tag'     => AKEEBA_BACKUP_ORIGIN,
+			'backupid' => null,
 		);
 		$config = array_merge($defConfig, $config);
 		extract($config);
@@ -448,7 +511,8 @@ class Json extends Model
 			$session->profile = $profile;
 		}
 
-		$kettenrad = \AECoreKettenrad::load($tag);
+		$kettenrad = \AECoreKettenrad::load($tag, $backupid);
+		$kettenrad->setBackupId($backupid);
 
 		$registry = \AEFactory::getConfiguration();
 		$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
@@ -457,7 +521,7 @@ class Json extends Model
 		$array = $kettenrad->tick();
 		$ret_array = $kettenrad->getStatusArray();
 		$array['Progress'] = $ret_array['Progress'];
-		\AECoreKettenrad::save($tag);
+		\AECoreKettenrad::save($tag, $backupid);
 
 		if ($array['Error'] != '')
 		{

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 3.9
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -141,6 +141,10 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.0.6 =
+* [HIGH] Information disclosure through the JSON API. This is a theoretical attack since we determined it is impractical to perform outside a controlled environment.
+* [HIGH] Front-end backup wasn’t included in the Core version.
 
 = 1.0.5 =
 * [HIGH] Apparently the SVN issue causing the packaging problem with 1.0.2, 1.0.3 and 1.0.
