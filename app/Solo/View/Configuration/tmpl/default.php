@@ -209,6 +209,9 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 	setTimeout(function(){
 		Solo.Configuration.parseConfigData(data);
 
+		// Work around Chrome, Firefox etc "modern" browsers which blatantly ignore autocomplete=off
+		setTimeout('Solo.Configuration.restoreDefaultPasswords();', 1000);
+
 		// Enable tootip popovers
 		akeeba.jQuery('[rel="popover"]').popover({
 			trigger: 'manual',

@@ -21,6 +21,8 @@ class Backup extends Model
 		$ret_array = array();
 
 		$ajaxTask = $this->getState('ajax');
+		$tag = $this->getState('tag');
+		$backupId = $this->getState('backupid');
 
 		switch ($ajaxTask)
 		{
@@ -30,7 +32,24 @@ class Backup extends Model
 				$jpskey = $this->getState('jpskey');
 				$angiekey = $this->getState('angiekey');
 
-				$tag = $this->getState('tag');
+				if (is_null($backupId))
+				{
+					$db = $this->container->db;
+					$query = $db->getQuery(true)
+						->select('MAX(' . $db->qn('id') . ')')
+						->from($db->qn('#__ak_stats'));
+
+					try
+					{
+						$maxId = $db->setQuery($query)->loadResult();
+					}
+					catch (\Exception $e)
+					{
+						$maxId = 0;
+					}
+
+					$backupId = 'id' . ($maxId + 1);
+				}
 
 				// Try resetting the engine
 				\AECoreKettenrad::reset(array(
@@ -44,9 +63,13 @@ class Backup extends Model
 					$tag = \AEPlatform::getInstance()->get_backup_origin();
 				}
 
-				\AEUtilTempvars::reset($tag);
+				$tempVarsTag = $tag;
+				$tempVarsTag .= empty($backupId) ? '' : ('.' . $backupId);
 
-				$kettenrad = \AECoreKettenrad::load($tag);
+				\AEUtilTempvars::reset($tempVarsTag);
+
+				$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+				$kettenrad->setBackupId($backupId);
 
 				// Take care of System Restore Point setup
 				if ($tag == 'restorepoint')
@@ -66,30 +89,37 @@ class Backup extends Model
 
 				if (($kettenrad->getState() != 'running') && ($tag == 'restorepoint'))
 				{
+					\AECoreKettenrad::save($tag, $backupId);
+					$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+					$kettenrad->setBackupId($backupId);
 					$kettenrad->tick();
 				}
 
 				$ret_array = $kettenrad->getStatusArray();
 				$kettenrad->resetWarnings(); // So as not to have duplicate warnings reports
 
-				\AECoreKettenrad::save($tag);
+				\AECoreKettenrad::save($tag, $backupId);
 				break;
 
 			case 'step':
-				$tag = $this->getState('tag');
-				$kettenrad = \AECoreKettenrad::load($tag);
+				$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+				$kettenrad->setBackupId($backupId);
 
 				$kettenrad->tick();
 				$ret_array = $kettenrad->getStatusArray();
 				$kettenrad->resetWarnings(); // So as not to have duplicate warnings reports
 
-				\AECoreKettenrad::save($tag);
+				\AECoreKettenrad::save($tag, $backupId);
 
 				if ($ret_array['HasRun'] == 1)
 				{
 					// Clean up
 					\AEFactory::nuke();
-					\AEUtilTempvars::reset($tag);
+
+					$tempVarsTag = $tag;
+					$tempVarsTag .= empty($backupId) ? '' : ('.' . $backupId);
+
+					\AEUtilTempvars::reset($tempVarsTag);
 				}
 				break;
 

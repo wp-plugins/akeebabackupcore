@@ -220,6 +220,18 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 				</div>
 			</div>
 
+            <div class="form-group">
+                <label for="stats_enabled" class="col-sm-2 control-label">
+                    <?php echo Text::_('CONFIG_USAGESTATS_SOLO_LABEL'); ?>
+                </label>
+                <div class="col-sm-10">
+                    <?php echo \Awf\Html\Select::booleanList('stats_enabled', array(), $config->get('stats_enabled', 1))?>
+                    <div class="help-block">
+                        <?php echo Text::_('CONFIG_USAGESTATS_SOLO_DESC') ?>
+                    </div>
+                </div>
+            </div>
+
 			<div class="form-group">
 				<label for="fs_driver" class="col-sm-2 control-label">
 					<?php echo Text::_('SOLO_SETUP_LBL_FS_DRIVER'); ?>

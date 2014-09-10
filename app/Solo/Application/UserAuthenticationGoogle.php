@@ -13,7 +13,7 @@ use Awf\Encrypt\Totp;
 use Awf\Uri\Uri;
 use Awf\User\Authentication;
 
-class UserAuthenticationGoogle extends Authentication
+class UserAuthenticationGoogle extends UserAuthenticationOtep
 {
 	/**
 	 * Is this user authenticated by this object? The $params array contains at least one key, 'password'.
@@ -37,6 +37,11 @@ class UserAuthenticationGoogle extends Authentication
 			if (!empty($secret))
 			{
 				$result = $this->validateGoogleOTP($secret);
+
+				if (!$result)
+				{
+					$result = $this->validateOtep($secret);
+				}
 			}
 		}
 

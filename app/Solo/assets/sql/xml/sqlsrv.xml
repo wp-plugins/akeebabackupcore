@@ -11,6 +11,20 @@
 
     <!-- SQL commands to run on installation and update -->
     <sql>
+        <action table="#__akeeba_common" canfail="0">
+          <condition type="missing" value=""/>
+          <query><![CDATA[
+CREATE TABLE [#__akeeba_common] (
+	[key] [NVARCHAR](255) NOT NULL,
+	[value] [TEXT] NOT NULL,
+	CONSTRAINT [PK_#__akeeba_common] PRIMARY KEY CLUSTERED
+	(
+		[key] ASC
+	) WITH (STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF)
+)
+            ]]></query>
+        </action>
+
         <action table="#__ak_params" canfail="0">
             <condition type="missing" value="" />
             <query><![CDATA[
@@ -65,6 +79,7 @@ CREATE TABLE [#__ak_stats] (
 	[absolute_path] [NVARCHAR](4000),
 	[multipart] [INT] NOT NULL DEFAULT ('0'),
 	[tag] [NVARCHAR](255) NULL,
+	[backupid] [NVARCHAR](255) NULL,
 	[filesexist] [TINYINT] NOT NULL DEFAULT ('1'),
 	[remote_filename] [NVARCHAR](1000) NULL,
 	[total_size] [BIGINT] NOT NULL DEFAULT ('0'),
@@ -119,6 +134,15 @@ CREATE TABLE [#__ak_storage] (
           [id] ASC
         ) WITH (STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF)
     )
+            ]]></query>
+        </action>
+
+        <!-- Add the backupid column to #__ak_stats if it's missing -->
+        <action table="#__ak_stats" canfail="1">
+            <condition type="missing" value="backupid" />
+            <query><![CDATA[
+ALTER TABLE [#__ak_stats]
+ADD [backupid] [NVARCHAR](255) DEFAULT NULL
             ]]></query>
         </action>
     </sql>

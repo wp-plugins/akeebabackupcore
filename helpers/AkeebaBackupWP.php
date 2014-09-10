@@ -180,7 +180,15 @@ class AkeebaBackupWP
 		}
 
 		$handle = 'akjs' . md5($url);
-		wp_enqueue_script($handle, $url, array('jquery', 'jquery-migrate'), AKEEBA_VERSION, false);
+		$dependencies = array('jquery', 'jquery-migrate');
+
+		// When we override the loading of jQuery do not depend on WP's jQuery being loaded
+		if (defined('AKEEBA_OVERRIDE_JQUERY') && AKEEBA_OVERRIDE_JQUERY)
+		{
+			$dependencies = array();
+		}
+
+		wp_enqueue_script($handle, $url, $dependencies, AKEEBA_VERSION, false);
 	}
 
 	/**

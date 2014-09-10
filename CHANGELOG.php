@@ -1,12 +1,41 @@
 <?php die(); ?>
 
+Akeeba Backup for WordPress 1.1.0
+================================================================================
++ Support for iDriveSync accounts created in 2014 or later
++ A different log file is created per backup attempt (and automatically removed when the backup archives are deleted by quotas or by using Delete Files in the interface)
++ You can now run several backups at the same time
++ The minimum execution time can now be enforced in the client side for backend backups, leading to increased stability on certain hosts
++ Back-end backups will resume after an AJAX error, allowing you to complete backups even on very hosts with very tight resource usage limits
++ The Dropbox chunked upload can now work on files smaller than 150Mb and will work across backup steps, allowing you to upload large files to Dropbox without timeout errors
++ Backups resulting in an AJAX error will be retried, in case backup failure was caused by a temporary server or network issue
++ Workaround for missing jQuery (old versions of WordPress or plugins corrupting jQuery loading in wp-admin)
++ Greatly improve the backup performance on massive tables as long as they have an auto_increment column
++ Work around the issues caused by some servers' error pages which contain DOM-modifying JavaScript
++ Work around for the overreaching password managers in so-called modern browsers which fill irrelevant passwords in the configuration page.
+# [HIGH] Dropbox upload would enter an infinite loop when using chunked uploads
+# [HIGH] Potential information leak through the JSON API using a Decryption Oracle attack
+# [MEDIUM] Core version: missing remote backup feature
+# [MEDIUM] Notice thrown from AppConfig.php
+# [MEDIUM] ANGIE: Restoring off-site directories would lead to errors
+# [LOW] ANGIE for WordPress, phpBB and PrestaShop: escape some special characters in passwords
+# [LOW] Some language strings inherited from Akeeba Backup for Joomla! reference Joomla! instead of WordPress
+
+Akeeba Backup for WordPress 1.0.6
+================================================================================
+! [HIGH] Information disclosure through the JSON API. This is a theoretical attack since we determined it is impractical to perform outside a controlled environment.
+# [HIGH] Front-end backup wasn’t included in the Core version.
+
 Akeeba Backup for WordPress 1.0.5
 ================================================================================
-* [HIGH] Apparently the SVN issue causing the packaging problem with 1.0.2, 1.0.3 and 1.0.4 is still unresolved and we still get white pages for some Professional features. We now reset the SVN repository, hoprefully fixing the issue.
+# [HIGH] Apparently the SVN issue causing the packaging problem with 1.0.2, 1.0.3 and 1.0.
+4 is still unresolved and we still get white pages for some Professional features. We now
+reset the SVN repository, hoprefully fixing the issue.
 
 Akeeba Backup for WordPress 1.0.4
 ================================================================================
-* [HIGH] Packaging error leads to error pages when trying to access Professional features from the Core release.
+# [HIGH] Packaging error leads to error pages when trying to access Professional features
+from the Core release.
 
 Akeeba Backup for WordPress 1.0.3
 ================================================================================

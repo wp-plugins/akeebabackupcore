@@ -203,10 +203,22 @@ class Manage extends Model
 		$stat = \AEPlatform::getInstance()->get_statistics($id);
 		$allFiles = \AEUtilStatistics::get_all_filenames($stat, false);
 
-		$status = true;
+		// Remove the custom log file if necessary
+		$this->_deleteLogs($stat);
 
+		// Make sure we have some files
+		if (empty($allFiles))
+		{
+			return true;
+		}
+
+		// Get a reference to the filesystem abstraction
 		$fs = $this->container->fileSystem;
 
+		// Set the default status
+		$status = true;
+
+		// Delete all archive files
 		foreach ($allFiles as $filename)
 		{
 			try
@@ -221,6 +233,37 @@ class Manage extends Model
 		}
 
 		return $status;
+	}
+
+	/**
+	 * Deletes the backup-specific log files of a stats record
+	 *
+	 * @param   array   $stat  The array holding the backup stats record
+	 *
+	 * @return  void
+	 */
+	protected function _deleteLogs(array $stat)
+	{
+		// We can't delete logs if there is no backup ID in the record
+		if (!isset($stat['backupid']) || empty($stat['backupid']))
+		{
+			return;
+		}
+
+		$logFileName = 'akeeba.' . $stat['tag'] . '.' . $stat['backupid'] . '.log';
+
+		$logPath = dirname($stat['absolute_path']) . '/' . $logFileName;
+
+		$fs = $this->container->fileSystem;
+
+		try
+		{
+			$fs->delete($logPath);
+		}
+		catch (\Exception $e)
+		{
+			// Ignore file deletion failure
+		}
 	}
 
 	/**

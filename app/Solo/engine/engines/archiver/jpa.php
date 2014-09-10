@@ -141,11 +141,11 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 		// Try to kill the archive if it exists
 		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "AEArchiverJpa :: Killing old archive");
-		$fp = @fopen($this->_dataFileName, "wb");
-		if (!($fp === false))
+		$this->fp = $this->_fopen($this->_dataFileName, "wb");
+
+		if (!($this->fp === false))
 		{
-			@ftruncate($fp, 0);
-			@fclose($fp);
+			@ftruncate($this->fp, 0);
 		}
 		else
 		{
@@ -271,11 +271,22 @@ class AEArchiverJpa extends AEAbstractArchiver
 		}
 		$timer = AEFactory::getTimer();
 
-		// Initialize archive file pointer
-		$fp = null;
-
 		// Initialize inode change timestamp
 		$filectime = 0;
+
+		// Open data file for output
+		if (is_null($this->fp))
+		{
+			$this->fp = $this->_fopen($this->_dataFileName, "ab");
+		}
+
+		if ($this->fp === false)
+		{
+			$this->fp = null;
+			$this->setError("Could not open archive file '{$this->_dataFileName}' for append!");
+
+			return false;
+		}
 
 		if (!$configuration->get('volatile.engine.archiver.processingfile', false))
 		{
@@ -473,34 +484,28 @@ class AEArchiverJpa extends AEAbstractArchiver
 				}
 			}
 
-			// Open data file for output
-			$fp = @fopen($this->_dataFileName, "ab");
-			if ($fp === false)
-			{
-				$this->setError("Could not open archive file '{$this->_dataFileName}' for append!");
+			$this->_fwrite($this->fp, $this->_fileHeader); // Entity Description Block header
 
-				return false;
-			}
-			$this->_fwrite($fp, $this->_fileHeader); // Entity Description Block header
 			if ($this->getError())
 			{
 				return false;
 			}
-			$this->_fwrite($fp, pack('v', $blockLength)); // Entity Description Block header length
-			$this->_fwrite($fp, pack('v', akstringlen($storedName))); // Length of entity path
-			$this->_fwrite($fp, $storedName); // Entity path
-			$this->_fwrite($fp, pack('C', $fileType)); // Entity type
-			$this->_fwrite($fp, pack('C', $compressionMethod)); // Compression method
-			$this->_fwrite($fp, pack('V', $c_len)); // Compressed size
-			$this->_fwrite($fp, pack('V', $unc_len)); // Uncompressed size
-			$this->_fwrite($fp, pack('V', $perms)); // Entity permissions
+
+			$this->_fwrite($this->fp, pack('v', $blockLength)); // Entity Description Block header length
+			$this->_fwrite($this->fp, pack('v', akstringlen($storedName))); // Length of entity path
+			$this->_fwrite($this->fp, $storedName); // Entity path
+			$this->_fwrite($this->fp, pack('C', $fileType)); // Entity type
+			$this->_fwrite($this->fp, pack('C', $compressionMethod)); // Compression method
+			$this->_fwrite($this->fp, pack('V', $c_len)); // Compressed size
+			$this->_fwrite($this->fp, pack('V', $unc_len)); // Uncompressed size
+			$this->_fwrite($this->fp, pack('V', $perms)); // Entity permissions
 
 			// Timestamp Extra Field, only for files
 			if ($filectime > 0)
 			{
-				$this->_fwrite($fp, "\x00\x01"); // Extra Field Identifier
-				$this->_fwrite($fp, pack('v', 8)); // Extra Field Length
-				$this->_fwrite($fp, pack('V', $filectime)); // Timestamp
+				$this->_fwrite($this->fp, "\x00\x01"); // Extra Field Identifier
+				$this->_fwrite($this->fp, pack('v', 8)); // Extra Field Length
+				$this->_fwrite($this->fp, pack('V', $filectime)); // Timestamp
 			}
 
 			// Cache useful information about the file
@@ -518,15 +523,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 			$isSymlink = false;
 			$isVirtual = false;
 			$compressionMethod = 0;
-
-			// Create a file pointer to the archive file
-			$fp = @fopen($this->_dataFileName, "ab");
-			if ($fp === false)
-			{
-				$this->setError("Could not open archive file '{$this->_dataFileName}' for append!");
-
-				return false;
-			}
 		}
 
 		/* "File data" segment. */
@@ -535,11 +531,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 			if (!$this->_useSplitZIP)
 			{
 				// Just dump the compressed data
-				$this->_fwrite($fp, $zdata);
+				$this->_fwrite($this->fp, $zdata);
+
 				if ($this->getError())
 				{
-					@fclose($fp);
-
 					return false;
 				}
 			}
@@ -552,11 +547,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 				if ($free_space >= akstringlen($zdata))
 				{
 					// Write in one part
-					$this->_fwrite($fp, $zdata);
+					$this->_fwrite($this->fp, $zdata);
+
 					if ($this->getError())
 					{
-						@fclose($fp);
-
 						return false;
 					}
 				}
@@ -571,11 +565,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 						$free_space = $this->_fragmentSize - ($current_part_size === false ? 0 : $current_part_size);
 
 						// Split between parts - Write first part
-						$this->_fwrite($fp, $zdata, min(akstringlen($zdata), $free_space));
+						$this->_fwrite($this->fp, $zdata, min(akstringlen($zdata), $free_space));
+
 						if ($this->getError())
 						{
-							@fclose($fp);
-
 							return false;
 						}
 
@@ -585,7 +578,9 @@ class AEArchiverJpa extends AEAbstractArchiver
 						if ($bytes_left > 0)
 						{
 							// Create new part
-							@fclose($fp);
+							$this->_fclose($this->fp);
+							$this->fp = null;
+
 							if (!$this->_createNewPart())
 							{
 								// Die if we couldn't create the new part
@@ -595,17 +590,18 @@ class AEArchiverJpa extends AEAbstractArchiver
 							}
 							else
 							{
-								// Close the old data file
-								@fclose($fp);
 								// Open data file for output
-								$fp = @fopen($this->_dataFileName, "ab");
-								if ($fp === false)
+								$this->fp = $this->_fopen($this->_dataFileName, "ab");
+
+								if ($this->fp === false)
 								{
+									$this->fp = null;
 									$this->setError("Could not open archive file {$this->_dataFileName} for append!");
 
 									return false;
 								}
 							}
+
 							$zdata = substr($zdata, -$bytes_left);
 						}
 					}
@@ -620,11 +616,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 				if (!$this->_useSplitZIP)
 				{
 					// Just dump the data
-					$this->_fwrite($fp, $sourceNameOrData);
+					$this->_fwrite($this->fp, $sourceNameOrData);
+
 					if ($this->getError())
 					{
-						@fclose($fp);
-
 						return false;
 					}
 				}
@@ -637,7 +632,7 @@ class AEArchiverJpa extends AEAbstractArchiver
 					if ($free_space >= akstringlen($sourceNameOrData))
 					{
 						// Write in one part
-						$this->_fwrite($fp, $sourceNameOrData);
+						$this->_fwrite($this->fp, $sourceNameOrData);
 						if ($this->getError())
 						{
 							return false;
@@ -654,11 +649,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 							$free_space = $this->_fragmentSize - ($current_part_size === false ? 0 : $current_part_size);
 
 							// Split between parts - Write first part
-							$this->_fwrite($fp, $sourceNameOrData, min(akstringlen($sourceNameOrData), $free_space));
+							$this->_fwrite($this->fp, $sourceNameOrData, min(akstringlen($sourceNameOrData), $free_space));
+
 							if ($this->getError())
 							{
-								@fclose($fp);
-
 								return false;
 							}
 
@@ -666,23 +660,25 @@ class AEArchiverJpa extends AEAbstractArchiver
 							$rest_size = akstringlen($sourceNameOrData) - $free_space;
 							if ($rest_size > 0)
 							{
+								$this->_fclose($this->fp);
+								$this->fp = null;
+
 								// Create new part
 								if (!$this->_createNewPart())
 								{
 									// Die if we couldn't create the new part
 									$this->setError('Could not create new JPA part file ' . basename($this->_dataFileName));
-									@fclose($fp);
 
 									return false;
 								}
 								else
 								{
-									// Close the old data file
-									@fclose($fp);
 									// Open data file for output
-									$fp = @fopen($this->_dataFileName, "ab");
-									if ($fp === false)
+									$this->fp = $this->_fopen($this->_dataFileName, "ab");
+
+									if ($this->fp === false)
 									{
+										$this->fp = null;
 										$this->setError("Could not open archive file {$this->_dataFileName} for append!");
 
 										return false;
@@ -698,7 +694,7 @@ class AEArchiverJpa extends AEAbstractArchiver
 			else
 			{
 				// IMPORTANT! Only this case can be spanned across steps: uncompressed, non-virtual data
-				// Load cached data if we're resumming file packing
+				// Load cached data if we're resuming file packing
 				if ($configuration->get('volatile.engine.archiver.processingfile', false))
 				{
 					$sourceNameOrData = $configuration->get('volatile.engine.archiver.sourceNameOrData', '');
@@ -708,10 +704,10 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 				// Copy the file contents, ignore directories
 				$zdatafp = @fopen($sourceNameOrData, "rb");
+
 				if ($zdatafp === false)
 				{
 					$this->setWarning('Unreadable file ' . $sourceNameOrData . '. Check permissions');
-					@fclose($fp);
 
 					return false;
 				}
@@ -727,7 +723,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 							// What?! We can't resume!
 							$this->setError(sprintf('Could not resume packing of file %s. Your archive is damaged!', $sourceNameOrData));
 							@fclose($zdatafp);
-							@fclose($fp);
 
 							return false;
 						}
@@ -741,12 +736,12 @@ class AEArchiverJpa extends AEAbstractArchiver
 						while (!feof($zdatafp) && ($timer->getTimeLeft() > 0) && ($unc_len > 0))
 						{
 							$zdata = fread($zdatafp, AKEEBA_CHUNK);
-							$this->_fwrite($fp, $zdata, min(akstringlen($zdata), AKEEBA_CHUNK));
+							$this->_fwrite($this->fp, $zdata, min(akstringlen($zdata), AKEEBA_CHUNK));
 							$unc_len -= min(akstringlen($zdata), AKEEBA_CHUNK);
+
 							if ($this->getError())
 							{
 								@fclose($zdatafp);
-								@fclose($fp);
 
 								return false;
 							}
@@ -759,7 +754,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 							$configuration->set('volatile.engine.archiver.resume', $resume);
 							$configuration->set('volatile.engine.archiver.processingfile', true);
 							@fclose($zdatafp);
-							@fclose($fp);
 
 							return true;
 						}
@@ -776,13 +770,12 @@ class AEArchiverJpa extends AEAbstractArchiver
 							while (!feof($zdatafp) && ($timer->getTimeLeft() > 0) && ($unc_len > 0))
 							{
 								$zdata = fread($zdatafp, AKEEBA_CHUNK);
-								$this->_fwrite($fp, $zdata, min(akstringlen($zdata), AKEEBA_CHUNK));
+								$this->_fwrite($this->fp, $zdata, min(akstringlen($zdata), AKEEBA_CHUNK));
 								//$unc_len -= min(akstringlen($zdata), AKEEBA_CHUNK);
 								$unc_len -= AKEEBA_CHUNK;
 								if ($this->getError())
 								{
 									@fclose($zdatafp);
-									@fclose($fp);
 
 									return false;
 								}
@@ -795,7 +788,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 								$configuration->set('volatile.engine.archiver.resume', $resume);
 								$configuration->set('volatile.engine.archiver.processingfile', true);
 								@fclose($zdatafp);
-								@fclose($fp);
 
 								return true;
 							}
@@ -825,13 +817,12 @@ class AEArchiverJpa extends AEAbstractArchiver
 								for ($i = 1; $i <= $loop_times; $i++)
 								{
 									$zdata = fread($zdatafp, $chunk_size_primary);
-									$this->_fwrite($fp, $zdata, min(akstringlen($zdata), $chunk_size_primary));
+									$this->_fwrite($this->fp, $zdata, min(akstringlen($zdata), $chunk_size_primary));
 									//$unc_len -= min(akstringlen($zdata), $chunk_size_primary);
 									$unc_len -= $chunk_size_primary;
 									if ($this->getError())
 									{
 										@fclose($zdatafp);
-										@fclose($fp);
 
 										return false;
 									}
@@ -845,7 +836,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 										$configuration->set('volatile.engine.archiver.resume', $resume);
 										$configuration->set('volatile.engine.archiver.processingfile', true);
 										@fclose($zdatafp);
-										@fclose($fp);
 
 										return true;
 									}
@@ -856,13 +846,12 @@ class AEArchiverJpa extends AEAbstractArchiver
 								if ($chunk_size_secondary > 0)
 								{
 									$zdata = fread($zdatafp, $chunk_size_secondary);
-									$this->_fwrite($fp, $zdata, min(akstringlen($zdata), $chunk_size_secondary));
+									$this->_fwrite($this->fp, $zdata, min(akstringlen($zdata), $chunk_size_secondary));
 									//$unc_len -= min(akstringlen($zdata), $chunk_size_secondary);
 									$unc_len -= $chunk_size_secondary;
 									if ($this->getError())
 									{
 										@fclose($zdatafp);
-										@fclose($fp);
 
 										return false;
 									}
@@ -883,14 +872,12 @@ class AEArchiverJpa extends AEAbstractArchiver
 										// Die if we couldn't create the new part
 										$this->setError('Could not create new JPA part file ' . basename($this->_dataFileName));
 										@fclose($zdatafp);
-										@fclose($fp);
 
 										return false;
 									}
 
 									// ...then, return
 									@fclose($zdatafp);
-									@fclose($fp);
 
 									return true;
 								}
@@ -899,20 +886,19 @@ class AEArchiverJpa extends AEAbstractArchiver
 								//if(!feof($zdatafp) && ($unc_len != 0) && ($unc_len > 0) )
 								if (!feof($zdatafp) && ($unc_len > 0))
 								{
+									$this->_fclose($this->fp);
+									$this->fp = null;
+
 									if (!$this->_createNewPart())
 									{
 										// Die if we couldn't create the new part
 										$this->setError('Could not create new JPA part file ' . basename($this->_dataFileName));
 										@fclose($zdatafp);
-										@fclose($fp);
 
 										return false;
 									}
 									else
 									{
-										// Close the old data file
-										fclose($fp);
-
 										// We have created the part. If the user asked for immediate post-proc, break step now.
 										if ($configuration->get('engine.postproc.common.after_part', 0))
 										{
@@ -922,14 +908,13 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 											$configuration->set('volatile.breakflag', true);
 											@fclose($zdatafp);
-											@fclose($fp);
 
 											return true;
 										}
 
 										// Open data file for output
-										$fp = @fopen($this->_dataFileName, "ab");
-										if ($fp === false)
+										$this->fp = $this->_fopen($this->_dataFileName, "ab");
+										if ($this->fp === false)
 										{
 											$this->setError("Could not open archive file {$this->_dataFileName} for append!");
 											@fclose($zdatafp);
@@ -947,10 +932,8 @@ class AEArchiverJpa extends AEAbstractArchiver
 		}
 		elseif ($isSymlink)
 		{
-			$this->_fwrite($fp, @readlink($sourceNameOrData));
+			$this->_fwrite($this->fp, @readlink($sourceNameOrData));
 		}
-
-		@fclose($fp);
 
 		//AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "DEBUG -- Added $targetName to archive");
 
@@ -974,8 +957,15 @@ class AEArchiverJpa extends AEAbstractArchiver
 	 */
 	private function _writeArchiveHeader()
 	{
-		$fp = @fopen($this->_dataFileName, 'r+');
-		if ($fp === false)
+		if (!is_null($this->fp))
+		{
+			$this->_fclose($this->fp);
+			$this->fp = null;
+		}
+
+		$this->fp = $this->_fopen($this->_dataFileName, 'cb');
+
+		if ($this->fp === false)
 		{
 			$this->setError('Could not open ' . $this->_dataFileName . ' for writing. Check permissions and open_basedir restrictions.');
 
@@ -989,27 +979,26 @@ class AEArchiverJpa extends AEAbstractArchiver
 			$headerSize += 8;
 		} // Spanned JPA header
 
-		$this->_fwrite($fp, $this->_archive_signature); // ID string (JPA)
+		$this->_fwrite($this->fp, $this->_archive_signature); // ID string (JPA)
 		if ($this->getError())
 		{
 			return false;
 		}
-		$this->_fwrite($fp, pack('v', $headerSize)); // Header length; fixed to 19 bytes
-		$this->_fwrite($fp, pack('C', _JPA_MAJOR)); // Major version
-		$this->_fwrite($fp, pack('C', _JPA_MINOR)); // Minor version
-		$this->_fwrite($fp, pack('V', $this->_fileCount)); // File count
-		$this->_fwrite($fp, pack('V', $this->_uncompressedSize)); // Size of files when extracted
-		$this->_fwrite($fp, pack('V', $this->_compressedSize)); // Size of files when stored
+		$this->_fwrite($this->fp, pack('v', $headerSize)); // Header length; fixed to 19 bytes
+		$this->_fwrite($this->fp, pack('C', _JPA_MAJOR)); // Major version
+		$this->_fwrite($this->fp, pack('C', _JPA_MINOR)); // Minor version
+		$this->_fwrite($this->fp, pack('V', $this->_fileCount)); // File count
+		$this->_fwrite($this->fp, pack('V', $this->_uncompressedSize)); // Size of files when extracted
+		$this->_fwrite($this->fp, pack('V', $this->_compressedSize)); // Size of files when stored
 
 		// Do I need to add a split archive's header too?
 		if ($this->_useSplitZIP)
 		{
-			$this->_fwrite($fp, $this->_extraHeaderSplit); // Signature
-			$this->_fwrite($fp, pack('v', 4)); // Extra field length
-			$this->_fwrite($fp, pack('v', $this->_totalFragments)); // Number of parts
+			$this->_fwrite($this->fp, $this->_extraHeaderSplit); // Signature
+			$this->_fwrite($this->fp, pack('v', 4)); // Extra field length
+			$this->_fwrite($this->fp, pack('v', $this->_totalFragments)); // Number of parts
 		}
 
-		@fclose($fp);
 		if (function_exists('chmod'))
 		{
 			@chmod($this->_dataFileName, 0755);
@@ -1018,6 +1007,9 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 	private function _createNewPart($finalPart = false)
 	{
+		// Remove the just finished part from the list of resumable offsets
+		$this->_removeFromOffsetsList($this->_dataFileName);
+
 		// Push the previous part if we have to post-process it immediately
 		$configuration = AEFactory::getConfiguration();
 		if ($configuration->get('engine.postproc.common.after_part', 0))

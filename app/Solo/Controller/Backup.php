@@ -52,6 +52,7 @@ class Backup extends ControllerDefault
 		$model->setState('jpskey',		$this->input->get('jpskey', '', 'raw'));
 		$model->setState('angiekey',	$this->input->get('angiekey', '', 'raw'));
 		$model->setState('returnurl',	$this->input->get('returnurl', '', 'raw'));
+		$model->setState('backupid',	$this->input->get('backupid', null, 'string'));
 
 		$this->display();
 	}
@@ -71,6 +72,7 @@ class Backup extends ControllerDefault
 		$model->setState('comment',			$this->input->get('comment', '','default', 'raw'));
 		$model->setState('jpskey',			$this->input->get('jpskey', '', 'raw'));
 		$model->setState('angiekey',		$this->input->get('angiekey', '', 'raw'));
+		$model->setState('backupid',	$this->input->get('backupid', null, 'string'));
 
 		$model->setState('tag',				$this->input->get('tag', 'backend', 'cmd'));
 		$model->setState('type',			strtolower($this->input->get('type', '', 'cmd')));

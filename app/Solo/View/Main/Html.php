@@ -7,6 +7,7 @@
 
 namespace Solo\View\Main;
 
+use Awf\Mvc\Model;
 use Awf\Mvc\View;
 use Solo\Model\Main;
 use Solo\Model\Update;
@@ -31,6 +32,10 @@ class Html extends \Solo\View\Html
 		$this->needsDownloadId = $model->needsDownloadID();
 		$this->warnCoreDownloadId = $model->mustWarnAboutDownloadIdInCore();
 
+        /** @var Stats $statsModel */
+        $statsModel = Model::getTmpInstance($this->container->application_name, 'Stats', $this->container);
+        $this->statsIframe = $statsModel->collectStatistics(true);
+
 		return true;
 	}
-} 
+}

@@ -50,7 +50,7 @@ if(!empty($styles)) foreach($styles as $url => $params)
 <link rel="stylesheet" type="text/css" href="<?php echo Uri::base(); ?>/media/css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="<?php echo Uri::base(); ?>/media/css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="<?php echo Uri::base(); ?>/media/css/font-awesome.min.css" />
-<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG): ?>
+<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG && @file_exists(APATH_BASE . '/media/css/theme.css')): ?>
 <link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.css" />
 <?php else: ?>
 <link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.min.css" />

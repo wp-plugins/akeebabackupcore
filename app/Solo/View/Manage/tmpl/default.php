@@ -147,6 +147,7 @@ $dateFormat = !empty($dateFormat) ? $dateFormat : Text::_('DATE_FORMAT_LC4');
 			<?php
 			$check = \Awf\Html\Grid::id(++$i, $record['id']);
 
+			$backupId = isset($record['backupid']) ? $record['backupid'] : '';
 			$origin_lbl = 'STATS_LABEL_ORIGIN_' . strtoupper($record['origin']);
 			$origin = Text::_($origin_lbl);
 
@@ -250,6 +251,16 @@ HTML;
 				}
 			}
 
+			// If there is a backup ID, show the view log button
+			if (($record['meta'] == 'ok') && isset($record['backupid']) && !empty($record['backupid']))
+			{
+				$viewLogTag = $record['tag'] . '.' . $record['backupid'];
+				$viewLogUrl = $router->route('index.php?view=log&tag=' . $viewLogTag . '&profileid=' . $record['profile_id']);
+				$viewLogLabel = Text::_('VIEWLOG');
+				$filename_col .= '<br><a class="btn btn-default btn-sm" href="' . $viewLogUrl . '">' .
+					'<span class="glyphicon glyphicon-list-alt"></span>' . $viewLogLabel . '</a>';
+			}
+
 			// Label class based on status
 			$status = Text::_('STATS_LABEL_STATUS_' . $record['meta']);
 			$statusClass = '';
@@ -293,6 +304,12 @@ HTML;
 				<a href="<?php echo $edit_link; ?>">
 					<?php echo $this->escape($record['description']) ?>
 				</a>
+				<?php if ($backupId): ?>
+					<br/>
+					<small>
+						<?php echo $backupId ?>
+					</small>
+				<?php endif; ?>
 			</td>
 			<td>
 				<?php echo $startTime->format($dateFormat, true); ?>

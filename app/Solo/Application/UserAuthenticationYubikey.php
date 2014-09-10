@@ -12,7 +12,7 @@ use Awf\Download\Download;
 use Awf\Uri\Uri;
 use Awf\User\Authentication;
 
-class UserAuthenticationYubikey extends Authentication
+class UserAuthenticationYubikey extends UserAuthenticationOtep
 {
 	/**
 	 * Is this user authenticated by this object? The $params array contains at least one key, 'password'.
@@ -36,6 +36,11 @@ class UserAuthenticationYubikey extends Authentication
 			if (!empty($secret))
 			{
 				$result = $this->validateYubikeyOTP($secret);
+
+				if (!$result)
+				{
+					$result = $this->validateOtep($secret);
+				}
 			}
 		}
 

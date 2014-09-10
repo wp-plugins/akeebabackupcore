@@ -231,32 +231,47 @@ abstract class AEPlatformAbstract implements AEPlatformInterface
 	 */
 	public function set_or_update_statistics($id = null, $data = array(), &$caller)
 	{
+		// No valid data?
 		if (!is_array($data))
 		{
 			return null;
-		} // No valid data?
+		}
+
+		// No data at all?
 		if (empty($data))
 		{
 			return null;
-		} // No data at all?
+		}
 
 		$db = AEFactory::getDatabase($this->get_platform_database_options());
+
+		$tableFields = $db->getTableColumns($this->tableNameStats);
+		$tableFields = array_keys($tableFields);
 
 		if (is_null($id))
 		{
 			// Create a new record
 			$sql_fields = array();
 			$sql_values = '';
+
 			foreach ($data as $key => $value)
 			{
+				if (!in_array($key, $tableFields))
+				{
+					continue;
+				}
+
 				$sql_fields[] = $db->qn($key);
 				$sql_values .= (!empty($sql_values) ? ',' : '') . $db->Quote($value);
 			}
+
 			$sql = $db->getQuery(true)
 				->insert($db->quoteName($this->tableNameStats))
 				->columns($sql_fields)
 				->values($sql_values);
+
 			$db->setQuery($sql);
+
 			try
 			{
 				$db->query();
@@ -514,7 +529,7 @@ abstract class AEPlatformAbstract implements AEPlatformInterface
 			->where(' NOT ' . $db->qn('archivename') . ' = ' . $db->q(''));
 		if (!empty($tag))
 		{
-			$query->where($db->qn('origin') . '=' . $db->q($tag));
+			$query->where($db->qn('origin') . ' LIKE ' . $db->q($tag . '%'));
 		}
 		$db->setQuery($query);
 
@@ -541,7 +556,7 @@ abstract class AEPlatformAbstract implements AEPlatformInterface
 			->select('MAX(' . $db->qn('id') . ') AS ' . $db->qn('id'))
 			->from($db->qn($this->tableNameStats))
 			->where($db->qn('status') . ' = ' . $db->q('complete'))
-			->group($db->qn('absolute_path'));;
+			->group($db->qn('absolute_path'));
 
 		$query = $db->getQuery(true)
 			->select($db->qn('id'))
@@ -556,6 +571,7 @@ abstract class AEPlatformAbstract implements AEPlatformInterface
 			$profile_id = $this->get_active_profile();
 			$query->where($db->qn('profile_id') . " = " . $db->q($profile_id));
 		}
+
 		if (!empty($tagFilters))
 		{
 			$operator = '';
@@ -578,6 +594,7 @@ abstract class AEPlatformAbstract implements AEPlatformInterface
 			unset($quotedTags);
 			$query->where($operator . ' ' . $db->quoteName('tag') . ' IN (' . $filter . ')');
 		}
+
 		$db->setQuery($query);
 		$array = $db->loadColumn();
 

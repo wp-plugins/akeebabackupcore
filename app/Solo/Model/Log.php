@@ -66,6 +66,14 @@ class Log extends Model
 			foreach ($list as $item)
 			{
 				$text = Text::_('STATS_LABEL_ORIGIN_' . strtoupper($item));
+
+				if (strstr($item, '.') !== false)
+				{
+					list($origin, $backupId) = explode('.', $item, 2);
+
+					$text = Text::_('STATS_LABEL_ORIGIN_' . strtoupper($origin)) . ' (' . $backupId . ')';
+				}
+
 				$options[] = Select::option($item, $text);
 			}
 		}

@@ -34,8 +34,8 @@ class Application extends \Awf\Application\Application
 		$this->setTemplate('default');
 
 		// Load the extra language files
+		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', false, $this->container->languagePath);
 		Text::loadLanguage('en-GB', 'akeeba', '.com_akeeba.ini', false, $this->container->languagePath);
-		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', true, $this->container->languagePath);
 
 		// Redirect to the setup page if the configuration does not exist yet
 		$configPath = $this->container->appConfig->getDefaultPath();

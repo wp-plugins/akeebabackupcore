@@ -76,16 +76,30 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 		</div>
 
 		<?php if (!AKEEBA_PRO): ?>
-		<div class="well">
-			<p class="text-danger">
-				<?php echo Text::_('SOLO_MAIN_LBL_WHYSUBSCRIBE'); ?>
-			</p>
-			<p style="text-align: center;">
-				<a class="btn btn-lg btn-danger" href="https://www.akeebabackup.com/subscribe.html">
-					<span class="glyphicon glyphicon-shopping-cart"></span>
-					<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
-				</a>
-			</p>
+		<div class="panel-group" id="coreaccordion">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a data-toggle="collapse" data-parent="#coreaccordion" href="#collapseOne">
+							<span class="glyphicon glyphicon-info-sign" ></span>
+							<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
+						</a>
+					</h4>
+				</div>
+				<div id="collapseOne" class="panel-collapse collapse">
+					<div class="panel-body">
+						<p class="text-muted">
+							<?php echo Text::_('SOLO_MAIN_LBL_WHYSUBSCRIBE'); ?>
+						</p>
+						<p style="text-align: center;">
+							<a class="btn btn-lg btn-danger" href="https://www.akeebabackup.com/subscribe.html">
+								<span class="glyphicon glyphicon-shopping-cart"></span>
+								<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
+							</a>
+						</p>
+					</div>
+				</div>
+			</div>
 		</div>
 		<?php endif; ?>
 
@@ -116,16 +130,16 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 					<span class="title"><?php echo Text::_('VIEWLOG') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=alice') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-fire-extinguisher"></span>
-					<span class="title"><?php echo Text::_('AKEEBA_ALICE') ?></span>
+					<span class="icon fa fa-fire-extinguisher <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('AKEEBA_ALICE') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=discover') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon glyphicon glyphicon-import"></span>
-					<span class="title"><?php echo Text::_('DISCOVER') ?></span>
+					<span class="icon glyphicon glyphicon-import <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('DISCOVER') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=s3import') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon glyphicon glyphicon-cloud-download"></span>
-					<span class="title"><?php echo Text::_('S3IMPORT') ?></span>
+					<span class="icon glyphicon glyphicon-cloud-download" <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>></span>
+					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('S3IMPORT') ?></span>
 				</a>
 
 				<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
@@ -151,12 +165,12 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 			</div>
 			<div class="panel-body">
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=multidb') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-th-large"></span>
-					<span class="title"><?php echo Text::_('MULTIDB') ?></span>
+					<span class="icon fa fa-th-large <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('MULTIDB') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=extradirs') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-files-o"></span>
-					<span class="title"><?php echo Text::_('EXTRADIRS') ?></span>
+					<span class="icon fa fa-files-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('EXTRADIRS') ?></span>
 				</a>
 			</div>
 		</div>
@@ -175,12 +189,12 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 					<span class="title"><?php echo Text::_('DBEF') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexfsfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-folder-o"></span>
-					<span class="title small-text"><?php echo Text::_('REGEXFSFILTERS') ?></span>
+					<span class="icon fa fa-folder-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXFSFILTERS') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexdbfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-hdd-o"></span>
-					<span class="title small-text"><?php echo Text::_('REGEXDBFILTERS') ?></span>
+					<span class="icon fa fa-hdd-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXDBFILTERS') ?></span>
 				</a>
 			</div>
 		</div>
@@ -234,6 +248,13 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 						Donate via PayPal
 					</button>
 				</form>
+				<br/>
+				<p style="text-align: center">
+					<a class="btn btn btn-danger" href="https://www.akeebabackup.com/subscribe.html">
+						<span class="glyphicon glyphicon-shopping-cart"></span>
+						<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
+					</a>
+				</p>
 				<?php endif; ?>
 			</div>
 		</div>
@@ -260,6 +281,13 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 		</div>
 	</div>
 </div>
+
+<?php
+if($this->statsIframe)
+{
+    echo $this->statsIframe;
+}
+?>
 
 <?php if (!empty($this->configUrl) || !empty($this->backupUrl)): ?>
 <script type="text/javascript">

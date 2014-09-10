@@ -60,7 +60,7 @@ switch ($exc->getCode())
 	<script type="text/javascript" src="<?php echo \Awf\Uri\Uri::base(); ?>media/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/bootstrap.min.css" />
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/bootstrap-theme.min.css" />
-	<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG): ?>
+	<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG && @file_exists(APATH_BASE . '/media/css/theme.css')): ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.css" />
 	<?php else: ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.min.css" />

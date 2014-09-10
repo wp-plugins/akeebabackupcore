@@ -61,7 +61,7 @@ class AppConfig extends Configuration
 	 *
 	 * @return  void
 	 */
-	public function loadConfiguration($filePath = null)
+	public function loadConfiguration($filePath = null, \Awf\Utils\Phpfunc $phpfunc = null)
 	{
 		if (!class_exists('wpdb'))
 		{

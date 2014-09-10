@@ -42,8 +42,8 @@ class Application extends \Awf\Application\Application
 		$this->setTemplate('wp');
 
 		// Load the extra language files
+		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', false, $this->container->languagePath);
 		Text::loadLanguage('en-GB', 'akeeba', '.com_akeeba.ini', false, $this->container->languagePath);
-		Text::loadLanguage(null, 'akeeba', '.com_akeeba.ini', true, $this->container->languagePath);
 
 		$configPath = $this->container->appConfig->getDefaultPath();
 
@@ -94,6 +94,8 @@ class Application extends \Awf\Application\Application
 			$v = str_replace('_QQ_', '"', $v);
 			$v = str_replace('Akeeba Solo', 'Akeeba Backup', $v);
 			$v = str_replace('Akeeba Backup', 'Akeeba Backup for WordPress', $v);
+			$v = str_replace('Joomla!', 'WordPress', $v);
+			$v = str_replace('Joomla', 'WordPress', $v);
 			$strings[$k] = $v;
 		}
 

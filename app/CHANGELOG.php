@@ -1,4 +1,34 @@
 <?php die();?>
+Akeeba Solo 1.1.0
+================================================================================
++ Support for iDriveSync accounts created in 2014 or later
++ A different log file is created per backup attempt (and automatically removed when the backup archives are deleted by quotas or by using Delete Files in the interface)
++ You can now run several backups at the same time
++ The minimum execution time can now be enforced in the client side for backend backups, leading to increased stability on certain hosts
++ Back-end backups will resume after an AJAX error, allowing you to complete backups even on very hosts with very tight resource usage limits
++ The Dropbox chunked upload can now work on files smaller than 150Mb and will work across backup steps, allowing you to upload large files to Dropbox without timeout errors
++ Backups resulting in an AJAX error will be retried, in case backup failure was caused by a temporary server or network issue
++ Greatly improve the backup performance on massive tables as long as they have an auto_increment column
++ Work around the issues caused by some servers' error pages which contain DOM-modifying JavaScript
++ Work around for the overreaching password managers in so-called modern browsers which fill irrelevant passwords in the configuration page.
++ Improved Two Factor Authentication with one time emergency passwords
+# [HIGH] Dropbox upload would enter an infinite loop when using chunked uploads
+# [HIGH] Javascript not loaded in Setup page
+# [HIGH] Potential information leak through the JSON API using a Decryption Oracle attack
+# [MEDIUM] ANGIE for Joomla!, cannot detect Joomla! version, leading to Two Factor Auth data not being re-encoded with the new secret key
+# [MEDIUM] ANGIE: Restoring off-site directories would lead to errors
+# [MEDIUM] ANGIE (all flavours): cannot restart db restoration after a database error has occurred.
+# [LOW] FTP port and directory not taken into account in the the setup page
+# [LOW] ANGIE for WordPress, phpBB and PrestaShop: escape some special characters in passwords
+# [LOW] Do not offer to install using the PDO or SQLite drivers as there's no schema file available for them
+# [LOW] Wrong language strings (copied from the original Joomla! component's codebase)
+# [LOW] ANGIE for Joomla!, array values in configuration.php were corrupted
+# [LOW] Setup user interface issue when debug mode is enabled
+
+Akeeba Solo 1.0.4
+================================================================================
+! [HIGH] Information disclosure through the JSON API. This is a theoretical attack since we determined it is impractical to perform outside a controlled environment.
+
 Akeeba Solo 1.0.3
 ================================================================================
 ! [HIGH] Packaging error leading to fatal error (white page)

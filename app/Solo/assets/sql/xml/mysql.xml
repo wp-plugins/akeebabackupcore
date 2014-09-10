@@ -11,6 +11,17 @@
 
     <!-- SQL commands to run on installation and update -->
     <sql>
+        <action table="#__akeeba_common" canfail="0">
+          <condition type="missing" value=""/>
+          <query><![CDATA[
+CREATE TABLE `#__akeeba_common` (
+	`key` varchar(255) NOT NULL,
+	`value` longtext NOT NULL,
+	PRIMARY KEY (`key`)
+) DEFAULT COLLATE utf8_general_ci CHARSET=utf8;
+            ]]></query>
+        </action>
+
         <action table="#__ak_params" canfail="0">
             <condition type="missing" value="" />
             <query><![CDATA[
@@ -64,6 +75,7 @@ CREATE TABLE `#__ak_stats` (
 	`absolute_path` longtext,
 	`multipart` int(11) NOT NULL DEFAULT '0',
 	`tag` varchar(255) DEFAULT NULL,
+	`backupid` varchar(255) DEFAULT NULL,
 	`filesexist` tinyint(3) NOT NULL DEFAULT '1',
 	`remote_filename` varchar(1000) DEFAULT NULL,
 	`total_size` bigint(20) NOT NULL DEFAULT '0',
@@ -98,6 +110,16 @@ CREATE TABLE `#__ak_users` (
   `parameters` longtext,
   PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8;
+            ]]></query>
+        </action>
+
+        <!-- Add the backupid column to #__ak_stats if it's missing -->
+        <action table="#__ak_stats" canfail="1">
+            <condition type="missing" value="backupid" />
+            <query><![CDATA[
+ALTER TABLE `#__ak_stats`
+ADD COLUMN `backupid` varchar(255) DEFAULT NULL
+AFTER `tag`
             ]]></query>
         </action>
     </sql>

@@ -33,6 +33,12 @@ abstract class Setup
 
 		foreach($connectors as $connector)
 		{
+			// Unsupported driver types
+			if (in_array(strtoupper($connector), array('PDO', 'SQLITE')))
+			{
+				continue;
+			}
+
 			$checked = (strtoupper($selected) == strtoupper($connector)) ? 'selected="selected"' : '';
 
 			$html .= "\t<option value=\"$connector\" $checked>" . Text::_('SOLO_SETUP_LBL_DATABASE_DRIVER_' . $connector) . "</option>\n";

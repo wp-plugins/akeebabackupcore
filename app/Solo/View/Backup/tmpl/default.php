@@ -18,6 +18,8 @@ $config = \AEFactory::getConfiguration();
 $quirks_style = $this->hasErrors ? 'alert-danger' : 'alert-warning';
 $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 
+$configuration = AEFactory::getConfiguration();
+
 ?>
 <div id="backup-setup">
 	<h3>
@@ -232,14 +234,14 @@ $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 			</p>
 
 			<?php if(empty($this->returnURL)): ?>
-				<button class="btn btn-primary btn-lg" onclick="window.location='<?php echo $router->route('index.php?view=manage') ?>'; return false;">
+				<a class="btn btn-primary btn-lg" href="<?php echo $router->route('index.php?view=manage') ?>">
 					<span class="glyphicon glyphicon-list"></span>
 					<?php echo Text::_('BUADMIN'); ?>
-				</button>
-				<button class="btn btn-default" onclick="window.location='<?php echo $router->route('index.php?view=log') ?>'; return false;">
+				</a>
+				<a class="btn btn-default" id="ab-viewlog-success" href="<?php echo $router->route('index.php?view=log') ?>">
 					<span class="fa fa-edit"></span>
 					<?php echo Text::_('VIEWLOG'); ?>
-				</button>
+				</a>
 			<?php endif; ?>
 		</div>
 	</div>
@@ -307,15 +309,46 @@ $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 				</button>
 
 			<?php else: ?>
-				<button class="btn btn-lg btn-primary" onclick="window.location='https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorbutton'; return false;">
+				<a class="btn btn-lg btn-primary" href="https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorbuttonsolo">
 					<span class="fa fa-share"></span>
 					<?php echo Text::_('BACKUP_TROUBLESHOOTINGDOCS') ?>
-				</button>
-				<button class="btn btn-default btn-sm" onclick="window.location='<?php echo $router->route('index.php?view=log') ?>'; return false;">
+				</a>
+				<a class="btn btn-default btn-sm" id="ab-viewlog-error" href="<?php echo $router->route('index.php?view=log') ?>">
 					<span class="fa fa-edit"></span>
 					<?php echo Text::_('VIEWLOG'); ?>
-				</button>
+				</a>
 			<?php endif; ?>
+		</div>
+	</div>
+</div>
+
+<div id="retry-panel" style="display: none">
+	<div class="alert alert-warning">
+		<h3 class="alert-heading">
+			<?php echo Text::_('BACKUP_HEADER_BACKUPRETRY'); ?>
+		</h3>
+		<div id="retryframe">
+			<p><?php echo Text::_('BACKUP_TEXT_BACKUPFAILEDRETRY') ?></p>
+			<p>
+				<strong>
+					<?php echo Text::_('BACKUP_TEXT_WILLRETRY') ?>
+					<span id="akeeba-retry-timeout">0</span>
+					<?php echo Text::_('BACKUP_TEXT_WILLRETRYSECONDS') ?>
+				</strong>
+				<br/>
+				<button class="btn btn-danger btn-sm" onclick="Solo.Backup.cancelResume(); return false;">
+					<span class="icon-cancel"></span>
+					<?php echo Text::_('UI-MULTIDB-CANCEL'); ?>
+				</button>
+				<button class="btn btn-success btn-sm" onclick="Solo.Backup.resumeBackup(); return false;">
+					<span class="icon-ok-circle"></span>
+					<?php echo Text::_('BACKUP_TEXT_BTNRESUME'); ?>
+				</button>
+			</p>
+
+			<p><?php echo Text::_('BACKUP_TEXT_LASTERRORMESSAGEWAS') ?></p>
+			<p id="backup-error-message-retry">
+			</p>
 		</div>
 	</div>
 </div>
@@ -329,11 +362,18 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 		Solo.Backup.runtimeBias = '<?php echo $this->bias ?>';
 		Solo.Backup.domains = JSON.parse("<?php echo $this->domains ?>");
 		Solo.System.params.AjaxURL = '<?php echo $router->route('index.php?view=backup&task=ajax')?>';
+		Solo.Backup.URLs.LogURL = '<?php echo $router->route('index.php?view=backup&task=log')?>';
 		Solo.System.params.useIFrame = <?php echo $this->useIframe ?>;
 		Solo.Backup.srpInfo = JSON.parse('<?php echo Escape::escapeJS(json_encode($this->srpInfo)) ?>');
 		Solo.Backup.default_descr = '<?php echo $this->default_descr ?>';
 		Solo.Backup.config_angiekey = '<?php echo $this->angieKey ?>';
 		Solo.Backup.jpsKey = '<?php echo $this->jpsKey ?>';
+
+		// Auto-resume setup
+		Solo.Backup.resume.enabled = <?php echo (int)$configuration->get('akeeba.advanced.autoresume', 1); ?>;
+		Solo.Backup.resume.timeout = <?php echo (int)$configuration->get('akeeba.advanced.autoresume_timeout', 10); ?>;
+		Solo.Backup.resume.maxRetries = <?php echo (int)$configuration->get('akeeba.advanced.autoresume_maxretries', 3); ?>;
+		Solo.Backup.resume.retry = 0;
 
 		// Work around Safari which ignores autocomplete=off (FOR CRYING OUT LOUD!)
 		setTimeout('Solo.Backup.restoreDefaultOptions();', 500);
