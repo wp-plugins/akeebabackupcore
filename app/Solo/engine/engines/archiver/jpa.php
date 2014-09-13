@@ -173,6 +173,8 @@ class AEArchiverJpa extends AEAbstractArchiver
 	 */
 	public function finalize()
 	{
+		$this->_closeAllFiles();
+
 		// If Spanned JPA and there is no .jpa file, rename the last fragment to .jpa
 		if ($this->_useSplitZIP)
 		{
@@ -180,13 +182,16 @@ class AEArchiverJpa extends AEAbstractArchiver
 			if ($extension != '.jpa')
 			{
 				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Renaming last JPA part to .JPA extension');
+
 				$newName = $this->_dataFileNameBase . '.jpa';
+
 				if (!@rename($this->_dataFileName, $newName))
 				{
 					$this->setError('Could not rename last JPA part to .JPA extension.');
 
 					return false;
 				}
+
 				$this->_dataFileName = $newName;
 			}
 
@@ -974,16 +979,20 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 		// Calculate total header size
 		$headerSize = 19; // Standard Header
+
 		if ($this->_useSplitZIP)
 		{
+			// Spanned JPA header
 			$headerSize += 8;
-		} // Spanned JPA header
+		}
 
 		$this->_fwrite($this->fp, $this->_archive_signature); // ID string (JPA)
+
 		if ($this->getError())
 		{
 			return false;
 		}
+
 		$this->_fwrite($this->fp, pack('v', $headerSize)); // Header length; fixed to 19 bytes
 		$this->_fwrite($this->fp, pack('C', _JPA_MAJOR)); // Major version
 		$this->_fwrite($this->fp, pack('C', _JPA_MINOR)); // Minor version
@@ -998,6 +1007,8 @@ class AEArchiverJpa extends AEAbstractArchiver
 			$this->_fwrite($this->fp, pack('v', 4)); // Extra field length
 			$this->_fwrite($this->fp, pack('v', $this->_totalFragments)); // Number of parts
 		}
+
+		$this->_fclose($this->fp);
 
 		if (function_exists('chmod'))
 		{

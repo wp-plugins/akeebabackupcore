@@ -190,6 +190,7 @@ class AEDumpNativeMysql extends AEAbstractDump
 				$this->nextRange = 1;
 				$outData = '';
 				$numRows = 0;
+				$dump_records = false;
 			}
 
 			// Output any data preamble commands, e.g. SET IDENTITY_INSERT for SQL Server
@@ -207,7 +208,10 @@ class AEDumpNativeMysql extends AEAbstractDump
 			}
 
 			// Get the table's auto increment information
-			$this->setAutoIncrementInfo();
+			if ($dump_records)
+			{
+				$this->setAutoIncrementInfo();
+			}
 		}
 
 		// Check if we have more work to do on this table
@@ -227,6 +231,11 @@ class AEDumpNativeMysql extends AEAbstractDump
 			$sql = $db->getQuery(true)
 					  ->select('*')
 					  ->from($db->nameQuote($tableAbstract));
+
+			if (!is_null($this->table_autoincrement['field']))
+			{
+				$sql->order($db->qn($this->table_autoincrement['field']) . ' ASC');
+			}
 
 			if ($this->nextRange == 0)
 			{
@@ -710,7 +719,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Listing stored PROCEDUREs");
 			$sql = "SHOW PROCEDURE STATUS WHERE `Db`=" . $db->Quote($this->database);
 			$db->setQuery($sql);
-			$all_entries = $db->loadResultArray(1);
+
+			try
+			{
+				$all_entries = $db->loadResultArray(1);
+			}
+			catch (Exception $e)
+			{
+				$all_entries = array();
+			}
 
 			// If we have filters, make sure the tables pass the filtering
 			if (is_array($all_entries))
@@ -736,7 +753,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Listing stored FUNCTIONs");
 			$sql = "SHOW FUNCTION STATUS WHERE `Db`=" . $db->Quote($this->database);
 			$db->setQuery($sql);
-			$all_entries = $db->loadResultArray(1);
+
+			try
+			{
+				$all_entries = $db->loadResultArray(1);
+			}
+			catch (Exception $e)
+			{
+				$all_entries = array();
+			}
 
 			// If we have filters, make sure the tables pass the filtering
 			if (is_array($all_entries))
@@ -763,7 +788,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Listing stored TRIGGERs");
 			$sql = "SHOW TRIGGERS";
 			$db->setQuery($sql);
-			$all_entries = $db->loadResultArray();
+
+			try
+			{
+				$all_entries = $db->loadResultArray();
+			}
+			catch (Exception $e)
+			{
+				$all_entries = array();
+			}
 
 			// If we have filters, make sure the tables pass the filtering
 			if (is_array($all_entries))
@@ -948,7 +981,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			// Get a list of procedures
 			$sql = 'SHOW PROCEDURE STATUS WHERE `Db`=' . $db->Quote($this->database);
 			$db->setQuery($sql);
-			$metadata_list = $db->loadRowList();
+
+			try
+			{
+				$metadata_list = $db->loadRowList();
+			}
+			catch (Exception $e)
+			{
+				$metadata_list = null;
+			}
 
 			if (is_array($metadata_list))
 			{
@@ -987,7 +1028,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			// Get a list of functions
 			$sql = 'SHOW FUNCTION STATUS WHERE `Db`=' . $db->Quote($this->database);
 			$db->setQuery($sql);
-			$metadata_list = $db->loadRowList();
+
+			try
+			{
+				$metadata_list = $db->loadRowList();
+			}
+			catch (Exception $e)
+			{
+				$metadata_list = null;
+			}
 
 			if (is_array($metadata_list))
 			{
@@ -1026,7 +1075,15 @@ class AEDumpNativeMysql extends AEAbstractDump
 			// Get a list of triggers
 			$sql = 'SHOW TRIGGERS';
 			$db->setQuery($sql);
-			$metadata_list = $db->loadRowList();
+
+			try
+			{
+				$metadata_list = $db->loadRowList();
+			}
+			catch (Exception $e)
+			{
+				$metadata_list = null;
+			}
 
 			if (is_array($metadata_list))
 			{

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -142,6 +142,13 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 == Changelog ==
 
+
+= 1.1.1 =
+* Dangling file pointer causing backup failure on certain Windows hosts
+* CloudFiles implementation changed to authentication API version 2.0, eliminating the need to choose your location
+* Old MySQL versions (5.1) would return randomly ordered rows when dumping MyISAM tables when the MySQL database is corrupt up to the kazoo and about to come crashing down in flames
+* [LOW] Database table exclusion table blank and backup errors when your db user doesn't have adequate privileges to show procedures, triggers or stored procedures in MySQL
+* [LOW] Could not back up triggers, procedures and functions
 
 = 1.1.0 =
 * Support for iDriveSync accounts created in 2014 or later
