@@ -7,8 +7,6 @@
 
 namespace Solo;
 
-use Awf\Container\Container;
-
 class PostUpgradeScript
 {
 	/** @var \Awf\Container\Container|null The container of the application we are running in */
@@ -110,9 +108,9 @@ class PostUpgradeScript
 	/**
 	 * Class constructor
 	 *
-	 * @param Container $container The container of the application we are running in
+	 * @param \Awf\Container\Container $container The container of the application we are running in
 	 */
-	public function __construct(Container $container)
+	public function __construct(\Awf\Container\Container $container)
 	{
 		$this->container = $container;
 	}

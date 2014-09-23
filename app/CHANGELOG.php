@@ -1,5 +1,9 @@
 <?php die();?>
 
+Akeeba Solo 1.1.3
+================================================================================
+! White page under certain versions of PHP
+
 Akeeba Solo 1.1.2
 ================================================================================
 ! Backup failure on certain Windows hosts and PHP versions due to the way these versions handle file pointers

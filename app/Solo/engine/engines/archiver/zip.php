@@ -1326,10 +1326,6 @@ class AEArchiverZip extends AEAbstractArchiver
 		// Remove the just finished part from the list of resumable offsets
 		$this->_removeFromOffsetsList($this->_dataFileName);
 
-		// Set the file pointers to null
-		$this->fp = null;
-		$this->cdfp = null;
-
 		// Push the previous part if we have to post-process it immediately
 		$configuration = AEFactory::getConfiguration();
 		if ($configuration->get('engine.postproc.common.after_part', 0))

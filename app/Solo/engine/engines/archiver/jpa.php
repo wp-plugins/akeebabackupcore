@@ -95,7 +95,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 	 * Initialises the archiver class, creating the archive from an existent
 	 * installer's JPA archive.
 	 *
-	 * @param string $sourceJPAPath     Absolute path to an installer's JPA archive
 	 * @param string $targetArchivePath Absolute path to the generated archive
 	 * @param array  $options           A named key array of options (optional)
 	 *
@@ -1045,13 +1044,8 @@ class AEArchiverJpa extends AEAbstractArchiver
 		// Remove the just finished part from the list of resumable offsets
 		$this->_removeFromOffsetsList($this->_dataFileName);
 
-		// Set the file pointers to null
-		$this->fp = null;
-		$this->cdfp = null;
-
 		// Push the previous part if we have to post-process it immediately
 		$configuration = AEFactory::getConfiguration();
-
 		if ($configuration->get('engine.postproc.common.after_part', 0))
 		{
 			// The first part needs its header overwritten during archive
@@ -1064,7 +1058,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 
 		$this->_totalFragments++;
 		$this->_currentFragment = $this->_totalFragments;
-
 		if ($finalPart)
 		{
 			$this->_dataFileName = $this->_dataFileNameBase . '.jpa';
@@ -1073,7 +1066,6 @@ class AEArchiverJpa extends AEAbstractArchiver
 		{
 			$this->_dataFileName = $this->_dataFileNameBase . '.j' . sprintf('%02d', $this->_currentFragment);
 		}
-
 		AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Creating new JPA part #' . $this->_currentFragment . ', file ' . $this->_dataFileName);
 		$statistics = AEFactory::getStatistics();
 		$statistics->updateMultipart($this->_totalFragments);
@@ -1081,18 +1073,15 @@ class AEArchiverJpa extends AEAbstractArchiver
 		@unlink($this->_dataFileName);
 		// Touch the new file
 		$result = @touch($this->_dataFileName);
-
 		if (function_exists('chmod'))
 		{
 			chmod($this->_dataFileName, 0666);
 		}
-
 		// Try to write 6 bytes to it
 		if ($result)
 		{
 			$result = @file_put_contents($this->_dataFileName, 'AKEEBA') == 6;
 		}
-
 		if ($result)
 		{
 			@unlink($this->_dataFileName);

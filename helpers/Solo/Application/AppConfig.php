@@ -9,12 +9,10 @@ namespace Solo\Application;
 
 
 use Awf\Application\Configuration;
-use Awf\Container\Container;
-use Awf\Registry\Registry;
 
 class AppConfig extends Configuration
 {
-	public function __construct(Container $container, $data = null)
+	public function __construct(\Awf\Container\Container $container, $data = null)
 	{
 		parent::__construct($container, $data);
 
