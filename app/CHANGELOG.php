@@ -1,5 +1,13 @@
 <?php die();?>
 
+Akeeba Solo 1.1.2
+================================================================================
+! Backup failure on certain Windows hosts and PHP versions due to the way these versions handle file pointers
+! Failure to post-process part files immediately on certain Windows hosts and PHP versions due to the way these versions handle file pointers
+# [HIGH] Translations wouldn't load
+# [LOW] Exclude non-core tables button not working in database table exclusion page
+# [LOW] Possible white page if you have are hosting multiple Solo installations on the same (sub)domain
+
 Akeeba Solo 1.1.1
 ================================================================================
 ! Dangling file pointer causing backup failure on certain Windows hosts

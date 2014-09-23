@@ -86,7 +86,7 @@ try
 	// Create the container if it doesn't already exist
 	if (!isset($container))
 	{
-		$container = new \Awf\Container\Container(array(
+		$container = new \Solo\Container(array(
 			'application_name'	=> 'Solo'
 		));
 	}

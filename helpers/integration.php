@@ -176,7 +176,7 @@ if(file_exists($alicePath))
 try
 {
 	// Create objects
-	$container = new \Awf\Container\Container(array(
+	$container = new \Solo\Container(array(
 		'appConfig'			=> function (\Awf\Container\Container $c)
 			{
 				return new \Solo\Application\AppConfig($c);

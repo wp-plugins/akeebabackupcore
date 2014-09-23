@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -142,6 +142,13 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 == Changelog ==
 
+
+= 1.1.2 =
+* Backup failure on certain Windows hosts and PHP versions due to the way these versions handle file pointers
+* Failure to post-process part files immediately on certain Windows hosts and PHP versions due to the way these versions handle file pointers
+* [HIGH] Translations wouldn't load
+* [LOW] Exclude non-core tables button not working in database table exclusion page
+* [LOW] Possible white page if you have are hosting multiple Akeeba Backup installations on the same (sub)domain
 
 = 1.1.1 =
 * Dangling file pointer causing backup failure on certain Windows hosts
