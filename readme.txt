@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -142,6 +142,9 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 == Changelog ==
 
+
+= 1.1.4 =
+* [SECURITY: Medium] Possibility of arbitrary file writing while a backup archive is being extracted by the integrated restoration feature
 
 = 1.1.3 =
 * White page under certain versions of PHP

@@ -1,5 +1,9 @@
 <?php die(); ?>
 
+Akeeba Backup for WordPress 1.1.4
+================================================================================
+! [SECURITY: Medium] Possibility of arbitrary file writing while a backup archive is being extracted by the integrated restoration feature
+
 Akeeba Backup for WordPress 1.1.3
 ================================================================================
 ! White page under certain versions of PHP
