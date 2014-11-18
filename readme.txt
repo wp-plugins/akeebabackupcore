@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.2.0.rc2
+Stable tag: 1.2.0.rc3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -267,6 +267,9 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 
 == Upgrade Notice ==
+
+= 1.2.0.rc3 =
+There was a problem with some filenames being in lowercase in previous versios. This versions hopefulyl fixes this. Unfortunately the Subversion repository used by WordPress.org to provision the plugins doesn't let us test this before release. We apologise for the inconvenience.
 
 = 1.2.0.rc1 =
 This is a RELEASE CANDIDATE version. Even though it has been extensively tested there might be something amiss. Please let us know if you spot a problem.
