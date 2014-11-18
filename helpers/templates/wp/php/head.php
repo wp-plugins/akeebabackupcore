@@ -45,6 +45,9 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 	}
 }
 
+$wpVersion = get_bloginfo('version', 'raw');
+
+if (version_compare($wpVersion, '4.0', 'lt')):
 // Template scripts
 ?>
 	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery.js'?>"></script>
@@ -52,6 +55,15 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery-migrate.js'?>"></script>
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/bootstrap.min.js"></script>
 <?php
+else:
+?>
+	<script type="text/javascript" src="<?php echo includes_url() . '/js/jquery/jquery.js'?>"></script>
+	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/akjqnamespace.min.js"></script>
+	<script type="text/javascript" src="<?php echo includes_url() . '/js/jquery/jquery-migrate.js'?>"></script>
+	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/bootstrap.min.js"></script>
+<?php
+endif;
+
 // Scripts after the template ones
 if(!empty($scripts)) foreach($scripts as $url => $params)
 {
@@ -84,7 +96,7 @@ if(!empty($styles)) foreach($styles as $url => $params)
 ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo Uri::base(); ?>/media/css/bootstrap-namespaced.min.css" />
 	<link rel="stylesheet" type="text/css" href="<?php echo Uri::base(); ?>/media/css/font-awesome.min.css" />
-<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG): ?>
+<?php if (defined('AKEEBADEBUG') && AKEEBADEBUG && @file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/css/theme.css')): ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.css" />
 <?php else: ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo \Awf\Uri\Uri::base(); ?>/media/css/theme.min.css" />

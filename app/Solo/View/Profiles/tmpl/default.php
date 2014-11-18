@@ -13,6 +13,9 @@ use \Awf\Text\Text;
 $router = $this->container->router;
 $configURL = base64_encode($router->route('index.php?view=configuration'));
 $token = $this->container->session->getCsrfToken()->getValue();
+
+/** @var \Solo\Model\Profiles $model */
+$model = $this->getModel();
 ?>
 
 <div class="alert alert-info">
@@ -30,9 +33,27 @@ $token = $this->container->session->getCsrfToken()->getValue();
 	<table class="table table-striped" id="adminList">
 		<thead>
 			<tr>
-				<th width="20px">&nbsp;</th>
-				<th width="20px">#</th>
-				<th><?php Text::_('PROFILE_COLLABEL_DESCRIPTION'); ?></th>
+				<th width="30">
+					&nbsp;
+				</th>
+				<th width="50">
+					<?php echo \Awf\Html\Grid::sort('#', 'id', $this->lists->order_Dir, $this->lists->order, 'browse'); ?>
+				</th>
+				<th width="20%">
+				</th>
+				<th>
+					<?php echo \Awf\Html\Grid::sort('PROFILE_COLLABEL_DESCRIPTION', 'description', $this->lists->order_Dir, $this->lists->order, 'browse'); ?>
+				</th>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td>
+					<input type="text" name="description" value="<?php echo $model->getState('description', '');?>"
+						   placeholder="<?php echo Text::_('PROFILE_COLLABEL_DESCRIPTION')?>"
+						   onchange="forms.adminForm.submit();" />
+				</td>
 			</tr>
 		</thead>
 		<tfoot>
@@ -66,7 +87,8 @@ $token = $this->container->session->getCsrfToken()->getValue();
 					<span class="icon-download"></span>
 					<?php echo Text::_('COM_AKEEBA_PROFILES_BTN_EXPORT'); ?>
 				</button>
-				&nbsp;
+			</td>
+			<td>
 				<a href="<?php echo $link; ?>">
 					<?php echo $profile->description; ?>
 				</a>

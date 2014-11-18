@@ -10,6 +10,8 @@ namespace Solo\Model;
 
 use Awf\Mvc\Model;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Dbfilters extends Model
 {
@@ -24,13 +26,13 @@ class Dbfilters extends Model
 	public function make_listing($root)
 	{
 		// Get database inclusion filters
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 		$database_list = $filters->getInclusions('db');
 
 		// Load the database object for the selected database
 		$config = $database_list[$root];
 		$config['user'] = $config['username'];
-		$db = \AEFactory::getDatabase($config);
+		$db = Factory::getDatabase($config);
 
 		// Load the table data
 		try
@@ -87,7 +89,7 @@ class Dbfilters extends Model
 	public function get_roots()
 	{
 		// Get database inclusion filters
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 		$database_list = $filters->getInclusions('db');
 
 		$ret = array();
@@ -127,10 +129,10 @@ class Dbfilters extends Model
 		);
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		$success = $filter->toggle($root, $item, $new_status);
@@ -162,10 +164,10 @@ class Dbfilters extends Model
 		);
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		$success = $filter->remove($root, $item);
@@ -201,10 +203,10 @@ class Dbfilters extends Model
 		);
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		$success = $filter->set($root, $item);
@@ -241,10 +243,10 @@ class Dbfilters extends Model
 		);
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		if (!empty($old_item))
@@ -284,7 +286,7 @@ class Dbfilters extends Model
 	public function &get_filters($root)
 	{
 		// A reference to the global Akeeba Engine filter object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Initialize the return array
 		$ret = array();
@@ -337,12 +339,12 @@ class Dbfilters extends Model
 	public function resetFilters($root)
 	{
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
-		$filter = \AEFactory::getFilterObject('tables');
+		$filter = Factory::getFilterObject('tables');
 		$filter->reset($root);
 
-		$filter = \AEFactory::getFilterObject('tabledata');
+		$filter = Factory::getFilterObject('tabledata');
 		$filter->reset($root);
 
 		$filters->save();

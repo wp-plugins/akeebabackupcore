@@ -40,7 +40,7 @@ document.onkeydown = onKeyDown;
 
 // -- Get the log's file name
 $tag = $this->tag;
-$logName = \AEUtilLogger::logName($tag);
+$logName = \Akeeba\Engine\Factory::getLog()->getLogFilename($tag);
 
 if(!@file_exists($logName))
 {

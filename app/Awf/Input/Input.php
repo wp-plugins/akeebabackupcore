@@ -68,14 +68,54 @@ class Input implements \Serializable, \Countable
 			$this->filter = \Awf\Input\Filter::getInstance();
 		}
 
-		if (is_null($source))
+		// Do I need to work around magic_quotes_gpc?
+		if (isset($options['magicQuotesWorkaround']))
 		{
-			$this->data = & $_REQUEST;
+			$magicQuotesWorkaround = $options['magicQuotesWorkaround'];
 		}
 		else
 		{
-			$this->data = $source;
+			// If there was no source specified, always try working around magic_quotes_gpc on PHP 5.3
+			$magicQuotesWorkaround = is_null($source);
 		}
+
+		// When no source is defined use the $_REQUEST superglobal
+		if (is_null($source))
+		{
+			$source = & $_REQUEST;
+		}
+
+		// On PHP 5.3 we have the plague of magic_quotes_gpc. Let's try working around it, if we are told so.
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt') && $magicQuotesWorkaround)
+		{
+			if (function_exists('ini_get') && ini_get('magic_quotes_gpc'))
+			{
+				$source = self::cleanMagicQuotes($source);
+			}
+		}
+
+		$this->data = $source;
+	}
+
+	public static function cleanMagicQuotes(array $source)
+	{
+		$temp = array();
+
+		foreach ($source as $k => $v)
+		{
+			if (is_array($v))
+			{
+				$v = self::cleanMagicQuotes($v);
+			}
+			else
+			{
+				$v = stripslashes($v);
+			}
+
+			$temp[$k] = $v;
+		}
+
+		return $temp;
 	}
 
 	/**

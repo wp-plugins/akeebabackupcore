@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -52,7 +52,8 @@ class Pythia
 				'password'	=> '',
 				'name'		=> '',
 				'prefix'	=> '',
-			)
+			),
+			'extradirs' => array()
 		);
 
 		// Get a list of all the CMS guessing classes
@@ -73,9 +74,10 @@ class Pythia
 
 			if ($o->isRecognised())
 			{
-				$ret['cms'] = $o->getName();
-				$ret['installer'] = $o->getInstaller();
-				$ret['database'] = $o->getDbInformation();
+				$ret['cms']         = $o->getName();
+				$ret['installer']   = $o->getInstaller();
+				$ret['database']    = $o->getDbInformation();
+				$ret['extradirs']   = $o->getExtradirs();
 
 				return $ret;
 			}
@@ -83,4 +85,4 @@ class Pythia
 
 		return $ret;
 	}
-} 
+}

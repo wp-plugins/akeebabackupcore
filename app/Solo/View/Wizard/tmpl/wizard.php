@@ -13,7 +13,7 @@ use Solo\Helper\Escape;
 /** @var \Solo\View\Wizard\Html $this */
 
 $router = $this->container->router;
-$config = \AEFactory::getConfiguration();
+$config = \Akeeba\Engine\Factory::getConfiguration();
 
 ?>
 <div id="akeeba-confwiz">

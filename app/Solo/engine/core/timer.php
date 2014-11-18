@@ -9,13 +9,19 @@
  *
  */
 
+namespace Akeeba\Engine\Core;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Object;
+use Akeeba\Engine\Factory;
 
 /**
  * Timer class
  */
-class AECoreTimer extends AEAbstractObject
+class Timer extends Object
 {
 
 	/** @var int Maximum execution time allowance per step */
@@ -27,17 +33,15 @@ class AECoreTimer extends AEAbstractObject
 	/**
 	 * Public constructor, creates the timer object and calculates the execution time limits
 	 *
-	 * @return AECoreTimer
+	 * @return Timer
 	 */
 	public function __construct()
 	{
-		parent::__construct();
-
 		// Initialize start time
 		$this->start_time = $this->microtime_float();
 
 		// Get configured max time per step and bias
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$config_max_exec_time = $configuration->get('akeeba.tuning.max_exec_time', 14);
 		$bias = $configuration->get('akeeba.tuning.run_time_bias', 75) / 100;
 
@@ -112,7 +116,7 @@ class AECoreTimer extends AEAbstractObject
 	/**
 	 * Returns the current timestamp in decimal seconds
 	 */
-	private function microtime_float()
+	protected function microtime_float()
 	{
 		list($usec, $sec) = explode(" ", microtime());
 
@@ -148,7 +152,7 @@ class AECoreTimer extends AEAbstractObject
 		$php_max_exec = max($php_max_exec * 1000 - 1000, 0);
 
 		// Get the "minimum execution time per step" Akeeba Backup configuration variable
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$minexectime = $configuration->get('akeeba.tuning.min_exec_time', 0);
 		if (!is_numeric($minexectime))
 		{
@@ -173,14 +177,14 @@ class AECoreTimer extends AEAbstractObject
 
 			if (!$serverSideSleep)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Asking client to sleep for $sleep_msec msec");
+				Factory::getLog()->log(LogLevel::DEBUG, "Asking client to sleep for $sleep_msec msec");
 				$clientSideSleep = $sleep_msec;
 			}
 			elseif (function_exists('usleep'))
 			{
 				if ($log)
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Sleeping for $sleep_msec msec, using usleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using usleep()");
 				}
 				usleep(1000 * $sleep_msec);
 			}
@@ -188,7 +192,7 @@ class AECoreTimer extends AEAbstractObject
 			{
 				if ($log)
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Sleeping for $sleep_msec msec, using time_nanosleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using time_nanosleep()");
 				}
 				$sleep_sec = floor($sleep_msec / 1000);
 				$sleep_nsec = 1000000 * ($sleep_msec - ($sleep_sec * 1000));
@@ -198,7 +202,7 @@ class AECoreTimer extends AEAbstractObject
 			{
 				if ($log)
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Sleeping for $sleep_msec msec, using time_sleep_until()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using time_sleep_until()");
 				}
 				$until_timestamp = time() + $sleep_msec / 1000;
 				time_sleep_until($until_timestamp);
@@ -208,7 +212,7 @@ class AECoreTimer extends AEAbstractObject
 				$sleep_sec = ceil($sleep_msec / 1000);
 				if ($log)
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Sleeping for $sleep_sec seconds, using sleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_sec seconds, using sleep()");
 				}
 				sleep($sleep_sec);
 			}
@@ -218,7 +222,7 @@ class AECoreTimer extends AEAbstractObject
 			// No sleep required, even if user configured us to be able to do so.
 			if ($log)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "No need to sleep; execution time: $elapsed_time msec; min. exec. time: $minexectime msec");
+				Factory::getLog()->log(LogLevel::DEBUG, "No need to sleep; execution time: $elapsed_time msec; min. exec. time: $minexectime msec");
 			}
 		}
 

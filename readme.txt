@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.1.4
+Stable tag: 1.2.0.rc1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -143,6 +143,35 @@ them but everything else is optimised for the CMS each solution is designed to r
 == Changelog ==
 
 
+= 1.2.0 =
+* New and improved backup engine
+* ANGIE for WordPress: Update serialised data on restoration
+* ANGIE: Add warning about Live site URL on Windows
+* You can now sort and search records in the Profile Management page
+* Workaround for magic_quotes_gpc under PHP 5.3
+* Changed the .htaccess files to be compatible with Apache 2.4
+* Improved responsive display without cutting off the right side of the plugin's display
+* Layout tweaks in the Configuration page
+* [HIGH] Magic quotes on PHP 5.3 could cause problems in filter pages
+* [HIGH] [PRO] Update information not fetched unless you manually retry through the Update page
+* [HIGH] [PRO] Akeeba Backup for WP Professional doesn't update correctly
+* [MEDIUM] ANGIE: The option "No auto value on zero" was not working
+* [MEDIUM] The data file pointer can be null sometimes when using multipart archives causing backup failures
+* [MEDIUM] Upload to remote storage from the Manage Backups page was broken for Amazon S3 multipart uploads
+* [MEDIUM] Race condition could prevent the reliable creation of JPS (encrypted) archives
+* [LOW] ANGIE: Fixed table name abstraction when no table prefix is given
+* [LOW] ANGIE: Fixed loading of translations
+* [LOW] ANGIE for WordPress: The blog name and tagline were empty when restoring to a new server (thanks Dimitris!)
+* [LOW] Workaround for badly written Wordpress plugins that are killing the request
+* [LOW] Javascript errors in WP 4.0 due to subtle changes in script load order
+* [LOW] Huge logo appearing on the page when WordPress debug mode is enabled
+* [LOW] SFTP post-processing engine did not mark successfully uploaded backup as Remote
+* [LOW] SFTP post-processing engine could not fetch the archive back to the server
+* [LOW] Tooltips not showing for engine parameters when selecting a different engine (e.g. changing the Archiver Engine from JPA to ZIP)
+
+= 1.1.5 =
+* [HIGH] The integrated restoration is broken after the last security update
+
 = 1.1.4 =
 * [SECURITY: Medium] Possibility of arbitrary file writing while a backup archive is being extracted by the integrated restoration feature
 
@@ -238,6 +267,9 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 
 == Upgrade Notice ==
+
+= 1.2.0.rc1 =
+This is a RELEASE CANDIDATE version. Even though it has been extensively tested there might be something amiss. Please let us know if you spot a problem.
 
 = 1.0.2 =
 Javascript related issues affecting upgraders have been fixed.

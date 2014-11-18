@@ -9,13 +9,20 @@
  *
  */
 
+namespace Akeeba\Engine\Core\Domain;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Part;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * Installer deployment
  */
-class AECoreDomainInstaller extends AEAbstractPart
+class Installer extends Part
 {
 
 	/** @var int Installer image file offset last read */
@@ -33,13 +40,13 @@ class AECoreDomainInstaller extends AEAbstractPart
 	/**
 	 * Public constructor
 	 *
-	 * @return AECoreDomainInstaller
+	 * @return Installer
 	 */
 	public function __construct()
 	{
 		parent::__construct();
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: New instance");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: New instance");
 	}
 
 	/**
@@ -48,7 +55,7 @@ class AECoreDomainInstaller extends AEAbstractPart
 	 */
 	function _prepare()
 	{
-		$archive = AEFactory::getArchiverEngine();
+		$archive = Factory::getArchiverEngine();
 
 		// Add the backup description and comment in a README.html file in the
 		// installation directory. This makes it the first file in the archive.
@@ -87,7 +94,7 @@ class AECoreDomainInstaller extends AEAbstractPart
 	{
 		if ($this->getState() == 'postrun')
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Already finished");
+			Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Already finished");
 			$this->setStep('');
 			$this->setSubstep('');
 		}
@@ -97,7 +104,7 @@ class AECoreDomainInstaller extends AEAbstractPart
 		}
 
 		// Try to step the archiver
-		$archive = AEFactory::getArchiverEngine();
+		$archive = Factory::getArchiverEngine();
 		$ret = $archive->transformJPA($this->xformIndex, $this->offset);
 
 		// Error propagation
@@ -113,7 +120,7 @@ class AECoreDomainInstaller extends AEAbstractPart
 		// Check for completion
 		if ($ret['done'])
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . ":: archive is initialized");
+			Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . ":: archive is initialized");
 			$this->setState('finished');
 		}
 
@@ -143,9 +150,9 @@ class AECoreDomainInstaller extends AEAbstractPart
 	 *
 	 * @return string The contents of the HTML file.
 	 */
-	private function createReadme()
+	protected function createReadme()
 	{
-		$config = AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 
 		$lbl_version = AKEEBA_VERSION . ' (' . AKEEBA_DATE . ')';
 
@@ -180,10 +187,10 @@ class AECoreDomainInstaller extends AEAbstractPart
 ENDHTML;
 	}
 
-	private function createExtrainfo()
+	protected function createExtrainfo()
 	{
 		$abversion = AKEEBA_VERSION;
-		$host = AEPlatform::getInstance()->get_host();
+		$host = Platform::getInstance()->get_host();
 		$backupdate = gmdate('Y-m-d H:i:s');
 		$phpversion = PHP_VERSION;
 		$ret = <<<ENDINI
@@ -197,9 +204,9 @@ ENDINI;
 		return $ret;
 	}
 
-	private function createPasswordFile()
+	protected function createPasswordFile()
 	{
-		$config = AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 		$ret = '';
 
 		$password = $config->get('engine.installer.angie.key', '');
@@ -209,7 +216,7 @@ ENDINI;
 			return $ret;
 		}
 
-		$randVal = new AEUtilRandval();
+		$randVal = Factory::getRandval();
 
 		$salt = $randVal->generateString(32);
 		$passhash = md5($password . $salt) . ':' . $salt;
@@ -223,8 +230,6 @@ ENDINI;
 	/**
 	 * Implements the progress calculation based on how much of the installer image
 	 * archive we have processed so far.
-	 *
-	 * @see backend/akeeba/abstract/AEAbstractPart#getProgress()
 	 */
 	public function getProgress()
 	{

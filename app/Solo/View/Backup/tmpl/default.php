@@ -9,16 +9,18 @@
 
 use Awf\Text\Text;
 use Solo\Helper\Escape;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /** @var \Solo\View\Backup\Html $this */
 
 $router = $this->container->router;
-$config = \AEFactory::getConfiguration();
+$config = Factory::getConfiguration();
 
 $quirks_style = $this->hasErrors ? 'alert-danger' : 'alert-warning';
 $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 
-$configuration = AEFactory::getConfiguration();
+$configuration = Factory::getConfiguration();
 
 ?>
 <div id="backup-setup">

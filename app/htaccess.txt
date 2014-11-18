@@ -40,7 +40,15 @@ SetEnvIf user-agent "Go!Zilla" stayout=1
 SetEnvIf user-agent "Go-Ahead-Got-It" stayout=1
 SetEnvIf user-agent "GrabNet" stayout=1
 SetEnvIf user-agent "TurnitinBot" stayout=1
+<IfModule !mod_authz_core.c>
 deny from env=stayout
+</IfModule>
+<IfModule mod_authz_core.c>
+<RequireAll>
+Require all granted
+Require not env stayout
+</RequireAll>
+</IfModule>
 ########## End - Common hacking tools and bandwidth hoggers block
 
 ########## Begin - Automatic compression of resources

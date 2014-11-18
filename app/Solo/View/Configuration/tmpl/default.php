@@ -247,7 +247,7 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 
 	akeeba_postprocsftp_init_browser = function()
 	{
-		Solo.Configuration.FtpBrowser.initialise('engine.postproc.sftp.initial_directory', 'engine.postproc.sftp')
+		Solo.Configuration.SftpBrowser.initialise('engine.postproc.sftp.initial_directory', 'engine.postproc.sftp')
 	}
 
 	directftp_test_connection = function()

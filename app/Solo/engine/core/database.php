@@ -8,20 +8,26 @@
  *
  */
 
+namespace Akeeba\Engine\Core;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Akeeba\Engine\Base\Object;
+use Akeeba\Engine\Driver\Base as DriverBase;
+use Akeeba\Engine\Platform;
 
 /**
  * A utility class to return a database connection object
  */
-class AECoreDatabase extends AEAbstractObject
+class Database extends Object
 {
 	/**
 	 * Returns a database connection object. It caches the created objects for future use.
 	 *
-	 * @param array $options Options to use when instanciating the database connection
+	 * @param array $options Options to use when instantiating the database connection
 	 *
-	 * @return AEAbstractDriver
+	 * @return DriverBase
 	 */
 	public static function &getDatabase($options, $unset = false)
 	{
@@ -53,26 +59,27 @@ class AECoreDatabase extends AEAbstractObject
 			$select = array_key_exists('select', $options) ? $options['select'] : true;
 			$database = array_key_exists('database', $options) ? $options['database'] : null;
 
-			$driver = preg_replace('/[^A-Z0-9_\.-]/i', '', $driver);
+			$driver = preg_replace('/[^A-Z0-9_\\\.-]/i', '', $driver);
+
 			if (empty($driver))
 			{
 				// No driver specified; try to guess
-				$default_signature = serialize(AEPlatform::getInstance()->get_platform_database_options());
+				$default_signature = serialize(Platform::getInstance()->get_platform_database_options());
 				if ($signature == $default_signature)
 				{
-					$driver = AEPlatform::getInstance()->get_default_database_driver(true);
+					$driver = Platform::getInstance()->get_default_database_driver(true);
 				}
 				else
 				{
-					$driver = AEPlatform::getInstance()->get_default_database_driver(false);
+					$driver = Platform::getInstance()->get_default_database_driver(false);
 				}
 			}
 			else
 			{
 				// Make sure a full driver name was given
-				if (substr($driver, 0, 2) != 'AE')
+				if ((substr($driver, 0, 7) != '\\Akeeba') && substr($driver, 0, 7) != 'Akeeba\\')
 				{
-					$driver = 'AEDriver' . ucfirst($driver);
+					$driver = '\\Akeeba\\Engine\\Driver\\' . ucfirst($driver);
 				}
 			}
 

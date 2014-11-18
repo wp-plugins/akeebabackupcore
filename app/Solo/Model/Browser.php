@@ -7,8 +7,9 @@
 
 namespace Solo\Model;
 
-
 use Awf\Mvc\Model;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Browser extends Model
 {
@@ -22,14 +23,14 @@ class Browser extends Model
 		// Get the folder to browse
 		$folder = $this->getState('folder', '');
 		$processFolder = $this->getState('processfolder', 0);
-		$siteRoot = \AEUtilFilesystem::TranslateWinPath(APATH_BASE);
+		$siteRoot = Factory::getFilesystemTools()->TranslateWinPath(APATH_BASE);
 
 		if (empty($folder))
 		{
 			$folder = $siteRoot;
 		}
 
-		$stock_dirs = \AEPlatform::getInstance()->get_stock_directories();
+		$stock_dirs = Platform::getInstance()->get_stock_directories();
 		arsort($stock_dirs);
 
 		if ($processFolder == 1)
@@ -41,7 +42,7 @@ class Browser extends Model
 		}
 
 		// Normalise name, but only if realpath() really, REALLY works...
-		$folder = \AEUtilFilesystem::TranslateWinPath($folder);
+		$folder = Factory::getFilesystemTools()->TranslateWinPath($folder);
 		$old_folder = $folder;
 		$folder = @realpath($folder);
 
@@ -50,7 +51,7 @@ class Browser extends Model
 			$folder = $old_folder;
 		}
 
-		if (\AEUtilFilesystem::folderExists($folder))
+		if (@is_dir($folder))
 		{
 			$isFolderThere = true;
 		}
@@ -63,7 +64,7 @@ class Browser extends Model
 		$isInRoot = (strpos($folder, $siteRoot) === 0);
 
 		// Check open_basedir restrictions
-		$isOpenbasedirRestricted = \AEUtilQuirks::checkOpenBasedirs($folder);
+		$isOpenbasedirRestricted = Factory::getConfigurationChecks()->checkOpenBasedirs($folder);
 
 		// -- Get the meta form of the directory name, if applicable
 		$folder_raw = $folder;

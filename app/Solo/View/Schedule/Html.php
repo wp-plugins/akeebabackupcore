@@ -7,15 +7,17 @@
 
 namespace Solo\View\Schedule;
 
+use Akeeba\Engine\Platform;
+
 class Html extends \Solo\View\Html
 {
 	public function onBeforeMain()
 	{
 		// Get profile ID
-		$this->profileid = \AEPlatform::getInstance()->get_active_profile();
+		$this->profileid = Platform::getInstance()->get_active_profile();
 
 		// Get profile name
-		$profileName = \AEPlatform::getInstance()->get_profile_name($this->profileid);
+		$profileName = Platform::getInstance()->get_profile_name($this->profileid);
 
 		// Get the CRON paths
 		$this->croninfo  = $this->getModel()->getPaths();

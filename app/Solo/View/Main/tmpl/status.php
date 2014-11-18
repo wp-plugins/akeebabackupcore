@@ -7,14 +7,15 @@
 
 use \Awf\Text\Text;
 use \Awf\Html;
+use Akeeba\Engine\Factory;
 
 // Used for type hinting
 /** @var \Solo\View\Main\Html $this */
 
 $router = $this->container->router;
 
-$quirks = AEUtilQuirks::get_quirks(false);
-$status = AEUtilQuirks::get_status();
+$quirks = Factory::getConfigurationChecks()->getDetailedStatus(false);
+$status = Factory::getConfigurationChecks()->getShortStatus();
 
 if($status && empty($quirks))
 {

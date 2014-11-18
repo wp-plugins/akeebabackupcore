@@ -7,10 +7,10 @@
 
 namespace Solo\Model;
 
-
 use AkeebaUsagestats;
 use Awf\Mvc\Model;
 use Awf\Uri\Uri;
+use Akeeba\Engine\Factory;
 
 class Stats extends Model
 {
@@ -94,7 +94,7 @@ class Stats extends Model
 
         require_once APATH_BASE . '/version.php';
 
-        $db = \AEFactory::getDatabase();
+        $db = Factory::getDatabase();
         $stats = new AkeebaUsagestats();
 
         $stats->setSiteId($siteId);
@@ -185,7 +185,7 @@ class Stats extends Model
      */
     public function getCommonVariable($key, $default = null)
     {
-        $db = \AEFactory::getDatabase();
+        $db = Factory::getDatabase();
         $query = $db->getQuery(true)
             ->select($db->qn('value'))
             ->from($db->qn('#__akeeba_common'))
@@ -212,7 +212,7 @@ class Stats extends Model
      */
     public function setCommonVariable($key, $value)
     {
-        $db = \AEFactory::getDatabase();
+        $db = Factory::getDatabase();
         $query = $db->getQuery(true)
             ->select('COUNT(*)')
             ->from($db->qn('#__akeeba_common'))

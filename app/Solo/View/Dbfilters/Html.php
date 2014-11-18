@@ -7,6 +7,7 @@
 
 namespace Solo\View\Dbfilters;
 
+use Akeeba\Engine\Platform;
 use Awf\Html\Select;
 use Awf\Router\Router;
 use Awf\Text\Text;
@@ -86,11 +87,11 @@ class Html extends \Solo\View\Html
 		}
 
 		// Get profile ID
-		$profileid = \AEPlatform::getInstance()->get_active_profile();
+		$profileid = Platform::getInstance()->get_active_profile();
 		$this->profileid = $profileid;
 
 		// Get profile name
-		$this->profilename = \AEPlatform::getInstance()->get_profile_name($profileid);
+		$this->profilename = Platform::getInstance()->get_profile_name($profileid);
 
 		// Load additional Javascript
 		Template::addJs('media://js/solo/fsfilters.js', $this->container->application);

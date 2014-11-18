@@ -51,7 +51,7 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 </div>
 
 <div>
-	<div class="col-md-8 col-sm-12">
+	<div class="col-md-8 col-sm-12 akeeba-cpanel">
 		<div class="panel panel-default">
 			<div class="panel-body">
 				<form action="<?php echo $router->route('index.php?view=main') ?>" method="post" name="profileForm">

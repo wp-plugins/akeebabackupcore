@@ -50,9 +50,10 @@ class Dbfilters extends ControllerDefault
 	public function ajax()
 	{
 		// Parse the JSON data and reset the action query param to the resulting array
-		$action_json = $this->input->get('action', '', 'raw');
+		$action_json = $this->input->get('akaction', '', 'raw');
 		$action = json_decode($action_json);
 
+		/** @var \Solo\Model\Dbfilters $model */
 		$model = $this->getModel();
 		$model->setState('action', $action);
 

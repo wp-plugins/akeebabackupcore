@@ -8,6 +8,8 @@
 use Awf\Application\Application;
 use Awf\Autoloader\Autoloader;
 use Awf\Session;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 // Makes sure we have PHP 5.3.4 or later
 if (version_compare(PHP_VERSION, '5.3.4', 'lt'))
@@ -70,15 +72,16 @@ if (!array_key_exists('Solo\\', $prefixes))
 if (!defined('AKEEBAENGINE'))
 {
 	define('AKEEBAENGINE', 1);
-	require_once __DIR__ . '/Solo/engine/factory.php';
+	require_once __DIR__ . '/Solo/engine/Factory.php';
 
 	if(file_exists(__DIR__.'/Solo/alice/factory.php'))
 	{
 		require_once __DIR__ . '/Solo/alice/factory.php';
 	}
 
-	\AEPlatform::getInstance()->load_version_defines();
-	\AEPlatform::getInstance()->apply_quirk_definitions();
+	Platform::addPlatform('Solo', __DIR__ . '/Solo/Platform/Solo');
+	Platform::getInstance()->load_version_defines();
+	Platform::getInstance()->apply_quirk_definitions();
 }
 
 try

@@ -7,10 +7,11 @@
 
 namespace Solo\Controller;
 
-
 use Awf\Input\Input;
 use Awf\Router\Router;
 use Awf\Text\Text;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 class Manage extends ControllerDefault
 {
@@ -115,8 +116,8 @@ class Manage extends ControllerDefault
 			return;
 		}
 
-		$stat = \AEPlatform::getInstance()->get_statistics($id);
-		$allFileNames = \AEUtilStatistics::get_all_filenames($stat);
+		$stat = Platform::getInstance()->get_statistics($id);
+		$allFileNames = Factory::getStatistics()->get_all_filenames($stat);
 
 		// Check single part files
 		if ((count($allFileNames) == 1) && ($part == -1))
@@ -439,11 +440,11 @@ class Manage extends ControllerDefault
 		$description = $this->input->get('description', '', 'string');
 		$comment = $this->input->get('comment', null, 'string', 4);
 
-		$statistic = \AEPlatform::getInstance()->get_statistics($id);
+		$statistic = Platform::getInstance()->get_statistics($id);
 		$statistic['description'] = $description;
 		$statistic['comment'] = $comment;
 
-		$result = \AEPlatform::getInstance()->set_or_update_statistics($id, $statistic, $self);
+		$result = Platform::getInstance()->set_or_update_statistics($id, $statistic, $self);
 
 		if ($result !== false)
 		{

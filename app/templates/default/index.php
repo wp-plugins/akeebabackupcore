@@ -48,20 +48,22 @@ $this->outputHTTPHeaders();
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="<?php echo \Awf\Uri\Uri::base() ?>">
-					<img src="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-256.png" class="img-responsive2">
-					<?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?>
-					<small class="text-<?php echo AKEEBA_PRO ? 'danger' : 'muted' ?>"><?php echo AKEEBA_PRO ? 'Pro' : 'Core' ?></small>
-					<?php if ((substr(AKEEBA_VERSION, 0, 3) == 'rev') || (strpos(AKEEBA_VERSION, '.a') !== false)): ?>
-					<sup><small><span class="label label-danger">ALPHA</span></small></sup>
-					<?php elseif (strpos(AKEEBA_VERSION, '.b') !== false): ?>
-					<sup><small><span class="label label-primary">BETA</span></small></sup>
-					<?php elseif (strpos(AKEEBA_VERSION, '.rc') !== false): ?>
-					<sup><small><span class="label label-default">RC</span></small></sup>
-					<?php endif; ?>
-					<?php if ($title = $this->getToolbar()->getTitle()):?>
-						<small>• <?php echo \Awf\Text\Text::_($title) ?></small>
-					<?php endif; ?>
+				<a class="navbar-brand navbar-brand-solo" href="<?php echo \Awf\Uri\Uri::base() ?>">
+					<img src="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-256.png" class="img-responsive">
+					<span>
+						<?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?>
+						<small class="text-<?php echo AKEEBA_PRO ? 'danger' : 'muted' ?>"><?php echo AKEEBA_PRO ? 'Pro' : 'Core' ?></small>
+						<?php if ((substr(AKEEBA_VERSION, 0, 3) == 'rev') || (strpos(AKEEBA_VERSION, '.a') !== false)): ?>
+						<sup><small><span class="label label-danger">ALPHA</span></small></sup>
+						<?php elseif (strpos(AKEEBA_VERSION, '.b') !== false): ?>
+						<sup><small><span class="label label-primary">BETA</span></small></sup>
+						<?php elseif (strpos(AKEEBA_VERSION, '.rc') !== false): ?>
+						<sup><small><span class="label label-default">RC</span></small></sup>
+						<?php endif; ?>
+						<?php if ($title = $this->getToolbar()->getTitle()):?>
+							<small>• <?php echo \Awf\Text\Text::_($title) ?></small>
+						<?php endif; ?>
+					</span>
 				</a>
 			</div>
 			<div class="navbar-collapse collapse">

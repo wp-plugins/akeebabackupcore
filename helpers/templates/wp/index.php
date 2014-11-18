@@ -16,31 +16,33 @@ else
 	<div class="navbar navbar-default navbar-static-top" role="navigation">
 		<div class="container">
 			<div class="navbar-header">
+				<a class="navbar-brand navbar-brand-wp" href="<?php echo $this->getContainer()->router->route('index.php') ?>">
+					<img src="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-256.png" class="img-responsive2">
+					<span>
+						<?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?>
+						<small class="text-<?php echo AKEEBA_PRO ? 'danger' : 'muted' ?>"><?php echo AKEEBA_PRO ? 'Pro' : 'Core' ?></small>
+						<?php if ((substr(AKEEBA_VERSION, 0, 3) == 'rev') || (strpos(AKEEBA_VERSION, '.a') !== false)): ?>
+							<sup><small><span class="label label-danger">ALPHA</span></small></sup>
+						<?php elseif (strpos(AKEEBA_VERSION, '.b') !== false): ?>
+							<sup><small><span class="label label-primary">BETA</span></small></sup>
+						<?php elseif (strpos(AKEEBA_VERSION, '.rc') !== false): ?>
+							<sup><small><span class="label label-default">RC</span></small></sup>
+						<?php endif; ?>
+						<?php if ($title = $this->getToolbar()->getTitle()):?>
+							<small>• <?php echo \Awf\Text\Text::_($title) ?></small>
+						<?php endif; ?>
+					</span>
+				</a>
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 					<span class="sr-only"><?php echo \Awf\Text\Text::_('SOLO_COMMON_TOGGLENAV') ?></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="<?php echo $this->getContainer()->router->route('index.php') ?>">
-					<img src="<?php echo \Awf\Uri\Uri::base() ?>media/logo/solo-256.png" class="img-responsive2">
-					<?php echo \Awf\Text\Text::_('SOLO_APP_TITLE') ?>
-					<small class="text-<?php echo AKEEBA_PRO ? 'danger' : 'muted' ?>"><?php echo AKEEBA_PRO ? 'Pro' : 'Core' ?></small>
-					<?php if ((substr(AKEEBA_VERSION, 0, 3) == 'rev') || (strpos(AKEEBA_VERSION, '.a') !== false)): ?>
-						<sup><small><span class="label label-danger">ALPHA</span></small></sup>
-					<?php elseif (strpos(AKEEBA_VERSION, '.b') !== false): ?>
-						<sup><small><span class="label label-primary">BETA</span></small></sup>
-					<?php elseif (strpos(AKEEBA_VERSION, '.rc') !== false): ?>
-						<sup><small><span class="label label-default">RC</span></small></sup>
-					<?php endif; ?>
-					<?php if ($title = $this->getToolbar()->getTitle()):?>
-						<small>• <?php echo \Awf\Text\Text::_($title) ?></small>
-					<?php endif; ?>
-				</a>
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-right">
-					<?php _solo_template_renderSubmenu($this, $this->getMenu()->getMenuItems('main'), 'nav navbar-nav'); ?>
+					<?php _solo_template_renderSubmenu($this, $this->getMenu()->getMenuItems('main'), 'nav navbar-nav navbar-nav-wp'); ?>
 				</ul>
 			</div>
 		</div>

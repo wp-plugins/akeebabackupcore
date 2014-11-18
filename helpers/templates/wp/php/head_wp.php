@@ -14,49 +14,47 @@ $scriptDeclarations = $this->getScriptDeclarations();
 $styles = $this->getStyles();
 $styleDeclarations = $this->getStyleDeclarations();
 
+AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/akjqnamespace.min.js');
+
 // Scripts before the template ones
-if (!empty($scripts))
+if(!empty($scripts)) foreach($scripts as $url => $params)
 {
-	foreach ($scripts as $url => $params)
+	if($params['before'])
 	{
-		if ($params['before'])
-		{
-			AkeebaBackupWP::enqueueScript($url);
-		}
+		AkeebaBackupWP::enqueueScript($url);
 	}
 }
 
-// Template scripts with fallback to our own copies (useful for support)
-if (
-	defined('AKEEBA_OVERRIDE_JQUERY') &&
-	@file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/js/jquery.min.js') &&
-	@file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/js/jquery-migrate.min.js')
-)
+$wpVersion = get_bloginfo('version', 'raw');
+
+if (version_compare($wpVersion, '4.0', 'lt'))
 {
-	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/jquery.min.js');
+	// Template scripts
+	AkeebaBackupWP::enqueueScript(content_url() . '/js/jquery/jquery.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/akjqnamespace.min.js');
-	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/jquery-migrate.min.js');
+	AkeebaBackupWP::enqueueScript(content_url() . '/js/jquery/jquery-migrate.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap.min.js');
 }
 else
 {
+	AkeebaBackupWP::enqueueScript(includes_url() . '/js/jquery/jquery.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/akjqnamespace.min.js');
+	AkeebaBackupWP::enqueueScript(includes_url() . '/js/jquery/jquery-migrate.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap.min.js');
 }
 
 // Scripts after the template ones
-if (!empty($scripts))
+if(!empty($scripts)) foreach($scripts as $url => $params)
 {
-	foreach ($scripts as $url => $params)
+	if(!$params['before'])
 	{
-		if (!$params['before'])
-		{
-			AkeebaBackupWP::enqueueScript($url);
-		}
+		AkeebaBackupWP::enqueueScript($url);
 	}
 }
 
 // onLoad scripts
+AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap.min.js');
+AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap-switch.min.js');
 AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/solo/loadscripts.min.js');
 
 // Script declarations
@@ -64,7 +62,13 @@ if (!empty($scriptDeclarations))
 {
 	foreach ($scriptDeclarations as $type => $content)
 	{
-		echo "\t<script type=\"$type\">\n$content\n</script>";
+		echo <<< HTML
+<script type="$type">
+Solo.loadScripts[Solo.loadScripts.length] = function () {
+	$content
+}
+</script>
+HTML;
 	}
 }
 
@@ -81,9 +85,10 @@ if (!empty($styles))
 }
 
 AkeebaBackupWP::enqueueStyle(Uri::base() . 'media/css/bootstrap-namespaced.min.css');
+AkeebaBackupWP::enqueueStyle(Uri::base() . 'media/css/bootstrap-wordpress.min.css');
 AkeebaBackupWP::enqueueStyle(Uri::base() . 'media/css/font-awesome.min.css');
 
-if (defined('AKEEBADEBUG') && AKEEBADEBUG)
+if (defined('AKEEBADEBUG') && AKEEBADEBUG && @file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/css/theme.css'))
 {
 	AkeebaBackupWP::enqueueStyle(Uri::base() . 'media/css/theme.css');
 }

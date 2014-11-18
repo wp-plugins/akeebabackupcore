@@ -7,12 +7,14 @@
 
 namespace Solo\Model;
 
-use Awf\Filesystem\Factory;
+use Akeeba\Engine\Archiver\Directftp;
 use Awf\Html\Select;
 use Awf\Mvc\Model;
 use Awf\Session\Randval;
 use Awf\Text\Text;
 use Solo\Helper\Escape;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Restore extends Model
 {
@@ -45,7 +47,7 @@ class Restore extends Model
 			throw new \RuntimeException(Text::_('RESTORE_ERROR_INVALID_RECORD'), 500);
 		}
 
-		$data = \AEPlatform::getInstance()->get_statistics($id);
+		$data = Platform::getInstance()->get_statistics($id);
 
 		if (empty($data))
 		{
@@ -59,7 +61,7 @@ class Restore extends Model
 
 		// Load the profile ID (so that we can find out the output directory)
 		$profile_id = $data['profile_id'];
-		\AEPlatform::getInstance()->load_configuration($profile_id);
+		Platform::getInstance()->load_configuration($profile_id);
 
 		$path = $data['absolute_path'];
 		$exists = @file_exists($path);
@@ -67,7 +69,7 @@ class Restore extends Model
 		if (!$exists)
 		{
 			// Let's try figuring out an alternative path
-			$config = \AEFactory::getConfiguration();
+			$config = Factory::getConfiguration();
 			$path = $config->get('akeeba.basic.output_directory', '') . '/' . $data['archivename'];
 			$exists = @file_exists($path);
 		}
@@ -111,7 +113,7 @@ class Restore extends Model
 		$procEngine = $this->getState('procengine', 'direct');
 
 		// Get the absolute path to site's root
-		$configuration = \AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		if ($configuration->get('akeeba.platform.override_root', 0))
 		{
 			$siteRoot = $configuration->get('akeeba.platform.newroot', '[SITEROOT]');
@@ -123,7 +125,7 @@ class Restore extends Model
 
 		if (stristr($siteRoot, '['))
 		{
-			$siteRoot = \AEUtilFilesystem::translateStockDirs($siteRoot);
+			$siteRoot = Factory::getFilesystemTools()->translateStockDirs($siteRoot);
 		}
 
 		if (empty($siteRoot))
@@ -249,7 +251,7 @@ ENDDATA;
 				);
 
 				// Perform the FTP connection test
-				$test = new \AEArchiverDirectftp();
+				$test = new Directftp();
 				$test->initialize('', $config);
 				$errors = $test->getError();
 

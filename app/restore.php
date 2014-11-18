@@ -14,45 +14,51 @@ define('_AKEEBA_RESTORATION', 1);
 defined('DS') or define('DS', DIRECTORY_SEPARATOR);
 
 // Unarchiver run states
-define('AK_STATE_NOFILE',	0); // File header not read yet
-define('AK_STATE_HEADER',	1); // File header read; ready to process data
-define('AK_STATE_DATA',		2); // Processing file data
-define('AK_STATE_DATAREAD',	3); // Finished processing file data; ready to post-process
-define('AK_STATE_POSTPROC',	4); // Post-processing
-define('AK_STATE_DONE',		5); // Done with post-processing
+define('AK_STATE_NOFILE', 0); // File header not read yet
+define('AK_STATE_HEADER', 1); // File header read; ready to process data
+define('AK_STATE_DATA', 2); // Processing file data
+define('AK_STATE_DATAREAD', 3); // Finished processing file data; ready to post-process
+define('AK_STATE_POSTPROC', 4); // Post-processing
+define('AK_STATE_DONE', 5); // Done with post-processing
 
 /* Windows system detection */
-if(!defined('_AKEEBA_IS_WINDOWS'))
+if (!defined('_AKEEBA_IS_WINDOWS'))
 {
 	if (function_exists('php_uname'))
+	{
 		define('_AKEEBA_IS_WINDOWS', stristr(php_uname(), 'windows'));
+	}
 	else
+	{
 		define('_AKEEBA_IS_WINDOWS', DIRECTORY_SEPARATOR == '\\');
+	}
 }
 
 // Get the file's root
-if(!defined('KSROOTDIR'))
+if (!defined('KSROOTDIR'))
 {
 	define('KSROOTDIR', dirname(__FILE__));
 }
-if(!defined('KSLANGDIR'))
+if (!defined('KSLANGDIR'))
 {
 	define('KSLANGDIR', KSROOTDIR);
 }
 
 // Make sure the locale is correct for basename() to work
-if(function_exists('setlocale'))
+if (function_exists('setlocale'))
 {
 	@setlocale(LC_ALL, 'en_US.UTF8');
 }
 
 // fnmatch not available on non-POSIX systems
 // Thanks to soywiz@php.net for this usefull alternative function [http://gr2.php.net/fnmatch]
-if (!function_exists('fnmatch')) {
-	function fnmatch($pattern, $string) {
+if (!function_exists('fnmatch'))
+{
+	function fnmatch($pattern, $string)
+	{
 		return @preg_match(
 			'/^' . strtr(addcslashes($pattern, '/\\.+^$(){}=!<>|'),
-		array('*' => '.*', '?' => '.?')) . '$/i', $string
+				array('*' => '.*', '?' => '.?')) . '$/i', $string
 		);
 	}
 }
@@ -60,33 +66,41 @@ if (!function_exists('fnmatch')) {
 // Unicode-safe binary data length function
 if (!function_exists('akstringlen'))
 {
-	if(function_exists('mb_strlen')) {
-		function akstringlen($string) { return mb_strlen($string,'8bit'); }
-	} else {
-		function akstringlen($string) { return strlen($string); }
+	if (function_exists('mb_strlen'))
+	{
+		function akstringlen($string)
+		{
+			return mb_strlen($string, '8bit');
+		}
+	}
+	else
+	{
+		function akstringlen($string)
+		{
+			return strlen($string);
+		}
 	}
 }
 
 /**
  * Gets a query parameter from GET or POST data
+ *
  * @param $key
  * @param $default
  */
-function getQueryParam( $key, $default = null )
+function getQueryParam($key, $default = null)
 {
-	$value = null;
+	$value = $default;
 
-	if(array_key_exists($key, $_REQUEST)) {
+	if (array_key_exists($key, $_REQUEST))
+	{
 		$value = $_REQUEST[$key];
-	} elseif(array_key_exists($key, $_POST)) {
-		$value = $_POST[$key];
-	} elseif(array_key_exists($key, $_GET)) {
-		$value = $_GET[$key];
-	} else {
-		return $default;
 	}
 
-	if(get_magic_quotes_gpc() && !is_null($value)) $value=stripslashes($value);
+	if (get_magic_quotes_gpc() && !is_null($value))
+	{
+		$value = stripslashes($value);
+	}
 
 	return $value;
 }
@@ -94,9 +108,14 @@ function getQueryParam( $key, $default = null )
 // Debugging function
 function debugMsg($msg)
 {
-	if(!defined('KSDEBUG')) return;
-	$fp = fopen('debug.txt','at');
-	fwrite($fp, $msg."\n");
+	if (!defined('KSDEBUG'))
+	{
+		return;
+	}
+
+	$fp = fopen('debug.txt', 'at');
+
+	fwrite($fp, $msg . "\n");
 	fclose($fp);
 }
 
@@ -1669,6 +1688,29 @@ abstract class AKAbstractUnarchiver extends AKAbstractPart
 					// Archive's absolute filename
 					case 'filename':
 						$this->filename = $value;
+
+						// Sanity check
+						if (!empty($value))
+						{
+							$value = strtolower($value);
+
+							if (strlen($value) > 6)
+							{
+								if (
+									(substr($value, 0, 7) == 'http://')
+									|| (substr($value, 0, 8) == 'https://')
+									|| (substr($value, 0, 6) == 'ftp://')
+									|| (substr($value, 0, 7) == 'ssh2://')
+									|| (substr($value, 0, 6) == 'ssl://')
+								)
+								{
+									$this->setState('error', 'Invalid archive location');
+								}
+							}
+						}
+
+
+
 						break;
 
 					// Should I restore permissions?
@@ -4197,7 +4239,7 @@ class AKPostprocHybrid extends AKAbstractPostproc
  */
 class AKUnarchiverJPA extends AKAbstractUnarchiver
 {
-	private $archiveHeaderData = array();
+	protected $archiveHeaderData = array();
 
 	protected function readArchiveHeader()
 	{
@@ -4796,7 +4838,7 @@ class AKUnarchiverJPA extends AKAbstractUnarchiver
 		if(empty($this->fileHeader->realFile)) $this->fileHeader->realFile = $this->fileHeader->file;
 		$lastSlash = strrpos($this->fileHeader->realFile, '/');
 		$dirName = substr( $this->fileHeader->realFile, 0, $lastSlash);
-		$perms = $this->flagRestorePermissions ? $retArray['permissions'] : 0755;
+		$perms = $this->flagRestorePermissions ? $this->fileHeader->permissions : 0755;
 		$ignore = AKFactory::get('kickstart.setup.ignoreerrors', false) || $this->isIgnoredDirectory($dirName);
 		if( ($this->postProcEngine->createDirRecursive($dirName, $perms) == false) && (!$ignore) ) {
 			$this->setError( AKText::sprintf('COULDNT_CREATE_DIR', $dirName) );
@@ -4826,7 +4868,7 @@ class AKUnarchiverJPA extends AKAbstractUnarchiver
 
 			// Read 512Kb
 			$chunk = fread($this->fp, 524288);
-			$size_read = mb_strlen($string,'8bit');
+			$size_read = mb_strlen($chunk,'8bit');
 			//$pos = strpos($chunk, 'JPF');
 			$pos = mb_strpos($chunk, 'JPF', 0, '8bit');
 			if($pos !== false) {
@@ -5147,9 +5189,9 @@ class AKUnarchiverZIP extends AKUnarchiverJPA
  */
 class AKUnarchiverJPS extends AKUnarchiverJPA
 {
-	private $archiveHeaderData = array();
+	protected $archiveHeaderData = array();
 
-	private $password = '';
+	protected $password = '';
 
 	public function __construct()
 	{
@@ -6178,6 +6220,9 @@ class AKText extends AKAbstractObject
 		'UPDATE_MOREINFO' => 'More information',
 		'IGNORE_MOST_ERRORS' => 'Ignore most errors',
 		'WRONG_FTP_PATH2' => 'Wrong FTP initial directory - the directory doesn\'t correspond to your site\'s web root',
+		'ARCHIVE_DIRECTORY' => 'Archive directory:',
+		'RELOAD_ARCHIVES'	=> 'Reload',
+		'CONFIG_UI_SFTPBROWSER_TITLE'	=> 'SFTP Directory Browser',
 	);
 
 	/**
@@ -6722,9 +6767,17 @@ class AKFactory {
 		$object = self::getClassInstance($class_name);
 		if( $object->getState() == 'init')
 		{
+			$sourcePath = self::get('kickstart.setup.sourcepath', '');
+			$sourceFile = self::get('kickstart.setup.sourcefile', '');
+
+			if (!empty($sourcePath))
+			{
+				$sourceFile = rtrim($sourcePath, '/\\') . '/' . $sourceFile;
+			}
+
 			// Initialize the object
 			$config = array(
-				'filename'				=> self::get('kickstart.setup.sourcefile', ''),
+				'filename'				=> $sourceFile,
 				'restore_permissions'	=> self::get('kickstart.setup.restoreperms', 0),
 				'post_proc'				=> self::get('kickstart.procengine', 'direct'),
 				'add_path'				=> self::get('kickstart.setup.targetpath', $destdir),
@@ -7168,8 +7221,9 @@ class AKEncryptionAES
  */
 
 /**
- * The Master Setup will read the configuration parameters from restoration.php, abiautomation.ini, or
+ * The Master Setup will read the configuration parameters from restoration.php or
  * the JSON-encoded "configuration" input variable and return the status.
+ *
  * @return bool True if the master configuration was applied to the Factory object
  */
 function masterSetup()
@@ -7181,26 +7235,29 @@ function masterSetup()
 	$ini_data = null;
 
 	// In restore.php mode, require restoration.php or fail
-	if(!defined('KICKSTART'))
+	if (!defined('KICKSTART'))
 	{
 		// This is the standalone mode, used by Akeeba Backup Professional. It looks for a restoration.php
 		// file to perform its magic. If the file is not there, we will abort.
 		$setupFile = 'restoration.php';
 
-		if( !file_exists($setupFile) )
+		if (!file_exists($setupFile))
 		{
-			// Uh oh... Somebody tried to pooh on our back yard. Lock the gates! Don't let the traitor inside!
 			AKFactory::set('kickstart.enabled', false);
+
 			return false;
 		}
 
 		// Load restoration.php. It creates a global variable named $restoration_setup
 		require_once $setupFile;
+
 		$ini_data = $restoration_setup;
-		if(empty($ini_data))
+
+		if (empty($ini_data))
 		{
 			// No parameters fetched. Darn, how am I supposed to work like that?!
 			AKFactory::set('kickstart.enabled', false);
+
 			return false;
 		}
 
@@ -7210,17 +7267,21 @@ function masterSetup()
 	{
 		// Maybe we have $restoration_setup defined in the head of kickstart.php
 		global $restoration_setup;
-		if(!empty($restoration_setup) && !is_array($restoration_setup)) {
+
+		if (!empty($restoration_setup) && !is_array($restoration_setup))
+		{
 			$ini_data = AKText::parse_ini_file($restoration_setup, false, true);
-		} elseif(is_array($restoration_setup)) {
+		}
+		elseif (is_array($restoration_setup))
+		{
 			$ini_data = $restoration_setup;
 		}
 	}
 
 	// Import any data from $restoration_setup
-	if(!empty($ini_data))
+	if (!empty($ini_data))
 	{
-		foreach($ini_data as $key => $value)
+		foreach ($ini_data as $key => $value)
 		{
 			AKFactory::set($key, $value);
 		}
@@ -7237,33 +7298,66 @@ function masterSetup()
 	// Detect a JSON string in the request variable and store it.
 	$json = getQueryParam('json', null);
 
-	// Remove everything from the request array
-	if(!empty($_REQUEST))
+	// Remove everything from the request, post and get arrays
+	if (!empty($_REQUEST))
 	{
-		foreach($_REQUEST as $key => $value)
+		foreach ($_REQUEST as $key => $value)
 		{
 			unset($_REQUEST[$key]);
 		}
 	}
-	// Decrypt a possibly encrypted JSON string
-	if(!empty($json))
+
+	if (!empty($_POST))
 	{
-		$password = AKFactory::get('kickstart.security.password', null);
-		if(!empty($password))
+		foreach ($_POST as $key => $value)
+		{
+			unset($_POST[$key]);
+		}
+	}
+
+	if (!empty($_GET))
+	{
+		foreach ($_GET as $key => $value)
+		{
+			unset($_GET[$key]);
+		}
+	}
+
+	// Decrypt a possibly encrypted JSON string
+	$password = AKFactory::get('kickstart.security.password', null);
+
+	if (!empty($json))
+	{
+		if (!empty($password))
 		{
 			$json = AKEncryptionAES::AESDecryptCtr($json, $password, 128);
+
+			if (empty($json))
+			{
+				die('###{"status":false,"message":"Invalid login"}###');
+			}
 		}
 
 		// Get the raw data
-		$raw = json_decode( $json, true );
-		// Pass all JSON data to the request array
-		if(!empty($raw))
+		$raw = json_decode($json, true);
+
+		if (!empty($password) && (empty($raw)))
 		{
-			foreach($raw as $key => $value)
+			die('###{"status":false,"message":"Invalid login"}###');
+		}
+
+		// Pass all JSON data to the request array
+		if (!empty($raw))
+		{
+			foreach ($raw as $key => $value)
 			{
 				$_REQUEST[$key] = $value;
 			}
 		}
+	}
+	elseif (!empty($password))
+	{
+		die('###{"status":false,"message":"Invalid login"}###');
 	}
 
 	// ------------------------------------------------------------
@@ -7271,50 +7365,44 @@ function masterSetup()
 	// ------------------------------------------------------------
 	// A "factory" variable will override all other settings.
 	$serialized = getQueryParam('factory', null);
-	if( !is_null($serialized) )
+
+	if (!is_null($serialized))
 	{
 		// Get the serialized factory
 		AKFactory::unserialize($serialized);
 		AKFactory::set('kickstart.enabled', true);
+
 		return true;
 	}
 
 	// ------------------------------------------------------------
-	// 4. Try abiautomation.ini and the configuration variable for Kickstart
+	// 4. Try the configuration variable for Kickstart
 	// ------------------------------------------------------------
-	if(defined('KICKSTART'))
+	if (defined('KICKSTART'))
 	{
-		// We are in Kickstart mode. abiautomation.ini has precedence.
-		$setupFile = 'abiautomation.ini';
-		if( file_exists($setupFile) )
+		$configuration = getQueryParam('configuration');
+
+		if (!is_null($configuration))
 		{
-			// abiautomation.ini was found
-			$ini_data = AKText::parse_ini_file('restoration.ini', false);
+			// Let's decode the configuration from JSON to array
+			$ini_data = json_decode($configuration, true);
 		}
 		else
 		{
-			// abiautomation.ini was not found. Let's try input parameters.
-			$configuration = getQueryParam('configuration');
-			if( !is_null($configuration) )
-			{
-				// Let's decode the configuration from JSON to array
-				$ini_data = json_decode($configuration, true);
-			}
-			else
-			{
-				// Neither exists. Enable Kickstart's interface anyway.
-				$ini_data = array('kickstart.enabled'=>true);
-			}
+			// Neither exists. Enable Kickstart's interface anyway.
+			$ini_data = array('kickstart.enabled' => true);
 		}
 
 		// Import any INI data we might have from other sources
-		if(!empty($ini_data))
+		if (!empty($ini_data))
 		{
-			foreach($ini_data as $key => $value)
+			foreach ($ini_data as $key => $value)
 			{
 				AKFactory::set($key, $value);
 			}
+
 			AKFactory::set('kickstart.enabled', true);
+
 			return true;
 		}
 	}
@@ -7454,9 +7542,9 @@ if(!defined('KICKSTART'))
 				$postproc->unlink( $basepath.'restoration.php' );
 
 				// Import a custom finalisation file
-				if (file_exists(__DIR__ . '/restore_finalisation.php'))
+				if (file_exists(dirname(__FILE__) . '/restore_finalisation.php'))
 				{
-					include_once __DIR__ . '/restore_finalisation.php';
+					include_once dirname(__FILE__) . '/restore_finalisation.php';
 				}
 
 				// Run a custom finalisation script

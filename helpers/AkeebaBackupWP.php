@@ -22,6 +22,8 @@ class AkeebaBackupWP
 	/** @var array List of all CSS files we can possibly load */
 	public static $cssFiles = array();
 
+	protected static $loadedScripts = array();
+
 	/**
 	 * Store the unquoted request variables to prevent WordPress from killing JSON requests.
 	 */
@@ -57,6 +59,61 @@ class AkeebaBackupWP
 			{
 				define('AKEEBA_SOLOWP_OBFLAG', 1);
 				@ob_start();
+			}
+		}
+	}
+
+	/**
+	 * Load template scripts with fallback to our own copies (useful for support)
+	 */
+	public static function loadJavascript()
+	{
+		if (!session_id())
+		{
+			session_start();
+		}
+
+		$page = self::$dirName . '/' . self::$fileName;
+
+		// Is this an Akeeba Solo page?
+		if (!isset($_REQUEST['page']) || !($_REQUEST['page'] == $page))
+		{
+			return;
+		}
+
+		if (
+			defined('AKEEBA_OVERRIDE_JQUERY') &&
+			@file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/js/jquery.min.js') &&
+				@file_exists(dirname(AkeebaBackupWP::$absoluteFileName) . '/app/media/js/jquery-migrate.min.js')
+		)
+		{
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/jquery.min.js', self::$absoluteFileName));
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/akjqnamespace.min.js', self::$absoluteFileName));
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/jquery-migrate.min.js', self::$absoluteFileName));
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/bootstrap.min.js', self::$absoluteFileName));
+		}
+		else
+		{
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/akjqnamespace.min.js', self::$absoluteFileName));
+			AkeebaBackupWP::enqueueHeadScript(plugins_url('app/media/js/bootstrap.min.js', self::$absoluteFileName));
+		}
+
+		$theEntireUniverseOfScripts = array(
+			'piecon', 'datepicker/bootstrap-datepicker', 'solo/gui-helpers',
+			'solo/alice', 'solo/backup', 'solo/configuration', 'solo/dbfilters', 'solo/encryption', 'solo/extradirs',
+			'solo/fsfilters', 'solo/multidb', 'solo/regexdbfilters', 'solo/regexfsfilters', 'solo/restore', 'solo/setup',
+			'solo/stepper', 'solo/system', 'solo/update', 'solo/wizard'
+		);
+
+		$relPath = __DIR__ . '/../';
+
+		foreach ($theEntireUniverseOfScripts as $script)
+		{
+			$scriptPath = 'app/media/js/' . $script . '.min.js';
+
+			if (file_exists($relPath . $scriptPath))
+			{
+				AkeebaBackupWP::enqueueHeadScript(plugins_url($scriptPath, self::$absoluteFileName));
 			}
 		}
 	}
@@ -174,6 +231,47 @@ class AkeebaBackupWP
 	 */
 	public static function enqueueScript($url)
 	{
+		if (in_array($url, self::$loadedScripts))
+		{
+			return;
+		}
+
+		self::$loadedScripts[] = $url;
+
+		if (!defined('AKEEBA_VERSION'))
+		{
+			@include_once dirname(self::$absoluteFileName) . '/app/version.php';
+		}
+
+		$handle = 'akjs' . md5($url);
+		$dependencies = array('jquery', 'jquery-migrate');
+
+		// When we override the loading of jQuery do not depend on WP's jQuery being loaded
+		if (defined('AKEEBA_OVERRIDE_JQUERY') && AKEEBA_OVERRIDE_JQUERY)
+		{
+			$dependencies = array();
+		}
+
+		//wp_enqueue_script($handle, $url, $dependencies, AKEEBA_VERSION, false);
+
+		$version = AKEEBA_VERSION;
+		echo "<script type=\"text/javascript\" src=\"$url?$version\"></script>\n";
+	}
+
+	/**
+	 * Enqueues a Javascript file for loading in the head
+	 *
+	 * @param   string  $url  The URL of the Javascript file to load
+	 */
+	public static function enqueueHeadScript($url)
+	{
+		if (in_array($url, self::$loadedScripts))
+		{
+			return;
+		}
+
+		self::$loadedScripts[] = $url;
+
 		if (!defined('AKEEBA_VERSION'))
 		{
 			@include_once dirname(self::$absoluteFileName) . '/app/version.php';

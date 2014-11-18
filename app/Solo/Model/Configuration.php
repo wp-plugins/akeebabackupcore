@@ -7,8 +7,12 @@
 
 namespace Solo\Model;
 
+use Akeeba\Engine\Archiver\Directftp;
+use Akeeba\Engine\Archiver\Directsftp;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * The Model for the Configuration view
@@ -28,9 +32,9 @@ class Configuration extends Model
 		if (array_key_exists('akeeba.basic.output_directory', $data))
 		{
 			$folder = $data['akeeba.basic.output_directory'];
-			$folder = \AEUtilFilesystem::translateStockDirs($folder, true, true);
+			$folder = Factory::getFilesystemTools()->translateStockDirs($folder, true, true);
 
-			$check = \AEUtilFilesystem::translateStockDirs('[SITEROOT]', true, true);
+			$check = Factory::getFilesystemTools()->translateStockDirs('[SITEROOT]', true, true);
 
 			if ($check == $folder)
 			{
@@ -40,11 +44,14 @@ class Configuration extends Model
 		}
 
 		// Merge it
-		$config = \AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
+		$protectedKeys = $config->getProtectedKeys();
+		$config->resetProtectedKeys();
 		$config->mergeArray($data, false, false);
+		$config->setProtectedKeys($protectedKeys);
 
 		// Save configuration
-		\AEPlatform::getInstance()->save_configuration();
+		Platform::getInstance()->save_configuration();
 	}
 
 	/**
@@ -71,7 +78,7 @@ class Configuration extends Model
 		}
 
 		// Perform the FTP connection test
-		$test = new \AEArchiverDirectftp();
+		$test = new Directftp();
 		$test->initialize('', $config);
 
 		$errors = $test->getError();
@@ -112,7 +119,7 @@ class Configuration extends Model
 		}
 
 		// Perform the FTP connection test
-		$test = new \AEArchiverDirectsftp();
+		$test = new Directsftp();
 		$test->initialize('', $config);
 		$errors = $test->getWarnings();
 
@@ -138,7 +145,7 @@ class Configuration extends Model
 		$engine = $this->getState('engine');
 		$params = $this->getState('params', array());
 
-		$engine = \AEFactory::getPostprocEngine($engine);
+		$engine = Factory::getPostprocEngine($engine);
 
 		if ($engine === false)
 		{
@@ -159,7 +166,7 @@ class Configuration extends Model
 		$method = $this->getState('method');
 		$params = $this->getState('params', array());
 
-		$engine = \AEFactory::getPostprocEngine($engine);
+		$engine = Factory::getPostprocEngine($engine);
 
 		if ($engine === false)
 		{

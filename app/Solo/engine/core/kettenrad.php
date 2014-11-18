@@ -9,15 +9,27 @@
  *
  */
 
+namespace Akeeba\Engine\Core;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Part;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * This is Akeeba Engine's heart. Kettenrad is reponsible for launching the
  * domain chain of a backup job.
  */
-final class AECoreKettenrad extends AEAbstractPart
+class Kettenrad extends Part
 {
+	/** @var bool Set to true when deadOnTimeout is registered as a shutdown function */
+	public static $registeredShutdownCallback = false;
+
+	/** @var bool Set to true when akeebaBackupErrorHandler is registered as an error handler */
+	public static $registeredErrorHandler = false;
 
 	/** @var array Cached copy of the response array */
 	private $array_cache = null;
@@ -71,7 +83,7 @@ final class AECoreKettenrad extends AEAbstractPart
 		if (empty($this->tag))
 		{
 			// If no tag exists, we resort to the pre-set backup origin
-			$tag = AEPlatform::getInstance()->get_backup_origin();
+			$tag = Platform::getInstance()->get_backup_origin();
 			$this->tag = $tag;
 		}
 
@@ -81,7 +93,7 @@ final class AECoreKettenrad extends AEAbstractPart
 	protected function _prepare()
 	{
 		// Intialize the timer class
-		$timer = AEFactory::getTimer();
+		$timer = Factory::getTimer();
 
 		// Do we have a tag?
 		if (!empty($this->_parametersArray['tag']))
@@ -94,21 +106,25 @@ final class AECoreKettenrad extends AEAbstractPart
 
 		// Reset the log
 		$logTag = $this->getLogTag();
-		AEUtilLogger::openLog($logTag);
-		AEUtilLogger::ResetLog($logTag);
+		Factory::getLog()->open($logTag);
+		Factory::getLog()->reset($logTag);
 
-		set_error_handler('akeebaBackupErrorHandler');
+		if (!static::$registeredErrorHandler)
+		{
+			static::$registeredErrorHandler = true;
+			set_error_handler('\\Akeeba\\Engine\\Core\\akeebaBackupErrorHandler');
+		}
 
 		// Reset the storage
-		$tempVarsTag = $this->tag . (empty($this->backup_id) ? '' : ('.' . $this->backup_id));
-		AEUtilTempvars::reset($tempVarsTag);
+		$factoryStorageTag = $this->tag . (empty($this->backup_id) ? '' : ('.' . $this->backup_id));
+		Factory::getFactoryStorage()->reset($factoryStorageTag);
 
 		// Apply the configuration overrides
-		$overrides = AEPlatform::getInstance()->configOverrides;
+		$overrides = Platform::getInstance()->configOverrides;
 
 		if (is_array($overrides) && @count($overrides))
 		{
-			$registry = AEFactory::getConfiguration();
+			$registry = Factory::getConfiguration();
 			$protected_keys = $registry->getProtectedKeys();
 			$registry->resetProtectedKeys();
 
@@ -121,7 +137,7 @@ final class AECoreKettenrad extends AEAbstractPart
 		}
 
 		// Get the domain chain
-		$this->domain_chain = AEUtilScripting::getDomainChain();
+		$this->domain_chain = Factory::getEngineParamsProvider()->getDomainChain();
 		$this->total_steps = count($this->domain_chain) - 1; // Init shouldn't count in the progress bar
 
 		// Mark this engine for Nesting Logging
@@ -136,8 +152,13 @@ final class AECoreKettenrad extends AEAbstractPart
 	protected function _run()
 	{
 		$logTag = $this->getLogTag();
-		AEUtilLogger::openLog($logTag);
-		set_error_handler('akeebaBackupErrorHandler');
+		Factory::getLog()->open($logTag);
+
+		if (!static::$registeredErrorHandler)
+		{
+			static::$registeredErrorHandler = true;
+			set_error_handler('\\Akeeba\\Engine\\Core\\akeebaBackupErrorHandler');
+		}
 
 		// Maybe we're already done or in an error state?
 		if (($this->getError()) || ($this->getState() == 'postrun'))
@@ -149,7 +170,7 @@ final class AECoreKettenrad extends AEAbstractPart
 		$this->setState('running');
 
 		// Initialize operation counter
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$registry->set('volatile.operation_counter', 0);
 
 		// Advance step counter
@@ -157,15 +178,15 @@ final class AECoreKettenrad extends AEAbstractPart
 		$registry->set('volatile.step_counter', ++$stepCounter);
 
 		// Log step start number
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '====== Starting Step number ' . $stepCounter . ' ======');
+		Factory::getLog()->log(LogLevel::DEBUG, '====== Starting Step number ' . $stepCounter . ' ======');
 
 		if (defined('AKEEBADEBUG'))
 		{
-			$root = AEPlatform::getInstance()->get_site_root();
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Site root: ' . $root);
+			$root = Platform::getInstance()->get_site_root();
+			Factory::getLog()->log(LogLevel::DEBUG, 'Site root: ' . $root);
 		}
 
-		$timer = AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$finished = false;
 		$error = false;
 		$breakFlag = false; // BREAKFLAG is optionally passed by domains to force-break current operation
@@ -197,7 +218,7 @@ final class AECoreKettenrad extends AEAbstractPart
 			}
 			else
 			{
-				$object = AEFactory::getDomainObject($this->class);
+				$object = Factory::getDomainObject($this->class);
 
 				if (!is_object($object))
 				{
@@ -219,9 +240,9 @@ final class AECoreKettenrad extends AEAbstractPart
 			// Switch domain if necessary
 			if ($have_to_switch)
 			{
-				if (!AEFactory::getConfiguration()->get('akeeba.tuning.nobreak.domains', 0))
+				if (!Factory::getConfiguration()->get('akeeba.tuning.nobreak.domains', 0))
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: BREAKING STEP BEFORE SWITCHING DOMAIN");
+					Factory::getLog()->log(LogLevel::DEBUG, "Kettenrad :: BREAKING STEP BEFORE SWITCHING DOMAIN");
 					$registry->set('volatile.breakflag', true);
 				}
 
@@ -232,8 +253,8 @@ final class AECoreKettenrad extends AEAbstractPart
 				{
 					// Aw, we're done! No more domains to run.
 					$this->setState('postrun');
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: No more domains to process");
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '====== Finished Step number ' . $stepCounter . ' ======');
+					Factory::getLog()->log(LogLevel::DEBUG, "Kettenrad :: No more domains to process");
+					Factory::getLog()->log(LogLevel::DEBUG, '====== Finished Step number ' . $stepCounter . ' ======');
 					$this->array_cache = null;
 
 					//restore_error_handler();
@@ -249,12 +270,12 @@ final class AECoreKettenrad extends AEAbstractPart
 					$this->domain = $new_definition['domain'];
 					$this->class = $new_definition['class'];
 					// Get a working object
-					$object = AEFactory::getDomainObject($this->class);
+					$object = Factory::getDomainObject($this->class);
 					$object->setup($this->_parametersArray);
 				}
 				else
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_WARNING, "Kettenrad :: No class defined trying to switch domains. The backup will crash.");
+					Factory::getLog()->log(LogLevel::WARNING, "Kettenrad :: No class defined trying to switch domains. The backup will crash.");
 					$this->domain = null;
 					$this->class = null;
 				}
@@ -263,7 +284,7 @@ final class AECoreKettenrad extends AEAbstractPart
 			{
 				if (!is_object($object))
 				{
-					$object = AEFactory::getDomainObject($this->class);
+					$object = Factory::getDomainObject($this->class);
 				}
 			}
 
@@ -298,48 +319,47 @@ final class AECoreKettenrad extends AEAbstractPart
 			$finished = $error ? true : !($result['HasRun']);
 
 			// Log operation end
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '----- Finished operation ' . $currentOperationNumber . ' ------');
+			Factory::getLog()->log(LogLevel::DEBUG, '----- Finished operation ' . $currentOperationNumber . ' ------');
 		}
 
 		// Log the result
 		if (!$error)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Successful Smart algorithm on " . get_class($object));
+			Factory::getLog()->log(LogLevel::DEBUG, "Successful Smart algorithm on " . get_class($object));
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_ERROR, "Failed Smart algorithm on " . get_class($object));
+			Factory::getLog()->log(LogLevel::ERROR, "Failed Smart algorithm on " . get_class($object));
 		}
 
 		// Log if we have to do more work or not
 		if (!is_object($object))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, "Kettenrad :: Empty object found when processing domain '" . $this->domain . "'. This should never happen.");
+			Factory::getLog()->log(LogLevel::WARNING, "Kettenrad :: Empty object found when processing domain '" . $this->domain . "'. This should never happen.");
 		}
 		else
 		{
 			if ($object->getState() == 'running')
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: More work required in domain '" . $this->domain . "'");
+				Factory::getLog()->log(LogLevel::DEBUG, "Kettenrad :: More work required in domain '" . $this->domain . "'");
 				// We need to set the break flag for the part processing to not batch successive steps
 				$registry->set('volatile.breakflag', true);
 			}
 			elseif ($object->getState() == 'finished')
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: Domain '" . $this->domain . "' has finished.");
+				Factory::getLog()->log(LogLevel::DEBUG, "Kettenrad :: Domain '" . $this->domain . "' has finished.");
 				$registry->set('volatile.breakflag', false);
 			}
 		}
 
 		// Log step end
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '====== Finished Step number ' . $stepCounter . ' ======');
+		Factory::getLog()->log(LogLevel::DEBUG, '====== Finished Step number ' . $stepCounter . ' ======');
 
 		if (!$registry->get('akeeba.tuning.nobreak.domains', 0))
 		{
 			// Force break between steps
 			$registry->set('volatile.breakflag', true);
 		}
-
 		//restore_error_handler();
 	}
 
@@ -347,260 +367,25 @@ final class AECoreKettenrad extends AEAbstractPart
 	{
 		// Open the log
 		$logTag = $this->getLogTag();
-		AEUtilLogger::openLog($logTag);
+		Factory::getLog()->open($logTag);
 
-		//set_error_handler('akeebaBackupErrorHandler');		
+		if (!static::$registeredErrorHandler)
+		{
+			static::$registeredErrorHandler = true;
+			set_error_handler('\\Akeeba\\Engine\\Core\\akeebaBackupErrorHandler');
+		}
 
 		// Kill the cached array
 		$this->array_cache = null;
 
 		// Remove the memory file
 		$tempVarsTag = $this->tag . (empty($this->backup_id) ? '' : ('.' . $this->backup_id));
-		AEUtilTempvars::reset($tempVarsTag);
+		Factory::getFactoryStorage()->reset($tempVarsTag);
 
 		// All done.
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: Just finished");
+		Factory::getLog()->log(LogLevel::DEBUG, "Kettenrad :: Just finished");
 		$this->setState('finished');
 		//restore_error_handler();
-	}
-
-	/**
-	 * Saves the whole factory to temporary storage
-	 */
-
-	/**
-	 * Saves the whole factory to temporary storage
-	 *
-	 * @param string|null $tag       The backup origin to save. Leave empty to get from already loaded Kettenrad instance.
-	 * @param string|null $backupId  The backup ID to save. Leave empty to get from already loaded Kettenrad instance.
-	 */
-	public static function save($tag = null, $backupId = null)
-	{
-		$kettenrad = AEFactory::getKettenrad();
-
-		if (empty($tag))
-		{
-			$tag = $kettenrad->tag;
-		}
-
-		if (empty($backupId))
-		{
-			$backupId = $kettenrad->backup_id;
-		}
-
-		$saveTag = $tag . (empty($backupId) ? '' : ('.' . $backupId));
-
-		$ret = $kettenrad->getStatusArray();
-
-		if ($ret['HasRun'] == 1)
-		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Will not save a finished Kettenrad instance");
-		}
-		else
-		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Saving Kettenrad instance $tag");
-
-			// Save a Factory snapshot
-			AEUtilTempvars::set(AEFactory::serialize(), $saveTag);
-		}
-	}
-
-	/**
-	 * Loads the factory from the storage (if it exists) and returns a reference to the
-	 * Kettenrad object.
-	 *
-	 * @param string|null $tag       The backup origin to load
-	 * @param string|null $backupId  The backup ID to load
-	 *
-	 * @return AECoreKettenrad A reference to the Kettenrad object
-	 */
-	public static function &load($tag = null, $backupId = null)
-	{
-		if (is_null($tag) && defined('AKEEBA_BACKUP_ORIGIN'))
-		{
-			$tag = AKEEBA_BACKUP_ORIGIN;
-		}
-
-		if (is_null($backupId) && defined('AKEEBA_BACKUP_ID'))
-		{
-			$tag = AKEEBA_BACKUP_ID;
-		}
-
-		$loadTag = $tag . (empty($backupId) ? '' : ('.' . $backupId));
-
-		// In order to load anything, we need to have the correct profile loaded. Let's assume
-		// that the latest backup record in this tag has the correct profile number set.
-		$config = AEFactory::getConfiguration();
-
-		if (empty($config->activeProfile))
-		{
-			// Only bother loading a configuration if none has been already loaded
-			$statList = AEPlatform::getInstance()->get_statistics_list(array(
-					'filters'  => array(
-						array('field' => 'tag', 'value' => $tag)
-					), 'order' => array(
-						'by' => 'id', 'order' => 'DESC'
-					)
-				)
-			);
-
-			if (is_array($statList))
-			{
-				$stat = array_pop($statList);
-				$profile = $stat['profile_id'];
-
-				AEPlatform::getInstance()->load_configuration($profile);
-			}
-		}
-
-		AEUtilLogger::openLog($loadTag);
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Kettenrad :: Attempting to load from database ($tag) [$loadTag]");
-
-		$serialized_factory = AEUtilTempvars::get($loadTag);
-
-		if ($serialized_factory !== false)
-		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, " -- Loaded stored Akeeba Factory ($tag) [$loadTag]");
-			AEFactory::unserialize($serialized_factory);
-		}
-		else
-		{
-			// There is no serialized factory. Nuke the in-memory factory.
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, " -- Stored Akeeba Factory ($tag) [$loadTag] not found - hard reset");
-			AEFactory::nuke();
-			AEPlatform::getInstance()->load_configuration();
-		}
-
-		unset($serialized_factory);
-
-		return AEFactory::getKettenrad();
-	}
-
-	/**
-	 * Resets the Kettenrad state, wiping out any pending backups and/or stale
-	 * temporary data.
-	 *
-	 * @param array $config Configuration parameters for the reset operation
-	 */
-	public static function reset($config = array())
-	{
-		$default_config = array(
-			'global' => true, // Reset all origins when true
-			'log'    => false, // Log our actions
-			'maxrun' => 180, // Consider "pending" backups as failed after this many seconds
-		);
-
-		$config = (object)array_merge($default_config, $config);
-
-		// Pause logging if so desired
-		if (!$config->log)
-		{
-			AEUtilLogger::WriteLog(false, '');
-		}
-
-		$originTag = null;
-
-		if (!$config->global)
-		{
-			// If we're not resetting globally, get a list of running backups per tag
-			$originTag = AEPlatform::getInstance()->get_backup_origin();
-		}
-
-		// Cache the factory before proceeding
-		$factory = AEFactory::serialize();
-
-		$runningList = AEPlatform::getInstance()->get_running_backups($originTag);
-
-		// Origins we have to clean
-		$origins = array(
-			AEPlatform::getInstance()->get_backup_origin()
-		);
-
-		// 1. Detect failed backups
-		if (is_array($runningList) && !empty($runningList))
-		{
-			// The current timestamp
-			$now = time();
-
-			// Mark running backups as failed
-			foreach ($runningList as $running)
-			{
-				if (empty($originTag))
-				{
-					// Check the timestamp of the log file to decide if it's stuck,
-					// but only if a tag is not set
-					$tstamp = @filemtime(AEUtilLogger::logName($running['origin']));
-
-					if ($tstamp !== false)
-					{
-						// We can only check the timestamp if it's returned. If not, we assume the backup is stale
-						$difference = abs($now - $tstamp);
-
-						// Backups less than maxrun seconds old are not considered stale (default: 3 minutes)
-						if ($difference < $config->maxrun)
-						{
-							continue;
-						}
-					}
-				}
-
-				$filenames = AEUtilStatistics::get_all_filenames($running, false);
-				$totalSize = 0;
-
-				// Process if there are files to delete...
-				if (!is_null($filenames))
-				{
-					// Delete the failed backup's archive, if exists
-					foreach ($filenames as $failedArchive)
-					{
-						if (file_exists($failedArchive))
-						{
-							$totalSize += (int)@filesize($failedArchive);
-							AEPlatform::getInstance()->unlink($failedArchive);
-						}
-					}
-				}
-
-				// Mark the backup failed
-				if (!$running['total_size'])
-				{
-					$running['total_size'] = $totalSize;
-				}
-
-				$running['status'] = 'fail';
-				$running['multipart'] = 0;
-				$dummy = null;
-				AEPlatform::getInstance()->set_or_update_statistics($running['id'], $running, $dummy);
-
-				$backupId = isset($running['backupid']) ? ('.' . $running['backupid']) : '';
-
-				$origins[] = $running['origin'] . $backupId;
-			}
-		}
-
-		if (!empty($origins))
-		{
-			$origins = array_unique($origins);
-
-			foreach ($origins as $originTag)
-			{
-				AECoreKettenrad::load($originTag);
-				// Remove temporary files
-				AEUtilTempfiles::deleteTempFiles();
-				// Delete any stale temporary data
-				AEUtilTempvars::reset($originTag);
-			}
-		}
-
-		// Reload the factory
-		AEFactory::unserialize($factory);
-		unset($factory);
-
-		// Unpause logging if it was previously paused
-		if (!$config->log)
-		{
-			AEUtilLogger::WriteLog(true, '');
-		}
 	}
 
 	/**
@@ -616,10 +401,10 @@ final class AECoreKettenrad extends AEAbstractPart
 			$array = $this->_makeReturnTable();
 
 			// Get the current step number
-			$stepCounter = AEFactory::getConfiguration()->get('volatile.step_counter', 0);
+			$stepCounter = Factory::getConfiguration()->get('volatile.step_counter', 0);
 
 			// Add the archive name
-			$statistics = AEFactory::getStatistics();
+			$statistics = Factory::getStatistics();
 			$record = $statistics->getRecord();
 			$array['Archive'] = isset($record['archivename']) ? $record['archivename'] : '';
 
@@ -660,7 +445,7 @@ final class AECoreKettenrad extends AEAbstractPart
 		// Get the percentage done of the current object
 		if (!empty($this->class))
 		{
-			$object = AEFactory::getDomainObject($this->class);
+			$object = Factory::getDomainObject($this->class);
 		}
 		else
 		{
@@ -715,15 +500,19 @@ function deadOnTimeOut()
 {
 	if (connection_status() == 1)
 	{
-		AEUtilLogger::WriteLog(_AE_LOG_ERROR, 'The process was aborted on user\'s request');
+		Factory::getLog()->log(LogLevel::ERROR, 'The process was aborted on user\'s request');
 	}
 	elseif (connection_status() >= 2)
 	{
-		AEUtilLogger::WriteLog(_AE_LOG_ERROR, AEPlatform::getInstance()->translate('KETTENRAD_TIMEOUT'));
+		Factory::getLog()->log(LogLevel::ERROR, Platform::getInstance()->translate('KETTENRAD_TIMEOUT'));
 	}
 }
 
-register_shutdown_function("deadOnTimeOut");
+if (!Kettenrad::$registeredShutdownCallback)
+{
+	Kettenrad::$registeredShutdownCallback = true;
+	register_shutdown_function("\\Akeeba\\Engine\\Core\\deadOnTimeOut");
+}
 
 /**
  * Nifty trick to track and log PHP errors to Akeeba Backup's log
@@ -758,30 +547,30 @@ function akeebaBackupErrorHandler($errno, $errstr, $errfile, $errline)
 		case E_ERROR:
 		case E_USER_ERROR:
 			// Can I really catch fatal errors? It doesn't seem likely...
-			AEUtilLogger::WriteLog(_AE_LOG_ERROR, "PHP FATAL ERROR on line $errline in file $errfile:");
-			AEUtilLogger::WriteLog(_AE_LOG_ERROR, $errstr);
-			AEUtilLogger::WriteLog(_AE_LOG_ERROR, "Execution aborted due to PHP fatal error");
+			Factory::getLog()->log(LogLevel::ERROR, "PHP FATAL ERROR on line $errline in file $errfile:");
+			Factory::getLog()->log(LogLevel::ERROR, $errstr);
+			Factory::getLog()->log(LogLevel::ERROR, "Execution aborted due to PHP fatal error");
 			break;
 
 		case E_WARNING:
 		case E_USER_WARNING:
 			// Log as debug messages so that we don't spook the user with warnings
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, "PHP WARNING on line $errline in file $errfile:");
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, $errstr);
+			Factory::getLog()->log(LogLevel::DEBUG, "PHP WARNING (not an error; you can ignore) on line $errline in file $errfile:");
+			Factory::getLog()->log(LogLevel::DEBUG, $errstr);
 			break;
 
 		case E_NOTICE:
 		case E_USER_NOTICE:
 			// Log as debug messages so that we don't spook the user with notices
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "PHP NOTICE on line $errline in file $errfile:");
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, $errstr);
+			Factory::getLog()->log(LogLevel::DEBUG, "PHP NOTICE (not an error; you can ignore) on line $errline in file $errfile:");
+			Factory::getLog()->log(LogLevel::DEBUG, $errstr);
 			break;
 
 		default:
-			// These are E_DEPRECATED, E_STRICT etc. Ignore that crap.
+			// These are E_DEPRECATED, E_STRICT etc. Ignore that.
 			break;
 	}
 
-	// Don't execute PHP's internal error handler
+	// Uncomment to prevent the execution of PHP's internal error handler
 	//return true;
 }

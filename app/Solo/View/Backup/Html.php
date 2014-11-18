@@ -7,6 +7,8 @@
 
 namespace Solo\View\Backup;
 
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 use Awf\Date\Date;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
@@ -51,17 +53,17 @@ class Html extends \Solo\View\Html
 		$this->returnURL = empty($returnURL) ? '' : $returnURL;
 
 		// Push the profile ID and name
-		$this->profileId = \AEPlatform::getInstance()->get_active_profile();
-		$this->profileName = \AEPlatform::getInstance()->get_profile_name($this->profileId);
+		$this->profileId = Platform::getInstance()->get_active_profile();
+		$this->profileName = Platform::getInstance()->get_profile_name($this->profileId);
 
 		// If a return URL is set *and* the profile's name is "Site Transfer
 		// Wizard", we are running the Site Transfer Wizard
 		$this->isSTW = ($this->profileName == 'Site Transfer Wizard (do not rename)') && !empty($this->returnURL);
 
 		// Get the domain details from scripting facility
-		$config = \AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 		$script = $config->get('akeeba.basic.backup_type', 'full');
-		$scripting = \AEUtilScripting::loadScripting();
+		$scripting = Factory::getEngineParamsProvider()->loadScripting();
 		$domains = array();
 
 		if (!empty($scripting))
@@ -114,7 +116,7 @@ class Html extends \Solo\View\Html
 		$this->srpInfo = $model->getState('srpinfo', array());
 
 		// Check if the output directory is writable
-		$quirks = \AEUtilQuirks::get_quirks(true);
+		$quirks = Factory::getConfigurationChecks()->getDetailedStatus(true);
 		$this->unwritableOutput = array_key_exists('001', $quirks);
 		$this->hasQuirks = !empty($quirks);
 		$this->hasErrors = false;

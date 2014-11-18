@@ -34,11 +34,14 @@ class Sftpbrowser extends ControllerDefault
 		$model = $this->getModel();
 
 		// Grab the data and push them to the model
+		$directory = $this->input->getRaw('directory', '');
+		$directory = '/' . ltrim($directory, '/');
+
 		$model->setState('host',		$this->input->getString('host', ''));
-		$model->setState('port',		$this->input->getInt('port', 21));
+		$model->setState('port',		$this->input->getInt('port', 22));
 		$model->setState('username',	$this->input->getRaw('username', ''));
 		$model->setState('password',	$this->input->getRaw('password', ''));
-		$model->setState('directory',	$this->input->getRaw('directory', ''));
+		$model->setState('directory', $directory);
 		$model->setState('privKey',		$this->input->getRaw('privkey', ''));
 		$model->setState('pubKey',		$this->input->getRaw('pubkey', ''));
 

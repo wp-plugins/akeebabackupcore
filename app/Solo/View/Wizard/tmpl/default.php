@@ -13,7 +13,7 @@ use Solo\Helper\Escape;
 /** @var \Solo\View\Wizard\Html $this */
 
 $router = $this->container->router;
-$config = \AEFactory::getConfiguration();
+$config = \Akeeba\Engine\Factory::getConfiguration();
 
 ?>
 <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="dialogLabel" aria-hidden="true">
@@ -227,6 +227,18 @@ $config = \AEFactory::getConfiguration();
 			</div>
 
 			<div class="form-group">
+				<label for="extradirs" class="col-sm-3 control-label">
+					<?php echo Text::_('SOLO_CONFIG_PLATFORM_EXTRADIRS_TITLE')?>
+				</label>
+				<div class="col-sm-9">
+					<span id="pythiaExtradirs">&nbsp;</span>
+					<div class="help-block">
+						<?php echo Text::_('SOLO_CONFIG_PLATFORM_EXTRADIRS_DESCRIPTION'); ?>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
 				<label for="var[akeeba.advanced.embedded_installer]" class="col-sm-3 control-label">
 					<?php echo Text::_('CONFIG_INSTALLER_TITLE')?>
 				</label>
@@ -267,7 +279,7 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 			Solo.Configuration.onBrowser(folder, element);
 			e.preventDefault();
 			return false;
-		})
+		});
 
 		$('#btnPythia').click(function(e){
 			var element = $(document.getElementById('var[akeeba.platform.newroot]'));

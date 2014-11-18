@@ -2,11 +2,14 @@
 /**
  * Akeeba Engine
  * The modular PHP5 site backup engine
+ *
  * @copyright Copyright (c)2009-2014 Nicholas K. Dionysopoulos
  * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
  *
  */
+
+namespace Akeeba\Engine;
 
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
@@ -14,7 +17,7 @@ defined('AKEEBAENGINE') or die();
 /**
  * The Akeeba Engine configuration registry class
  */
-class AEConfiguration
+class Configuration
 {
 	/** @var   string  Default NameSpace */
 	private $defaultNameSpace = 'global';
@@ -36,22 +39,10 @@ class AEConfiguration
 	/**
 	 * Constructor
 	 *
-	 * @return  AEConfiguration
+	 * @return  Configuration
 	 */
 	public function __construct()
 	{
-		// Assisted Singleton pattern
-		if (function_exists('debug_backtrace'))
-		{
-			$caller = debug_backtrace();
-			$caller = $caller[1];
-
-			if ($caller['class'] != 'AEFactory')
-			{
-				trigger_error("You can't create a direct descendant of " . __CLASS__, E_USER_ERROR);
-			}
-		}
-
 		// Create the default namespace
 		$this->makeNameSpace($this->defaultNameSpace);
 
@@ -62,13 +53,13 @@ class AEConfiguration
 	/**
 	 * Create a namespace
 	 *
-	 * @param   string  $namespace  Name of the namespace to create
+	 * @param   string $namespace Name of the namespace to create
 	 *
 	 * @return  void
 	 */
 	public function makeNameSpace($namespace)
 	{
-		$this->registry[$namespace] = array('data' => new stdClass());
+		$this->registry[$namespace] = array('data' => new \stdClass());
 	}
 
 	/**
@@ -84,9 +75,10 @@ class AEConfiguration
 	/**
 	 * Get a registry value
 	 *
-	 * @param   string   $regpath               Registry path (e.g. global.directory.temporary)
-	 * @param   mixed    $default               Optional default value
-	 * @param   boolean  $process_special_vars  Optional. If true (default), it processes special variables, e.g. [SITEROOT] in folder names
+	 * @param   string  $regpath              Registry path (e.g. global.directory.temporary)
+	 * @param   mixed   $default              Optional default value
+	 * @param   boolean $process_special_vars Optional. If true (default), it processes special variables, e.g.
+	 *                                        [SITEROOT] in folder names
 	 *
 	 * @return  mixed  Value of entry or null
 	 */
@@ -97,7 +89,7 @@ class AEConfiguration
 
 		if (empty($stock_directories))
 		{
-			$stock_directories = AEPlatform::getInstance()->get_stock_directories();
+			$stock_directories = Platform::getInstance()->get_stock_directories();
 		}
 
 		$result = $default;
@@ -107,6 +99,7 @@ class AEConfiguration
 		{
 			// Get the namespace
 			$count = count($nodes);
+
 			if ($count < 2)
 			{
 				$namespace = $this->defaultNameSpace;
@@ -155,9 +148,10 @@ class AEConfiguration
 	/**
 	 * Set a registry value
 	 *
-	 * @param   string  $regpath               Registry Path (e.g. global.directory.temporary)
-	 * @param   mixed   $value                 Value of entry
-	 * @param   bool    $process_special_vars  Optional. If true (default), it processes special variables, e.g. [SITEROOT] in folder names
+	 * @param   string $regpath              Registry Path (e.g. global.directory.temporary)
+	 * @param   mixed  $value                Value of entry
+	 * @param   bool   $process_special_vars Optional. If true (default), it processes special variables, e.g.
+	 *                                       [SITEROOT] in folder names
 	 *
 	 * @return  mixed  Value of old value or boolean false if operation failed
 	 */
@@ -168,7 +162,7 @@ class AEConfiguration
 
 		if (empty($stock_directories))
 		{
-			$stock_directories = AEPlatform::getInstance()->get_stock_directories();
+			$stock_directories = Platform::getInstance()->get_stock_directories();
 		}
 
 		if (in_array($regpath, $this->protected_nodes))
@@ -211,7 +205,7 @@ class AEConfiguration
 			// If any node along the registry path does not exist, create it
 			if (!isset($ns->$nodes[$i]))
 			{
-				$ns->$nodes[$i] = new stdClass();
+				$ns->$nodes[$i] = new \stdClass();
 			}
 			$ns = $ns->$nodes[$i];
 		}
@@ -231,10 +225,12 @@ class AEConfiguration
 			if (!empty($stock_directories))
 			{
 				$data = $value;
+
 				foreach ($stock_directories as $tag => $content)
 				{
 					$data = str_replace($tag, $content, $data);
 				}
+
 				$ns->$nodes[$i] = $data;
 
 				return $ns->$nodes[$i];
@@ -255,7 +251,7 @@ class AEConfiguration
 	/**
 	 * Unset (remove) a registry value
 	 *
-	 * @param   string  $regpath  Registry Path (e.g. global.directory.temporary)
+	 * @param   string $regpath Registry Path (e.g. global.directory.temporary)
 	 *
 	 * @return  boolean  True if the node was removed
 	 */
@@ -298,6 +294,7 @@ class AEConfiguration
 			{
 				return false;
 			}
+
 			$ns = $ns->$nodes[$i];
 		}
 
@@ -312,67 +309,53 @@ class AEConfiguration
 	public function reset()
 	{
 		// Load the Akeeba Engine INI files
-		$ds = DIRECTORY_SEPARATOR;
-		$root_path = dirname(__FILE__);
-
-		if (defined('AKEEBAROOT'))
-		{
-			$root_path = AKEEBAROOT;
-		}
-
-		$plugin_path = $root_path . $ds . 'plugins';
+		$root_path = __DIR__;
 
 		$paths = array(
-			$root_path . $ds . 'core',
-			$root_path . $ds . 'engines' . $ds . 'archiver',
-			$root_path . $ds . 'engines' . $ds . 'dump',
-			$root_path . $ds . 'engines' . $ds . 'scan',
-			$root_path . $ds . 'engines' . $ds . 'writer',
-			$root_path . $ds . 'engines' . $ds . 'proc',
-			$root_path . $ds . 'platform' . $ds . 'filters' . $ds . 'stack',
-			$root_path . $ds . 'filters' . $ds . 'stack',
-			/**/
-			$plugin_path . $ds . 'core',
-			$plugin_path . $ds . 'engines' . $ds . 'archiver',
-			$plugin_path . $ds . 'engines' . $ds . 'dump',
-			$plugin_path . $ds . 'engines' . $ds . 'scan',
-			$plugin_path . $ds . 'engines' . $ds . 'writer',
-			$plugin_path . $ds . 'engines' . $ds . 'proc',
-			$plugin_path . $ds . 'filters' . $ds . 'stack'
-			/**/
+			$root_path . '/Core',
+			$root_path . '/Archiver',
+			$root_path . '/Dump',
+			$root_path . '/Scan',
+			$root_path . '/Writer',
+			$root_path . '/Proc',
+			$root_path . '/Platform/Filter/Stack',
+			$root_path . '/Filter/Stack',
 		);
 
-		$platform_paths = AEPlatform::getInstance()->getPlatformDirectories();
+		$platform_paths = Platform::getInstance()->getPlatformDirectories();
 
 		foreach ($platform_paths as $p)
 		{
-			$paths[] = $p . '/filters/stack';
-			$paths[] = $p . '/config';
+			$paths[] = $p . '/Filter/Stack';
+			$paths[] = $p . '/Config';
 		}
 
 		foreach ($paths as $root)
 		{
-			$handle = false;
-
-			if (is_dir($root) || is_link($root))
+			if (!(is_dir($root) || is_link($root)))
 			{
-				if (is_readable($root))
-				{
-					$handle = @opendir($root);
-				}
+				continue;
 			}
 
-			if ($handle !== false)
+			if (!is_readable($root))
 			{
-				while (false !== ($file = @readdir($handle)))
+				continue;
+			}
+
+			$di = new \DirectoryIterator($root);
+
+			/** @var \DirectoryIterator $file */
+			foreach ($di as $file)
+			{
+				if (!$file->isFile())
 				{
-					if (substr($file, -4) == '.ini')
-					{
-						$this->mergeEngineINI($root . DIRECTORY_SEPARATOR . $file);
-					}
+					continue;
 				}
 
-				closedir($handle);
+				if ($file->getExtension() == 'ini')
+				{
+					$this->mergeEngineINI($file->getRealPath());
+				}
 			}
 		}
 	}
@@ -383,7 +366,8 @@ class AEConfiguration
 	 *
 	 * @param    array $array                An associative array. Its keys are registry paths.
 	 * @param    bool  $noOverride           [optional] Do not override pre-set values.
-	 * @param    bool  $process_special_vars Optional. If true (default), it processes special variables, e.g. [SITEROOT] in folder names
+	 * @param    bool  $process_special_vars Optional. If true (default), it processes special variables, e.g.
+	 *                                       [SITEROOT] in folder names
 	 */
 	public function mergeArray($array, $noOverride = false, $process_special_vars = true)
 	{
@@ -412,8 +396,8 @@ class AEConfiguration
 	 * values. If noOverride is set, only non set or null values will be applied.
 	 * Sections beginning with an underscore will be ignored.
 	 *
-	 * @param   string   $inifile     The full path to the INI file to load
-	 * @param   boolean  $noOverride  [optional] Do not override pre-set values.
+	 * @param   string  $inifile    The full path to the INI file to load
+	 * @param   boolean $noOverride [optional] Do not override pre-set values.
 	 *
 	 * @return  boolean  True on success
 	 */
@@ -424,7 +408,7 @@ class AEConfiguration
 			return false;
 		}
 
-		$inidata = AEUtilINI::parse_ini_file($inifile, true);
+		$inidata = parse_ini_file($inifile, true);
 
 		foreach ($inidata as $rootkey => $rootvalue)
 		{
@@ -464,8 +448,8 @@ class AEConfiguration
 	 * key named "default" and merges its value to the configuration. The other keys
 	 * are simply ignored.
 	 *
-	 * @param   string  $inifile     The absolute path to an INI file
-	 * @param   bool    $noOverride  [optional] If true, values from the INI will not override the configuration
+	 * @param   string $inifile    The absolute path to an INI file
+	 * @param   bool   $noOverride [optional] If true, values from the INI will not override the configuration
 	 *
 	 * @return  boolean  True on success
 	 */
@@ -476,7 +460,7 @@ class AEConfiguration
 			return false;
 		}
 
-		$inidata = AEUtilINI::parse_ini_file($inifile, true);
+		$inidata = parse_ini_file($inifile, true);
 
 		foreach ($inidata as $section => $nodes)
 		{
@@ -565,8 +549,8 @@ class AEConfiguration
 	/**
 	 * Internal function to dump an object as INI-formatted data
 	 *
-	 * @param   object  $object  The object to dump
-	 * @param   string  $prefix  [optional] The prefix to use for the exported data
+	 * @param   object $object The object to dump
+	 * @param   string $prefix [optional] The prefix to use for the exported data
 	 *
 	 * @return  string
 	 */
@@ -574,6 +558,7 @@ class AEConfiguration
 	{
 		$data = '';
 		$vars = get_object_vars($object);
+
 		foreach ($vars as $key => $value)
 		{
 			if (!is_object($value))
@@ -597,8 +582,8 @@ class AEConfiguration
 	/**
 	 * Sets the protection status for a specific configuration key
 	 *
-	 * @param   string|array  $node     The node to protect/unprotect
-	 * @param   boolean       $protect  True to protect, false to unprotect
+	 * @param   string|array $node    The node to protect/unprotect
+	 * @param   boolean      $protect True to protect, false to unprotect
 	 *
 	 * @return  void
 	 */
@@ -664,7 +649,7 @@ class AEConfiguration
 	/**
 	 * Sets the protected keys
 	 *
-	 * @param   array  $keys  A list of keys to protect
+	 * @param   array $keys A list of keys to protect
 	 *
 	 * @return  void
 	 */

@@ -10,6 +10,8 @@ namespace Solo\Controller;
 use Awf\Application\Application;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 class Check extends ControllerDefault
 {
@@ -43,10 +45,10 @@ class Check extends ControllerDefault
 	private function checkPermissions()
 	{
 		// Is frontend backup enabled?
-		$febEnabled = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
+		$febEnabled = Platform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
 		$febEnabled = in_array($febEnabled, array('on', 'checked', 'true', 1, 'yes'));
 
-		$validKey = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
+		$validKey = Platform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
 		$validKeyTrim = trim($validKey);
 
 		if (!$febEnabled || empty($validKey))
@@ -76,6 +78,6 @@ class Check extends ControllerDefault
 		$session = Application::getInstance()->getContainer()->segment;
 		$session->profile = $profile;
 
-		\AEPlatform::getInstance()->load_configuration($profile);
+		Platform::getInstance()->load_configuration($profile);
 	}
 } 

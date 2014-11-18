@@ -7,6 +7,7 @@
 
 namespace Solo\View\Profiles;
 
+use Akeeba\Engine\Platform;
 use Awf\Mvc\DataModel;
 use Awf\Pagination\Pagination;
 use Solo\View\DataHtml;
@@ -53,10 +54,10 @@ class Html extends DataHtml
 		}
 
 		// Pass the profile ID and name
-		$this->profileid = \AEPlatform::getInstance()->get_active_profile();
+		$this->profileid = Platform::getInstance()->get_active_profile();
 
 		// Get profile name
-		$this->profilename = \AEPlatform::getInstance()->get_profile_name($this->profileid);
+		$this->profilename = Platform::getInstance()->get_profile_name($this->profileid);
 
 		return parent::onBeforeBrowse();
 	}

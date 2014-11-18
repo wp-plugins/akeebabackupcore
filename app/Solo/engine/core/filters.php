@@ -2,19 +2,28 @@
 /**
  * Akeeba Engine
  * The modular PHP5 site backup engine
+ *
  * @copyright Copyright (c)2009-2014 Nicholas K. Dionysopoulos
  * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
  *
  */
 
+namespace Akeeba\Engine\Core;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Base\Object;
+use Akeeba\Engine\Platform;
+use \Akeeba\Engine\Filter\Base as FilterBase;
 
 /**
  * Akeeba filtering feature
  */
-final class AECoreFilters extends AEAbstractObject
+class Filters extends Object
 {
 	/** @var array An array holding data for all defined filters */
 	private $filter_registry = array();
@@ -28,154 +37,172 @@ final class AECoreFilters extends AEAbstractObject
 	/**
 	 * Public constructor, loads filter data and filter classes
 	 */
-	public final function __construct()
+	public function __construct()
 	{
-		static $initializing = false;
-
-		parent::__construct(); // Call parent's constructor
-
 		// Load filter data from platform's database
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Fetching filter data from database');
-		$this->filter_registry = AEPlatform::getInstance()->load_filters();
+		Factory::getLog()->log(LogLevel::DEBUG, 'Fetching filter data from database');
+		$this->filter_registry = Platform::getInstance()->load_filters();
 
 		// Load platform, plugin and core filters
 		$this->filters = array();
+
 		$locations = array(
-			AEFactory::getAkeebaRoot() . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'filters',
-			AEFactory::getAkeebaRoot() . DIRECTORY_SEPARATOR . 'filters'
+			Factory::getAkeebaRoot() . '/Filter'
 		);
-		$platform_paths = AEPlatform::getInstance()->getPlatformDirectories();
+
+		$platform_paths = Platform::getInstance()->getPlatformDirectories();
+
 		foreach ($platform_paths as $p)
 		{
-			$locations[] = $p . '/filters';
+			$locations[] = $p . '/Filter';
 		}
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Loading filters');
+
+		Factory::getLog()->log(LogLevel::DEBUG, 'Loading filters');
+
 		foreach ($locations as $folder)
 		{
-			$is_platform = $this->isPlatformDirectory($folder);
-			$files = AEUtilScanner::getFiles($folder);
-			if ($files === false)
+			if (!@is_dir($folder))
 			{
 				continue;
-			} // Skip inexistent folders
-			if (empty($files))
+			}
+
+			if (!@is_readable($folder))
 			{
 				continue;
-			} // Skip no-match folders
+			}
 
-			// Loop all files
-			foreach ($files as $file)
+			$di = new \DirectoryIterator($folder);
+
+			foreach ($di as $file)
 			{
-				if (substr($file, -4) != '.php')
+				if (!$file->isFile())
 				{
-					continue; // Skip non-PHP files
-				}
-				if (in_array(substr($file, 0, 1), array('.', '_')))
-				{
-					continue; // Skip filter files starting with dot or dash
+					continue;
 				}
 
-                // Some hosts copy .ini and .php files, renaming them (ie foobar.1.php)
-                // We need to exclude them, otherwise we'll get a fatal error for declaring the same class twice
-                $bare_name = strtolower(basename($file, '.php'));
+				if ($file->getExtension() != 'php')
+				{
+					continue;
+				}
 
-                if(preg_match('/[^a-z0-9]/', $bare_name))
-                {
-                    continue;
-                }
+				$filename = $file->getFilename();
 
-				$filter_name = ($is_platform ? 'Platform' : '') . ucfirst(basename($file, '.php')); // Extract filter base name
+				// Skip filter files starting with dot or dash
+				if (in_array(substr($filename, 0, 1), array('.', '_')))
+				{
+					continue;
+				}
+
+				// Some hosts copy .ini and .php files, renaming them (ie foobar.1.php)
+				// We need to exclude them, otherwise we'll get a fatal error for declaring the same class twice
+				$bare_name = $file->getBasename('.php');
+
+				if (preg_match('/[^a-zA-Z0-9]/', $bare_name))
+				{
+					continue;
+				}
+
+				// Extract filter base name
+				$filter_name = ucfirst($bare_name);
+
+				// This is an abstract class; do not try to create instance
+				if ($filter_name == 'Base')
+				{
+					continue;
+				}
+
+				// Skip already loaded filters
 				if (array_key_exists($filter_name, $this->filters))
 				{
-					continue; // Skip already loaded filters
+					continue;
 				}
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '-- Loading filter ' . $filter_name);
-				$this->filters[$filter_name] = AEFactory::getFilterObject($filter_name); // Add the filter
+
+				Factory::getLog()->log(LogLevel::DEBUG, '-- Loading filter ' . $filter_name);
+
+				// Add the filter
+				$this->filters[$filter_name] = Factory::getFilterObject($filter_name);
 			}
 		}
 
 		// Load platform, plugin and core stacked filters
 		$locations = array(
-			AEFactory::getAkeebaRoot() . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'filters' . DIRECTORY_SEPARATOR . 'stack',
-			AEFactory::getAkeebaRoot() . DIRECTORY_SEPARATOR . 'filters' . DIRECTORY_SEPARATOR . 'stack'
+			Factory::getAkeebaRoot() . '/Filter/Stack'
 		);
-		$platform_paths = AEPlatform::getInstance()->getPlatformDirectories();
+
+		$platform_paths       = Platform::getInstance()->getPlatformDirectories();
 		$platform_stack_paths = array();
+
 		foreach ($platform_paths as $p)
 		{
-			$locations[] = $p . '/filters';
-			$locations[] = $p . '/filters/stack';
-			$platform_stack_paths[] = $p . '/filters/stack';
+			$locations[]            = $p . '/Filter';
+			$locations[]            = $p . '/Filter/Stack';
+			$platform_stack_paths[] = $p . '/Filter/Stack';
 		}
 
-		$config = AEFactory::getConfiguration();
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Loading optional filters');
+		$config = Factory::getConfiguration();
+		Factory::getLog()->log(LogLevel::DEBUG, 'Loading optional filters');
+
 		foreach ($locations as $folder)
 		{
-			$is_platform = $this->isPlatformDirectory($folder);
-			$files = AEUtilScanner::getFiles($folder);
-			if ($files === false)
+			if (!@is_dir($folder))
 			{
 				continue;
-			} // Skip inexistent folders
-			if (empty($files))
-			{
-				continue;
-			} // Skip no-match folders
+			}
 
-			// Loop all files
-			foreach ($files as $file)
+			if (!@is_readable($folder))
 			{
-				if (substr($file, -4) != '.php')
+				continue;
+			}
+
+			$di = new \DirectoryIterator($folder);
+
+			/** @var \DirectoryIterator $file */
+			foreach ($di as $file)
+			{
+				if (!$file->isFile())
 				{
 					continue;
-				} // Skip non-PHP files
+				}
 
-                // Some hosts copy .ini and .php files, renaming them (ie foobar.1.php)
-                // We need to exclude them, otherwise we'll get a fatal error for declaring the same class twice
-                $bare_name = strtolower(basename($file, '.php'));
+				if ($file->getExtension() != 'php')
+				{
+					continue;
+				}
 
-                if(preg_match('/[^a-z0-9]/', $bare_name))
-                {
-                    continue;
-                }
+				// Some hosts copy .ini and .php files, renaming them (ie foobar.1.php)
+				// We need to exclude them, otherwise we'll get a fatal error for declaring the same class twice
+				$bare_name = strtolower($file->getBasename('.php'));
 
-				$filter_name = 'Stack' . ($is_platform ? 'Platform' : '') . ucfirst(basename($file, '.php')); // Extract filter base name
+				if (preg_match('/[^A-Za-z0-9]/', $bare_name))
+				{
+					continue;
+				}
+
+				// Extract filter base name
+				$filter_name = 'Stack' . ucfirst($bare_name);
+
+				// Skip already loaded filters
 				if (array_key_exists($filter_name, $this->filters))
 				{
 					continue;
-				} // Skip already loaded filters
-				if (!file_exists($folder . '/' . substr($file, 0, -4) . '.ini'))
+				}
+
+				// Make sure the INI file also exists
+				if ( !file_exists($folder . '/' . $bare_name . '.ini'))
 				{
 					continue;
-				} // Make sure the INI file also exists
+				}
+
 				$key = "core.filters.$bare_name.enabled";
+
 				if ($config->get($key, 0))
 				{
-					AEUtilLogger::WriteLog(_AE_LOG_DEBUG, '-- Loading optional filter ' . $filter_name);
-					$this->filters[$filter_name] = AEFactory::getFilterObject($filter_name); // Add the filter
+					Factory::getLog()->log(LogLevel::DEBUG, '-- Loading optional filter ' . $filter_name);
+					// Add the filter
+					$this->filters[$filter_name] = Factory::getFilterObject($filter_name);
 				}
 			}
 		}
-	}
-
-	private function isPlatformDirectory($path)
-	{
-		static $allPlatformPaths = array();
-
-		if (empty($allPlatformPaths))
-		{
-			$platform_paths = AEPlatform::getInstance()->getPlatformDirectories();
-			foreach ($platform_paths as $p)
-			{
-				$allPlatformPaths[] = AEUtilFilesystem::TranslateWinPath($p . '/filters');
-				$allPlatformPaths[] = AEUtilFilesystem::TranslateWinPath($p . '/filters/stack');
-			}
-		}
-
-		$search = AEUtilFilesystem::TranslateWinPath($path);
-
-		return in_array($search, $allPlatformPaths);
 	}
 
 	/**
@@ -189,14 +216,18 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @return    bool    True if it is a filtered element
 	 */
-	public final function isFilteredExtended($test, $root, $object, $subtype, &$by_filter)
+	public function isFilteredExtended($test, $root, $object, $subtype, &$by_filter)
 	{
-		if (!$this->cleanup_has_run)
+		if ( !$this->cleanup_has_run)
 		{
 			// Loop the filters and clean up those with no data
+			/**
+			 * @var string $filter_name
+			 * @var FilterBase $filter
+			 */
 			foreach ($this->filters as $filter_name => $filter)
 			{
-				if (!$this->filters[$filter_name]->hasFilters())
+				if ( !$filter->hasFilters())
 				{
 					unset($this->filters[$filter_name]);
 				} // Remove empty filters
@@ -205,7 +236,7 @@ final class AECoreFilters extends AEAbstractObject
 		}
 
 		$by_filter = '';
-		if (!empty($this->filters))
+		if ( !empty($this->filters))
 		{
 			foreach ($this->filters as $filter_name => $filter)
 			{
@@ -236,7 +267,7 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @return    bool    True if it is a filtered element
 	 */
-	public final function isFiltered($test, $root, $object, $subtype)
+	public function isFiltered($test, $root, $object, $subtype)
 	{
 		$by_filter = '';
 
@@ -248,17 +279,28 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @param    string $object The inclusion object (dir|db)
 	 *
-	 * @return unknown_type
+	 * @return array
 	 */
-	public final function &getInclusions($object)
+	public function &getInclusions($object)
 	{
 		$inclusions = array();
-		if (!empty($this->filters))
+
+		if ( !empty($this->filters))
 		{
+			/**
+			 * @var string $filter_name
+			 * @var FilterBase $filter
+			 */
 			foreach ($this->filters as $filter_name => $filter)
 			{
+				if (!is_object($filter))
+				{
+					Factory::getLog()->log(LogLevel::ERROR, "Object for filter $filter_name not found. The engine will now crash.");
+				}
+
 				$new_inclusions = $filter->getInclusions($object);
-				if (!empty($new_inclusions))
+
+				if ( !empty($new_inclusions))
 				{
 					$inclusions = array_merge($inclusions, $new_inclusions);
 				}
@@ -275,7 +317,7 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @return    array    The filter data for the requested filter
 	 */
-	public final function &getFilterData($filter_name)
+	public function &getFilterData($filter_name)
 	{
 		if (array_key_exists($filter_name, $this->filter_registry))
 		{
@@ -295,18 +337,19 @@ final class AECoreFilters extends AEAbstractObject
 	 * @param    string $filter_name The filter for which to modify the stored data
 	 * @param    string $data        The new data
 	 */
-	public final function setFilterData($filter_name, &$data)
+	public function setFilterData($filter_name, &$data)
 	{
 		$this->filter_registry[$filter_name] = $data;
 	}
 
 	/**
 	 * Saves all filters to the platform defined database
+	 *
 	 * @return bool    True on success
 	 */
-	public final function save()
+	public function save()
 	{
-		return AEPlatform::getInstance()->save_filters($this->filter_registry);
+		return Platform::getInstance()->save_filters($this->filter_registry);
 	}
 
 	/**
@@ -316,17 +359,21 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @return string
 	 */
-	public final function &getExtraSQL($root)
+	public function &getExtraSQL($root)
 	{
 		$ret = "";
 		if (count($this->filters) >= 1)
 		{
+			/**
+			 * @var string $filter_name
+			 * @var FilterBase $filter
+			 */
 			foreach ($this->filters as $filter_name => $filter)
 			{
 				$extra_sql = $filter->getExtraSQL($root);
-				if (!empty($extra_sql))
+				if ( !empty($extra_sql))
 				{
-					if (!empty($ret))
+					if ( !empty($ret))
 					{
 						$ret .= "\n";
 					}
@@ -346,7 +393,7 @@ final class AECoreFilters extends AEAbstractObject
 	 *
 	 * @return bool
 	 */
-	public final function hasFilterType($object, $subtype = null)
+	public function hasFilterType($object, $subtype = null)
 	{
 		foreach ($this->filters as $filter_name => $filter)
 		{

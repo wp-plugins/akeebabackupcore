@@ -5,6 +5,8 @@
  * @license        GNU GPL version 3 or later
  */
 
+use Akeeba\Engine\Factory;
+
 /** @var \Solo\View\Profiles\Json $this */
 
 /** @var \Solo\Model\Profiles $model */
@@ -15,9 +17,9 @@ $data = $model->toArray();
 if (substr($data['configuration'], 0, 12) == '###AES128###')
 {
 	// Load the server key file if necessary
-	$key = AEUtilSecuresettings::getKey();
+	$key = Factory::getSecureSettings()->getKey();
 
-	$data['configuration'] = \AEUtilSecuresettings::decryptSettings($data['configuration'], $key);
+	$data['configuration'] = Factory::getSecureSettings()->decryptSettings($data['configuration'], $key);
 }
 
 $defaultName = $this->input->get('view', 'joomla', 'cmd');

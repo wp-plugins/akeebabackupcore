@@ -9,13 +9,20 @@
  *
  */
 
+namespace Akeeba\Engine\Core\Domain;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Part;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * Backup initialization domain
  */
-class AECoreDomainInit extends AEAbstractPart
+class Init extends Part
 {
 	/** @var   string  The backup description */
 	private $description = '';
@@ -26,13 +33,13 @@ class AECoreDomainInit extends AEAbstractPart
 	/**
 	 * Implements the constructor of the class
 	 *
-	 * @return  AECoreDomainInit
+	 * @return  Init
 	 */
 	public function __construct()
 	{
 		parent::__construct();
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: New instance");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: New instance");
 	}
 
 	/**
@@ -72,10 +79,10 @@ class AECoreDomainInit extends AEAbstractPart
 		}
 
 		// Load configuration
-		AEPlatform::getInstance()->load_configuration();
+		Platform::getInstance()->load_configuration();
 
 		// Initialize counters
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 
 		if (!empty($jpskey))
 		{
@@ -88,11 +95,11 @@ class AECoreDomainInit extends AEAbstractPart
 		}
 
 		// Initialize temporary storage
-		AEUtilTempvars::reset();
+		Factory::getFactoryStorage()->reset();
 
 		// Force load the tag -- do not delete!
-		$kettenrad = AEFactory::getKettenrad();
-		$tag = $kettenrad->getTag();
+		$kettenrad = Factory::getKettenrad();
+		$tag = $kettenrad->getTag(); // Yes, this is an unused variable by we MUST run this method. DO NOT DELETE.
 
 		// Push the comment and description in temp vars for use in the installer phase
 		$registry->set('volatile.core.description', $this->description);
@@ -110,7 +117,7 @@ class AECoreDomainInit extends AEAbstractPart
 	{
 		if ($this->getState() == 'postrun')
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Already finished");
+			Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Already finished");
 			$this->setStep('');
 			$this->setSubstep('');
 
@@ -125,31 +132,31 @@ class AECoreDomainInit extends AEAbstractPart
 		$extraNotes = null;
 
 		// Load the version defines
-		AEPlatform::getInstance()->load_version_defines();
+		Platform::getInstance()->load_version_defines();
 
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 
 		// Write log file's header
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "--------------------------------------------------------------------------------");
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "Akeeba Backup " . AKEEBA_VERSION . ' (' . AKEEBA_DATE . ')');
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "Got backup?");
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "--------------------------------------------------------------------------------");
+		Factory::getLog()->log(LogLevel::INFO, "--------------------------------------------------------------------------------");
+		Factory::getLog()->log(LogLevel::INFO, "Akeeba Backup " . AKEEBA_VERSION . ' (' . AKEEBA_DATE . ')');
+		Factory::getLog()->log(LogLevel::INFO, "Got backup?");
+		Factory::getLog()->log(LogLevel::INFO, "--------------------------------------------------------------------------------");
 
 		// PHP configuration variables are tried to be logged only for debug and info log levels
-		if ($registry->get('akeeba.basic.log_level') >= _AE_LOG_INFO)
+		if ($registry->get('akeeba.basic.log_level') >= 2)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "--- System Information ---");
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "PHP Version        :" . PHP_VERSION);
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "PHP OS             :" . PHP_OS);
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "PHP SAPI           :" . PHP_SAPI);
+			Factory::getLog()->log(LogLevel::INFO, "--- System Information ---");
+			Factory::getLog()->log(LogLevel::INFO, "PHP Version        :" . PHP_VERSION);
+			Factory::getLog()->log(LogLevel::INFO, "PHP OS             :" . PHP_OS);
+			Factory::getLog()->log(LogLevel::INFO, "PHP SAPI           :" . PHP_SAPI);
 
 			if (function_exists('php_uname'))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, "OS Version         :" . php_uname('s'));
+				Factory::getLog()->log(LogLevel::INFO, "OS Version         :" . php_uname('s'));
 			}
 
-			$db = AEFactory::getDatabase();
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "DB Version         :" . $db->getVersion());
+			$db = Factory::getDatabase();
+			Factory::getLog()->log(LogLevel::INFO, "DB Version         :" . $db->getVersion());
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{
@@ -164,42 +171,42 @@ class AECoreDomainInit extends AEAbstractPart
 				$server = 'n/a';
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Web Server         :" . $server);
+			Factory::getLog()->log(LogLevel::INFO, "Web Server         :" . $server);
 
 			$platform = 'Unknown platform';
 			$version = '(unknown version)';
-			$platformData = AEPlatform::getInstance()->getPlatformVersion();
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, $platformData['name'] . " version    :" . $platformData['version']);
+			$platformData = Platform::getInstance()->getPlatformVersion();
+			Factory::getLog()->log(LogLevel::INFO, $platformData['name'] . " version    :" . $platformData['version']);
 
 			if (isset($_SERVER['HTTP_USER_AGENT']))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, "User agent         :" . phpversion() <= "4.2.1" ? getenv("HTTP_USER_AGENT") : $_SERVER['HTTP_USER_AGENT']);
+				Factory::getLog()->log(LogLevel::INFO, "User agent         :" . phpversion() <= "4.2.1" ? getenv("HTTP_USER_AGENT") : $_SERVER['HTTP_USER_AGENT']);
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Safe mode          :" . ini_get("safe_mode"));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Display errors     :" . ini_get("display_errors"));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Error reporting    :" . self::error2string());
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Error display      :" . self::errordisplay());
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Disabled functions :" . ini_get("disable_functions"));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "open_basedir restr.:" . ini_get('open_basedir'));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Max. exec. time    :" . ini_get("max_execution_time"));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Memory limit       :" . ini_get("memory_limit"));
+			Factory::getLog()->log(LogLevel::INFO, "Safe mode          :" . ini_get("safe_mode"));
+			Factory::getLog()->log(LogLevel::INFO, "Display errors     :" . ini_get("display_errors"));
+			Factory::getLog()->log(LogLevel::INFO, "Error reporting    :" . self::error2string());
+			Factory::getLog()->log(LogLevel::INFO, "Error display      :" . self::errordisplay());
+			Factory::getLog()->log(LogLevel::INFO, "Disabled functions :" . ini_get("disable_functions"));
+			Factory::getLog()->log(LogLevel::INFO, "open_basedir restr.:" . ini_get('open_basedir'));
+			Factory::getLog()->log(LogLevel::INFO, "Max. exec. time    :" . ini_get("max_execution_time"));
+			Factory::getLog()->log(LogLevel::INFO, "Memory limit       :" . ini_get("memory_limit"));
 
 			if (function_exists("memory_get_usage"))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, "Current mem. usage :" . memory_get_usage());
+				Factory::getLog()->log(LogLevel::INFO, "Current mem. usage :" . memory_get_usage());
 			}
 
 			if (function_exists("gzcompress"))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, "GZIP Compression   : available (good)");
+				Factory::getLog()->log(LogLevel::INFO, "GZIP Compression   : available (good)");
 			}
 			else
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, "GZIP Compression   : n/a (no compression)");
+				Factory::getLog()->log(LogLevel::INFO, "GZIP Compression   : n/a (no compression)");
 			}
 
-			$extraNotes = AEPlatform::getInstance()->log_platform_special_directories();
+			$extraNotes = Platform::getInstance()->log_platform_special_directories();
 
 			if (!empty($extraNotes) && is_array($extraNotes))
 			{
@@ -220,50 +227,51 @@ class AECoreDomainInit extends AEAbstractPart
 				}
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Output directory   :" . $registry->get('akeeba.basic.output_directory'));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Part size (bytes)  :" . $registry->get('engine.archiver.common.part_size', 0));
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "--------------------------------------------------------------------------------");
+			Factory::getLog()->log(LogLevel::INFO, "Output directory   :" . $registry->get('akeeba.basic.output_directory'));
+			Factory::getLog()->log(LogLevel::INFO, "Part size (bytes)  :" . $registry->get('engine.archiver.common.part_size', 0));
+			Factory::getLog()->log(LogLevel::INFO, "--------------------------------------------------------------------------------");
 		}
 
 		// Quirks reporting
-		$quirks = AEUtilQuirks::get_quirks(true);
+		$quirks = Factory::getConfigurationChecks()->getDetailedStatus(true);
 
 		if (!empty($quirks))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Akeeba Backup has detected the following potential problems:");
+			Factory::getLog()->log(LogLevel::INFO, "Akeeba Backup has detected the following potential problems:");
 
 			foreach ($quirks as $q)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, '- ' . $q['code'] . ' ' . $q['description'] . ' (' . $q['severity'] . ')');
+				Factory::getLog()->log(LogLevel::INFO, '- ' . $q['code'] . ' ' . $q['description'] . ' (' . $q['severity'] . ')');
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "You probably do not have to worry about them, but you should be aware of them.");
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "--------------------------------------------------------------------------------");
+			Factory::getLog()->log(LogLevel::INFO, "You probably do not have to worry about them, but you should be aware of them.");
+			Factory::getLog()->log(LogLevel::INFO, "--------------------------------------------------------------------------------");
 		}
 
 		if (!version_compare(PHP_VERSION, '5.3.4', 'ge'))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, "You are using an outdated version of PHP. Akeeba Engine may not work properly. Please upgrade to PHP 5.3.4 or later.");
+			Factory::getLog()->log(LogLevel::WARNING, "You are using an outdated version of PHP. Akeeba Engine may not work properly. Please upgrade to PHP 5.3.4 or later.");
 		}
 
 		// Report profile ID
-		$profile_id = AEPlatform::getInstance()->get_active_profile();
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "Loaded profile #$profile_id");
+		$profile_id = Platform::getInstance()->get_active_profile();
+		Factory::getLog()->log(LogLevel::INFO, "Loaded profile #$profile_id");
 
 		// Get archive name
-		AEUtilFilesystem::get_archive_name($relativeArchiveName, $absoluteArchiveName);
+		list($relativeArchiveName, $absoluteArchiveName) = $this->getArchiveName();
 
 		// ==== Stats initialisation ===
-		$origin = AEPlatform::getInstance()->get_backup_origin(); // Get backup origin
-		$profile_id = AEPlatform::getInstance()->get_active_profile(); // Get active profile
+		$origin = Platform::getInstance()->get_backup_origin(); // Get backup origin
+		$profile_id = Platform::getInstance()->get_active_profile(); // Get active profile
 
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$backupType = $registry->get('akeeba.basic.backup_type');
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Backup type is now set to '" . $backupType . "'");
+		Factory::getLog()->log(LogLevel::DEBUG, "Backup type is now set to '" . $backupType . "'");
 
 		// Substitute "variables" in the archive name
-		$description = AEUtilFilesystem::replace_archive_name_variables($this->description);
-		$comment = AEUtilFilesystem::replace_archive_name_variables($this->comment);
+		$fsUtils = Factory::getFilesystemTools();
+		$description = $fsUtils->replace_archive_name_variables($this->description);
+		$comment = $fsUtils->replace_archive_name_variables($this->comment);
 
 		if ($registry->get('volatile.writer.store_on_server', true))
 		{
@@ -278,12 +286,12 @@ class AECoreDomainInit extends AEAbstractPart
 			$stat_absoluteArchiveName = '';
 		}
 
-		$kettenrad = AEFactory::getKettenrad();
+		$kettenrad = Factory::getKettenrad();
 
 		$temp = array(
 			'description'   => $description,
 			'comment'       => $comment,
-			'backupstart'   => AEPlatform::getInstance()->get_timestamp_database(),
+			'backupstart'   => Platform::getInstance()->get_timestamp_database(),
 			'status'        => 'run',
 			'origin'        => $origin,
 			'type'          => $backupType,
@@ -293,11 +301,11 @@ class AECoreDomainInit extends AEAbstractPart
 			'multipart'     => 0,
 			'filesexist'    => 1,
 			'tag'           => $kettenrad->getTag(),
-			'backupid'		=> $kettenrad->getBackupId(),
+			'backupid'      => $kettenrad->getBackupId(),
 		);
 
 		// Save the entry
-		$statistics = AEFactory::getStatistics();
+		$statistics = Factory::getStatistics();
 		$statistics->setStatistics($temp);
 
 		if ($statistics->getError())
@@ -310,12 +318,12 @@ class AECoreDomainInit extends AEAbstractPart
 		$statistics->release_multipart_lock();
 
 		// Initialize the archive.
-		if (AEUtilScripting::getScriptingParameter('core.createarchive', true))
+		if (Factory::getEngineParamsProvider()->getScriptingParameter('core.createarchive', true))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Expanded archive file name: " . $absoluteArchiveName);
+			Factory::getLog()->log(LogLevel::DEBUG, "Expanded archive file name: " . $absoluteArchiveName);
 
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Initializing archiver engine");
-			$archiver = AEFactory::getArchiverEngine();
+			Factory::getLog()->log(LogLevel::DEBUG, "Initializing archiver engine");
+			$archiver = Factory::getArchiverEngine();
 			$archiver->initialize($absoluteArchiveName);
 			$archiver->setComment($comment); // Add the comment to the archive itself.
 			$archiver->propagateToObject($this);
@@ -401,5 +409,45 @@ class AECoreDomainInit extends AEAbstractPart
 		}
 
 		return ini_get('display_errors') ? 'on' : 'off';
+	}
+
+	/**
+	 * Returns the relative and absolute path to the archive
+	 */
+	protected function getArchiveName()
+	{
+		$registry = Factory::getConfiguration();
+
+		// Import volatile scripting keys to the registry
+		Factory::getEngineParamsProvider()->importScriptingToRegistry();
+
+		// Determine the extension
+		$force_extension = Factory::getEngineParamsProvider()->getScriptingParameter('core.forceextension', null);
+
+		if (is_null($force_extension))
+		{
+			$archiver = Factory::getArchiverEngine();
+			$extension = $archiver->getExtension();
+		}
+		else
+		{
+			$extension = $force_extension;
+		}
+
+		// Get the template name
+		$templateName = $registry->get('akeeba.basic.archive_name');
+		Factory::getLog()->log(LogLevel::DEBUG, "Archive template name: $templateName");
+
+		// Parse all tags
+		$fsUtils = Factory::getFilesystemTools();
+		$templateName = $fsUtils->replace_archive_name_variables($templateName);
+
+		Factory::getLog()->log(LogLevel::DEBUG, "Expanded template name: $templateName");
+
+		$ds = DIRECTORY_SEPARATOR;
+		$relative_path = $templateName . $extension;
+		$absolute_path = $fsUtils->TranslateWinPath($registry->get('akeeba.basic.output_directory') . $ds . $relative_path);
+
+		return array($relative_path, $absolute_path);
 	}
 }

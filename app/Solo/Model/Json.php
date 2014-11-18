@@ -10,6 +10,8 @@ namespace Solo\Model;
 use Awf\Date\Date;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 // JSON API version number
 define('AKEEBA_JSON_API_VERSION', '330');
@@ -21,12 +23,6 @@ define('AKEEBA_JSON_API_VERSION', '330');
  * 320  Minor bug fixes
  * 330  Introduction of Akeeba Solo
  */
-
-// Force load the AEUtilEncrypt class if it's Akeeba Backup Professional
-if (AKEEBA_PRO == 1)
-{
-	$dummy = new \AEUtilEncrypt;
-}
 
 if (!defined('AKEEBA_BACKUP_ORIGIN'))
 {
@@ -75,7 +71,7 @@ class Json extends Model
 	public function execute($json)
 	{
 		// Check if we're activated
-		$enabled = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
+		$enabled = Platform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
 
 		if (!$enabled)
 		{
@@ -103,7 +99,7 @@ class Json extends Model
 		// Request format: {encapsulation, body{ [key], [challenge], method, [data] }} or {[challenge], method, [data]}
 		if (isset($request->encapsulation) && isset($request->body))
 		{
-			if (!class_exists('\\AEUtilEncrypt') && !($request->encapsulation == self::ENCAPSULATION_RAW))
+			if (!class_exists('\\Akeeba\\Engine\\Util\\Encrypt') && !($request->encapsulation == self::ENCAPSULATION_RAW))
 			{
 				// Encrypted request found, but there is no encryption class available!
 				$this->data = 'This server does not support encrypted requests';
@@ -120,7 +116,7 @@ class Json extends Model
 					if (!isset($body))
 					{
 						$request->body = base64_decode($request->body);
-						$body = \AEUtilEncrypt::AESDecryptCBC($request->body, $this->serverKey(), 128);
+						$body = Factory::getEncryption()->AESDecryptCBC($request->body, $this->serverKey(), 128);
 					}
 					break;
 
@@ -128,21 +124,21 @@ class Json extends Model
 					if (!isset($body))
 					{
 						$request->body = base64_decode($request->body);
-						$body = \AEUtilEncrypt::AESDecryptCBC($request->body, $this->serverKey(), 256);
+						$body = Factory::getEncryption()->AESDecryptCBC($request->body, $this->serverKey(), 256);
 					}
 					break;
 
 				case self::ENCAPSULATION_AESCTR128:
 					if (!isset($body))
 					{
-						$body = \AEUtilEncrypt::AESDecryptCtr($request->body, $this->serverKey(), 128);
+						$body = Factory::getEncryption()->AESDecryptCtr($request->body, $this->serverKey(), 128);
 					}
 					break;
 
 				case self::ENCAPSULATION_AESCTR256:
 					if (!isset($body))
 					{
-						$body = \AEUtilEncrypt::AESDecryptCtr($request->body, $this->serverKey(), 256);
+						$body = Factory::getEncryption()->AESDecryptCtr($request->body, $this->serverKey(), 256);
 					}
 					break;
 
@@ -317,19 +313,19 @@ class Json extends Model
 				break;
 
 			case self::ENCAPSULATION_AESCTR128:
-				$data = \AEUtilEncrypt::AESEncryptCtr($data, $this->password, 128);
+				$data = Factory::getEncryption()->AESEncryptCtr($data, $this->password, 128);
 				break;
 
 			case self::ENCAPSULATION_AESCTR256:
-				$data = \AEUtilEncrypt::AESEncryptCtr($data, $this->password, 256);
+				$data = Factory::getEncryption()->AESEncryptCtr($data, $this->password, 256);
 				break;
 
 			case self::ENCAPSULATION_AESCBC128:
-				$data = base64_encode(\AEUtilEncrypt::AESEncryptCBC($data, $this->password, 128));
+				$data = base64_encode(Factory::getEncryption()->AESEncryptCBC($data, $this->password, 128));
 				break;
 
 			case self::ENCAPSULATION_AESCBC256:
-				$data = base64_encode(\AEUtilEncrypt::AESEncryptCBC($data, $this->password, 256));
+				$data = base64_encode(Factory::getEncryption()->AESEncryptCBC($data, $this->password, 256));
 				break;
 		}
 
@@ -344,7 +340,7 @@ class Json extends Model
 
 		if (is_null($key))
 		{
-			$key = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
+			$key = Platform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
 		}
 
 		return $key;
@@ -406,7 +402,7 @@ class Json extends Model
 		extract($config);
 
 		// Nuke the factory
-		\AEFactory::nuke();
+		Factory::nuke();
 
 		// Set the profile. Note: $profile is set by extract($config) above.
 		$profile = (int)$profile;
@@ -442,7 +438,7 @@ class Json extends Model
 		$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
 		$session->profile = $profile;
 
-		\AEPlatform::getInstance()->load_configuration($profile);
+		Platform::getInstance()->load_configuration($profile);
 
 		// Use the default description if none specified
 		if (empty($description))
@@ -452,18 +448,19 @@ class Json extends Model
 		}
 
 		// Start the backup
-		\AECoreKettenrad::reset(array(
+		Factory::resetState(array(
 			'maxrun' => 0
 		));
 
-		\AEUtilTempfiles::deleteTempFiles();
+		Factory::getTempFiles()->deleteTempFiles();
 
 		$tempVarsTag = AKEEBA_BACKUP_ORIGIN;
 		$tempVarsTag .= empty($backupid) ? '' : ('.' . $backupid);
 
-		\AEUtilTempvars::reset($tempVarsTag);
+		Factory::getFactoryStorage()->reset($tempVarsTag);
 
-		$kettenrad = \AECoreKettenrad::load(AKEEBA_BACKUP_ORIGIN, $backupid);
+		Factory::loadState(AKEEBA_BACKUP_ORIGIN, $backupid);
+		$kettenrad = Factory::getKettenrad();
 		$kettenrad->setBackupId($backupid);
 
 		$options = array(
@@ -473,7 +470,7 @@ class Json extends Model
 		);
 		$kettenrad->setup($options); // Setting up the engine
 		$array = $kettenrad->tick(); // Initializes the init domain
-		\AECoreKettenrad::save(AKEEBA_BACKUP_ORIGIN, $backupid);
+		Factory::saveState(AKEEBA_BACKUP_ORIGIN, $backupid);
 
 		$array = $kettenrad->getStatusArray();
 		if ($array['Error'] != '')
@@ -486,7 +483,7 @@ class Json extends Model
 		}
 		else
 		{
-			$statistics = \AEFactory::getStatistics();
+			$statistics = Factory::getStatistics();
 			$array['BackupID'] = $statistics->getId();
 			$array['HasRun'] = 1; // Force the backup to go on.
 			return $array;
@@ -506,22 +503,23 @@ class Json extends Model
 		// Try to set the profile from the setup parameters
 		if (!empty($profile))
 		{
-			$registry = \AEFactory::getConfiguration();
+			$registry = Factory::getConfiguration();
 			$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
 			$session->profile = $profile;
 		}
 
-		$kettenrad = \AECoreKettenrad::load($tag, $backupid);
+		Factory::loadState($tag, $backupid);
+		$kettenrad = Factory::getKettenrad();
 		$kettenrad->setBackupId($backupid);
 
-		$registry = \AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
 		$session->profile = $registry->activeProfile;
 
 		$array = $kettenrad->tick();
 		$ret_array = $kettenrad->getStatusArray();
 		$array['Progress'] = $ret_array['Progress'];
-		\AECoreKettenrad::save($tag, $backupid);
+		Factory::saveState($tag, $backupid);
 
 		if ($array['Error'] != '')
 		{
@@ -533,8 +531,8 @@ class Json extends Model
 		}
 		elseif ($array['HasRun'] == false)
 		{
-			\AEFactory::nuke();
-			\AEUtilTempvars::reset();
+			Factory::nuke();
+			Factory::getFactoryStorage()->reset();
 		}
 
 		return $array;
@@ -565,10 +563,10 @@ class Json extends Model
 		extract($config);
 
 		// Get the basic statistics
-		$record = \AEPlatform::getInstance()->get_statistics($backup_id);
+		$record = Platform::getInstance()->get_statistics($backup_id);
 
 		// Get a list of filenames
-		$backup_stats = \AEPlatform::getInstance()->get_statistics($backup_id);
+		$backup_stats = Platform::getInstance()->get_statistics($backup_id);
 
 		// Backup record doesn't exist
 		if (empty($backup_stats))
@@ -579,7 +577,7 @@ class Json extends Model
 			return 'Invalid backup record identifier';
 		}
 
-		$filenames = \AEUtilStatistics::get_all_filenames($record);
+		$filenames = Factory::getStatistics()->get_all_filenames($record);
 
 		if (empty($filenames))
 		{
@@ -623,7 +621,7 @@ class Json extends Model
 		$config = array_merge($defConfig, $config);
 		extract($config);
 
-		$backup_stats = \AEPlatform::getInstance()->get_statistics($backup_id);
+		$backup_stats = Platform::getInstance()->get_statistics($backup_id);
 		if (empty($backup_stats))
 		{
 			// Backup record doesn't exist
@@ -632,7 +630,7 @@ class Json extends Model
 
 			return 'Invalid backup record identifier';
 		}
-		$files = \AEUtilStatistics::get_all_filenames($backup_stats);
+		$files = Factory::getStatistics()->get_all_filenames($backup_stats);
 
 		if ((count($files) < $part_id) || ($part_id <= 0))
 		{
@@ -794,7 +792,7 @@ class Json extends Model
 		$config = array_merge($defConfig, $config);
 		extract($config);
 
-		$filename = \AEUtilLogger::logName($tag);
+		$filename = Factory::getLog()->getLogFilename($tag);
 		$buffer = file_get_contents($filename);
 
 		switch ($this->encapsulation)
@@ -832,7 +830,7 @@ class Json extends Model
 		$config = array_merge($defConfig, $config);
 		extract($config);
 
-		$backup_stats = \AEPlatform::getInstance()->get_statistics($backup_id);
+		$backup_stats = Platform::getInstance()->get_statistics($backup_id);
 		if (empty($backup_stats))
 		{
 			// Backup record doesn't exist
@@ -843,7 +841,7 @@ class Json extends Model
 			flush();
 			$this->container->application->close();
 		}
-		$files = \AEUtilStatistics::get_all_filenames($backup_stats);
+		$files = Factory::getStatistics()->get_all_filenames($backup_stats);
 
 		if ((count($files) < $part_id) || ($part_id <= 0))
 		{

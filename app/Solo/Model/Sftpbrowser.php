@@ -38,7 +38,7 @@ class Sftpbrowser extends Model
 		}
 		else
 		{
-			$parent_directory = '';
+			$parent_directory = '/';
 		}
 
 

@@ -7,8 +7,9 @@
 
 namespace Solo\Model;
 
-
 use Awf\Mvc\Model;
+use Awf\Filesystem\Factory;
+use Akeeba\Engine\Platform;
 
 class Schedule extends Model
 {
@@ -37,7 +38,7 @@ class Schedule extends Model
 		);
 
 		// Get the profile ID
-		$profileid = \AEPlatform::getInstance()->get_active_profile();
+		$profileid = Platform::getInstance()->get_active_profile();
 
 		// Get the absolute path to the site's root
 		$absolute_root = rtrim(realpath(APATH_BASE), DIRECTORY_SEPARATOR);
@@ -56,11 +57,11 @@ class Schedule extends Model
 		}
 
 		// Get front-end backup secret key
-		$ret->info->secret = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
-		$ret->info->feenabled = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_enable', false);
+		$ret->info->secret = Platform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
+		$ret->info->feenabled = Platform::getInstance()->get_platform_configuration_option('frontend_enable', false);
 
 		// Get root URL
-		$ret->info->root_url = rtrim(\AEPlatform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
+		$ret->info->root_url = rtrim(Platform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
 
 		// Get information for CLI CRON script
 		if (AKEEBA_PRO)
@@ -148,10 +149,10 @@ class Schedule extends Model
         }
 
         // Get front-end backup secret key
-        $ret->info->secret    = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
-        $ret->info->feenabled = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_enable', false);
+        $ret->info->secret    = Platform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
+        $ret->info->feenabled = Platform::getInstance()->get_platform_configuration_option('frontend_enable', false);
         // Get root URL
-        $ret->info->root_url = rtrim(\AEPlatform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
+        $ret->info->root_url = rtrim(Platform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
 
         // Get information for CLI CRON script
         if(AKEEBA_PRO)

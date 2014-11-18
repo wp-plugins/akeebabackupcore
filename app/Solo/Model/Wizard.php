@@ -8,12 +8,13 @@
 namespace Solo\Model;
 
 use Awf\Database\Driver;
-use Awf\Filesystem\Factory;
 use Awf\Filesystem\Hybrid;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 use Solo\Pythia\Pythia;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * Configuration wizard's model class
@@ -22,7 +23,7 @@ class Wizard extends Model
 {
 	public function guessSiteParams()
 	{
-		$config = \AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 		$siteURL = $config->get('akeeba.platform.site_url', '');
 		$siteRoot = $config->get('akeeba.platform.newroot', '');
 
@@ -75,7 +76,7 @@ class Wizard extends Model
 	public function testSiteParams($siteParams)
 	{
 		$siteRoot = $siteParams['akeeba.platform.newroot'];
-		$stock_directories = \AEPlatform::getInstance()->get_stock_directories();
+		$stock_directories = Platform::getInstance()->get_stock_directories();
 
 		foreach ($stock_directories as $tag => $content)
 		{
@@ -116,14 +117,14 @@ class Wizard extends Model
 	 */
 	public function saveSiteParams($siteParams)
 	{
-		$config = \AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 
 		foreach ($siteParams as $k => $v)
 		{
 			$config->set($k, $v);
 		}
 
-		\AEPlatform::getInstance()->save_configuration();
+		Platform::getInstance()->save_configuration();
 	}
 
 	/**
@@ -137,10 +138,10 @@ class Wizard extends Model
 	public function autofixDirectories($dontRecurse = 0)
 	{
 		// Get the profile ID
-		$profile_id = \AEPlatform::getInstance()->get_active_profile();
+		$profile_id = Platform::getInstance()->get_active_profile();
 
 		// Get the output and temporary directory
-		$aeconfig = \AEFactory::getConfiguration();
+		$aeconfig = Factory::getConfiguration();
 		$outdir = $aeconfig->get('akeeba.basic.output_directory', '');
 
 		$fixTemp = false;
@@ -180,7 +181,7 @@ class Wizard extends Model
 		if ($fixOut && ($dontRecurse < 1))
 		{
 			$aeconfig->set('akeeba.basic.output_directory', '[DEFAULT_OUTPUT]');
-			AEPlatform::getInstance()->save_configuration($profile_id);
+			Platform::getInstance()->save_configuration($profile_id);
 
 			// After fixing the directory, run ourselves again
 			return $this->autofixDirectories(1);
@@ -207,7 +208,7 @@ class Wizard extends Model
 	{
 		if (empty($tempdir))
 		{
-			$aeconfig = \AEFactory::getConfiguration();
+			$aeconfig = Factory::getConfiguration();
 			$tempdir = $aeconfig->get('akeeba.basic.output_directory', '');
 		}
 
@@ -484,8 +485,8 @@ class Wizard extends Model
 			}
 		}
 
-		$profile_id = \AEPlatform::getInstance()->get_active_profile();
-		$config = \AEFactory::getConfiguration();
+		$profile_id = Platform::getInstance()->get_active_profile();
+		$config = Factory::getConfiguration();
 
 		// Use the correct database dump engine
 		if (strtolower(substr($dbTech, 0, 5)) == 'mysql')
@@ -524,7 +525,7 @@ class Wizard extends Model
 
 		$config->set('engine.dump.common.packet_size', $packet_size);
 
-		\AEPlatform::getInstance()->save_configuration($profile_id);
+		Platform::getInstance()->save_configuration($profile_id);
 	}
 
 	/**
@@ -611,14 +612,14 @@ class Wizard extends Model
 		$minexec = $this->input->get('minecxec', 2.0, 'float');
 
 		// Save the settings
-		$profile_id = \AEPlatform::getInstance()->get_active_profile();
-		$config = \AEFactory::getConfiguration();
+		$profile_id = Platform::getInstance()->get_active_profile();
+		$config = Factory::getConfiguration();
 		$config->set('akeeba.basic.useiframe', $iframes);
 		$config->set('akeeba.tuning.min_exec_time', $minexec * 1000);
-		\AEPlatform::getInstance()->save_configuration($profile_id);
+		Platform::getInstance()->save_configuration($profile_id);
 
 		// Enforce the min exec time
-		$timer = \AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$timer->enforce_min_exec_time(false);
 
 		// Done!
@@ -632,7 +633,7 @@ class Wizard extends Model
 	 */
 	private function directories()
 	{
-		$timer = \AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$result = $this->autofixDirectories();
 		$timer->enforce_min_exec_time(false);
 
@@ -646,7 +647,7 @@ class Wizard extends Model
 	 */
 	private function database()
 	{
-		$timer = \AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$this->analyzeDatabase();
 		$timer->enforce_min_exec_time(false);
 
@@ -661,7 +662,7 @@ class Wizard extends Model
 	private function maxexec()
 	{
 		$seconds = $this->input->get('seconds', 30, 'int');
-		$timer = \AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$result = $this->doNothing($seconds);
 		$timer->enforce_min_exec_time(false);
 
@@ -679,15 +680,15 @@ class Wizard extends Model
 		$maxexec = $this->input->get('seconds', 2, 'int');
 
 		// Save the settings
-		$timer = \AEFactory::getTimer();
-		$profile_id = \AEPlatform::getInstance()->get_active_profile();
-		$config = \AEFactory::getConfiguration();
+		$timer = Factory::getTimer();
+		$profile_id = Platform::getInstance()->get_active_profile();
+		$config = Factory::getConfiguration();
 		$config->set('akeeba.tuning.max_exec_time', $maxexec);
 		$config->set('akeeba.tuning.run_time_bias', '75');
 		$config->set('akeeba.advanced.scan_engine', 'smart');
 		// @todo This should be an option (choose format, zip/jpa)
 		$config->set('akeeba.advanced.archiver_engine', 'jpa');
-		\AEPlatform::getInstance()->save_configuration($profile_id);
+		Platform::getInstance()->save_configuration($profile_id);
 
 		// Enforce the min exec time
 		$timer->enforce_min_exec_time(false);
@@ -704,7 +705,7 @@ class Wizard extends Model
 	 */
 	public function partsize()
 	{
-		$timer = \AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$blocks = $this->input->get('blocks', 1, 'int');
 
 		$result = $this->createTempFile($blocks);
@@ -718,10 +719,10 @@ class Wizard extends Model
 				$blocks = 16383;
 			}
 
-			$profile_id = \AEPlatform::getInstance()->get_active_profile();
-			$config = \AEFactory::getConfiguration();
+			$profile_id = Platform::getInstance()->get_active_profile();
+			$config = Factory::getConfiguration();
 			$config->set('engine.archiver.common.part_size', $blocks * 128 * 1024);
-			\AEPlatform::getInstance()->save_configuration($profile_id);
+			Platform::getInstance()->save_configuration($profile_id);
 		}
 
 		// Enforce the min exec time
@@ -740,8 +741,8 @@ class Wizard extends Model
 		$folder = $this->input->get('folder', '', 'raw');
 
 		// Translate the folder
-		/** @var \AEPlatformSolo $platform */
-		$platform = \AEPlatform::getInstance();
+		/** @var Platform\Solo $platform */
+		$platform = Platform::getInstance();
 		$platformDirs = $platform->get_stock_directories();
 
 		foreach ($platformDirs as $key => $value)

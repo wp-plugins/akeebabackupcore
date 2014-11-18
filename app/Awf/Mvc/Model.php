@@ -541,7 +541,7 @@ class Model
 	 *
 	 * @return  static
 	 */
-	public function &savestate($newState)
+	public function savestate($newState)
 	{
 		$this->_savestate = $newState ? true : false;
 
@@ -554,7 +554,7 @@ class Model
 	 *
 	 * @return  static
 	 */
-	public function populateSavesate()
+	public function populateSavestate()
 	{
 		if (is_null($this->_savestate))
 		{

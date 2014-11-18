@@ -8,10 +8,11 @@
 namespace Solo\Model;
 
 use Awf\Database\Driver;
-use Awf\Filesystem\Factory;
 use Awf\Mvc\Model;
 use Awf\Pagination\Pagination;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Manage extends Model
 {
@@ -34,7 +35,7 @@ class Manage extends Model
 	 * named 'meta' which categorises attempts based on their backup archive status
 	 *
 	 * @param   boolean $overrideLimits Should I override all list limits?
-	 * @param   array   $filters        Filters to apply, see \AEPlatformInterface::get_statistics_list
+	 * @param   array   $filters        Filters to apply, see PlatformInterface::get_statistics_list
 	 * @param   array   $order          Record ordering information (By and Ordering)
 	 *
 	 * @return  array  An array of backup attempt objects
@@ -51,13 +52,13 @@ class Manage extends Model
 			$filters = null;
 		}
 
-		$allStats = \AEPlatform::getInstance()->get_statistics_list(array(
+		$allStats = Platform::getInstance()->get_statistics_list(array(
 																		 'limitstart' => $limitstart,
 																		 'limit'      => $limit,
 																		 'filters'    => $filters,
 																		 'order'      => $order
 																	));
-		$valid = \AEPlatform::getInstance()->get_valid_backup_records();
+		$valid = Platform::getInstance()->get_valid_backup_records();
 
 		if (empty($valid))
 		{
@@ -78,7 +79,7 @@ class Manage extends Model
 
 				if (in_array($stat['id'], $valid))
 				{
-					$archives = \AEUtilStatistics::get_all_filenames($stat);
+					$archives = Factory::getStatistics()->get_all_filenames($stat);
 					$stat['meta'] = (count($archives) > 0) ? 'ok' : 'obsolete';
 
 					if ($stat['meta'] == 'ok')
@@ -152,7 +153,7 @@ class Manage extends Model
 		// Update records found as not having files any more
 		if (count($updateNonExistent))
 		{
-			\AEPlatform::getInstance()->invalidate_backup_records($updateNonExistent);
+			Platform::getInstance()->invalidate_backup_records($updateNonExistent);
 		}
 
 		unset($valid);
@@ -179,7 +180,7 @@ class Manage extends Model
 		// Try to delete files
 		$this->deleteFile();
 
-		\AEPlatform::getInstance()->delete_statistics($id);
+		Platform::getInstance()->delete_statistics($id);
 
 		return true;
 	}
@@ -200,8 +201,8 @@ class Manage extends Model
 			throw new \RuntimeException(Text::_('STATS_ERROR_INVALIDID'), 500);
 		}
 
-		$stat = \AEPlatform::getInstance()->get_statistics($id);
-		$allFiles = \AEUtilStatistics::get_all_filenames($stat, false);
+		$stat = Platform::getInstance()->get_statistics($id);
+		$allFiles = Factory::getStatistics()->get_all_filenames($stat, false);
 
 		// Remove the custom log file if necessary
 		$this->_deleteLogs($stat);
@@ -278,7 +279,7 @@ class Manage extends Model
 		if (!is_object($this->pagination))
 		{
 			// Prepare pagination values
-			$total = \AEPlatform::getInstance()->get_statistics_count($filters);
+			$total = Platform::getInstance()->get_statistics_count($filters);
 			$limitStart = $this->getState('limitStart');
 			$limit = $this->getState('limit');
 
@@ -297,7 +298,7 @@ class Manage extends Model
 	public function getPostProcessingEnginePerProfile()
 	{
 		// Cache the current profile
-		$currentProfileID = \AEPlatform::getInstance()->get_active_profile();
+		$currentProfileID = Platform::getInstance()->get_active_profile();
 
 		$db = $this->container->db;
 
@@ -311,12 +312,12 @@ class Manage extends Model
 
 		foreach($profiles as $profileID)
 		{
-			\AEPlatform::getInstance()->load_configuration($profileID);
-			$pConf = \AEFactory::getConfiguration();
+			Platform::getInstance()->load_configuration($profileID);
+			$pConf = Factory::getConfiguration();
 			$engines[$profileID] = $pConf->get('akeeba.advanced.proc_engine');
 		}
 
-		\AEPlatform::getInstance()->load_configuration($currentProfileID);
+		Platform::getInstance()->load_configuration($currentProfileID);
 
 		return $engines;
 	}

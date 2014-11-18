@@ -8,6 +8,8 @@
 namespace Solo\Model;
 
 use Awf\Mvc\Model;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Backup extends Model
 {
@@ -52,7 +54,7 @@ class Backup extends Model
 				}
 
 				// Try resetting the engine
-				\AECoreKettenrad::reset(array(
+				Factory::resetState(array(
 											 'maxrun' => 0
 										));
 
@@ -60,15 +62,16 @@ class Backup extends Model
 
 				if (empty($tag))
 				{
-					$tag = \AEPlatform::getInstance()->get_backup_origin();
+					$tag = Platform::getInstance()->get_backup_origin();
 				}
 
 				$tempVarsTag = $tag;
 				$tempVarsTag .= empty($backupId) ? '' : ('.' . $backupId);
 
-				\AEUtilTempvars::reset($tempVarsTag);
+				Factory::getFactoryStorage()->reset($tempVarsTag);
 
-				$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+				Factory::loadState($tag, $backupId);
+				$kettenrad = Factory::getKettenrad();
 				$kettenrad->setBackupId($backupId);
 
 				// Take care of System Restore Point setup
@@ -89,8 +92,9 @@ class Backup extends Model
 
 				if (($kettenrad->getState() != 'running') && ($tag == 'restorepoint'))
 				{
-					\AECoreKettenrad::save($tag, $backupId);
-					$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+					Factory::saveState($tag, $backupId);
+					Factory::loadState($tag, $backupId);
+					$kettenrad = Factory::getKettenrad();
 					$kettenrad->setBackupId($backupId);
 					$kettenrad->tick();
 				}
@@ -98,28 +102,29 @@ class Backup extends Model
 				$ret_array = $kettenrad->getStatusArray();
 				$kettenrad->resetWarnings(); // So as not to have duplicate warnings reports
 
-				\AECoreKettenrad::save($tag, $backupId);
+				Factory::saveState($tag, $backupId);
 				break;
 
 			case 'step':
-				$kettenrad = \AECoreKettenrad::load($tag, $backupId);
+				Factory::loadState($tag, $backupId);
+				$kettenrad = Factory::getKettenrad();
 				$kettenrad->setBackupId($backupId);
 
 				$kettenrad->tick();
 				$ret_array = $kettenrad->getStatusArray();
 				$kettenrad->resetWarnings(); // So as not to have duplicate warnings reports
 
-				\AECoreKettenrad::save($tag, $backupId);
+				Factory::saveState($tag, $backupId);
 
 				if ($ret_array['HasRun'] == 1)
 				{
 					// Clean up
-					\AEFactory::nuke();
+					Factory::nuke();
 
 					$tempVarsTag = $tag;
 					$tempVarsTag .= empty($backupId) ? '' : ('.' . $backupId);
 
-					\AEUtilTempvars::reset($tempVarsTag);
+					Factory::getFactoryStorage()->reset($tempVarsTag);
 				}
 				break;
 

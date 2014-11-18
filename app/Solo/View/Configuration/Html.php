@@ -7,6 +7,8 @@
 
 namespace Solo\View\Configuration;
 
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 use Awf\Utils\Template;
 use Solo\Application;
 use Solo\Helper\Escape;
@@ -25,20 +27,20 @@ class Html extends \Solo\View\Html
 		Template::addJs('media://js/solo/configuration.js', $this->container->application);
 
 		// Push configuration in JSON format
-		$this->json = \Solo\Helper\Escape::escapeJS(\AEUtilInihelper::getJsonGuiDefinition(), '"\\');
+		$this->json = \Solo\Helper\Escape::escapeJS(Factory::getEngineParamsProvider()->getJsonGuiDefinition(), '"\\');
 
 		// Push the profile's numeric ID
-		$this->profileId = \AEPlatform::getInstance()->get_active_profile();
+		$this->profileId = Platform::getInstance()->get_active_profile();
 
 		// Push the profile name
-		$this->profileName = \AEPlatform::getInstance()->get_profile_name($this->profileId);
+		$this->profileName = Platform::getInstance()->get_profile_name($this->profileId);
 
 		// Are the settings secured?
-		if (\AEPlatform::getInstance()->get_platform_configuration_option('useencryption', -1) == 0)
+		if (Platform::getInstance()->get_platform_configuration_option('useencryption', -1) == 0)
 		{
 			$this->secureSettings = -1;
 		}
-		elseif (!\AEUtilSecuresettings::supportsEncryption())
+		elseif (!Factory::getSecureSettings()->supportsEncryption())
 		{
 			$this->secureSettings = 0;
 		}

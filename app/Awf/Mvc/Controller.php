@@ -243,7 +243,7 @@ class Controller
 			$container = Application::getInstance()->getContainer();
 		}
 
-		if (array_key_exists('mvc_config', $container))
+		if (isset($container['mvc_config']))
 		{
 			$config = $container['mvc_config'];
 		}
@@ -427,6 +427,8 @@ class Controller
 
 	/**
 	 * Alias to the display() task
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function main()
 	{
@@ -499,7 +501,7 @@ class Controller
 	 *
 	 * @return  View  The instance of the Model known to this Controller
 	 */
-	public final function getView($name = null, $config = array())
+	public function getView($name = null, $config = array())
 	{
 		if (!empty($name))
 		{

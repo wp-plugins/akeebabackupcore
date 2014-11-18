@@ -1,5 +1,31 @@
 <?php die();?>
 
+Akeeba Solo 1.2.0.b1
+================================================================================
++ New and improved backup engine
++ ANGIE for WordPress: Update serialised data
++ ANGIE: Add warning about Live site URL on Windows
++ You can now sort and search records in the Profile Management page
+~ Workaround for magic_quotes_gpc under PHP 5.3
+~ Changed the .htaccess files to be compatible with Apache 2.4
+~ Improved responsive display
+~ Layout tweaks in the Configuration page
+# [HIGH] Update information not fetched unless you manually retry through the Update page
+# [MEDIUM] ANGIE: The option "No auto value on zero" was not working
+# [MEDIUM] The data file pointer can be null sometimes when using multipart archives causing backup failures
+# [MEDIUM] Upload to remote storage from the Manage Backups page was broken for Amazon S3 multipart uploads
+# [MEDIUM] Race condition could prevent the reliable creation of JPS (encrypted) archives
+# [LOW] ANGIE: Fixed table name abstraction when no table prefix is given
+# [LOW] ANGIE: Fixed loading of translations
+# [LOW] ANGIE for WordPress: The blog name and tagline were empty when restoring to a new server (thanks Dimitris!)
+# [LOW] SFTP post-processing engine did not mark successfully uploaded backup as Remote
+# [LOW] SFTP post-processing engine could not fetch the archive back to the server
+# [LOW] Tooltips not showing for engine parameters when selecting a different engine (e.g. changing the Archiver Engine from JPA to ZIP)
+
+Akeeba Solo 1.1.5
+================================================================================
+# [HIGH] The integrated restoration is broken after the last security update
+
 Akeeba Solo 1.1.4
 ================================================================================
 ! [SECURITY: Medium] Possibility of arbitrary file writing while a backup archive is being extracted by the integrated restoration feature

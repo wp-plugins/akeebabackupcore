@@ -149,4 +149,9 @@ class Wordpress implements OracleInterface
 
 		return $ret;
 	}
-} 
+
+	public function getExtradirs()
+	{
+		return array();
+	}
+}

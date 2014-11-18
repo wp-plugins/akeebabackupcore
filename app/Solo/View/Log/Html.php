@@ -8,6 +8,7 @@
 namespace Solo\View\Log;
 
 
+use Akeeba\Engine\Platform;
 use Solo\Model\Log;
 
 class Html extends \Solo\View\Html
@@ -33,8 +34,8 @@ class Html extends \Solo\View\Html
 		$this->tag = $tag;
 
 		// Get profile ID and name
-		$this->profileid = \AEPlatform::getInstance()->get_active_profile();;
-		$this->profilename = \AEPlatform::getInstance()->get_profile_name($this->profileid);
+		$this->profileid = Platform::getInstance()->get_active_profile();;
+		$this->profilename = Platform::getInstance()->get_profile_name($this->profileid);
 
 		return true;
 	}

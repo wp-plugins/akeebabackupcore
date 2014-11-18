@@ -9,47 +9,58 @@
  *
  */
 
+namespace Akeeba\Engine\Core\Domain;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Part;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * Backup finalization domain
  */
-class AECoreDomainFinalization extends AEAbstractPart
+class Finalization extends Part
 {
-
+	/** @var array The finalisation actions we have to execute (FIFO queue) */
 	private $action_queue = array();
 
+	/** @var array Additional objects which will also handle finalisation tasks */
 	private $action_handlers = array();
 
+	/** @var string The current method, shifted from the action queye */
 	private $current_method = '';
 
+	/** @var array A list of all backup parts to process */
 	private $backup_parts = array();
 
+	/** @var int The backup part we are currently processing */
 	private $backup_parts_index = -1;
 
-	private $update_stats = false;
-
+	/** @var array Which remote files to remove */
 	private $remote_files_killlist = null;
 
-	// Used for percentage reporting
+	/** @var int How many finalisation steps I have in total */
 	private $steps_total = 0;
 
+	/** @var int How many finalisation steps I have already done */
 	private $steps_done = 0;
 
+	/** @var int How many finalisation substeps I have in total */
 	private $substeps_total = 0;
 
+	/** @var int How many finalisation substeps I have already done */
 	private $substeps_done = 0;
 
 	/**
 	 * Implements the abstract method
-	 *
-	 * @see akeeba/abstract/AEAbstractPart#_prepare()
 	 */
 	protected function _prepare()
 	{
 		// Make sure the break flag is not set
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$configuration->get('volatile.breakflag', false);
 
 		// Populate actions queue
@@ -70,7 +81,6 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		if (!$uploadKickstart)
 		{
-			$idx = array_search('kickstart_post_processing', $this->action_queue);
 			unset ($this->action_queue['kickstart_post_processing']);
 		}
 
@@ -96,7 +106,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		if (is_array($customQueue) && !empty($customQueue))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Overriding finalization action queue');
+			Factory::getLog()->log(LogLevel::DEBUG, 'Overriding finalization action queue');
 			$this->action_queue = array();
 
 			foreach ($customQueue as $action)
@@ -119,7 +129,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			}
 		}
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Finalization action queue: ' . implode(', ', $this->action_queue));
+		Factory::getLog()->log(LogLevel::DEBUG, 'Finalization action queue: ' . implode(', ', $this->action_queue));
 
 		$this->steps_total = count($this->action_queue);
 		$this->steps_done = 0;
@@ -136,11 +146,11 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Implements the abstract method
 	 *
-	 * @see akeeba/abstract/AEAbstractPart#_run()
+	 * @return  void
 	 */
 	protected function _run()
 	{
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 
 		if ($this->getState() == 'postrun')
 		{
@@ -158,7 +168,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		$this->setState('running');
 
-		$timer = AEFactory::getTimer();
+		$timer = Factory::getTimer();
 
 		// Continue processing while we have still enough time and stuff to do
 		while (($timer->getTimeLeft() > 0) && (!$finished) && (!$configuration->get('volatile.breakflag', false)))
@@ -167,7 +177,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 			if (method_exists($this, $method))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . "::_run() Running built-in method $method");
+				Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . "::_run() Running built-in method $method");
 				$status = $this->$method();
 			}
 			else
@@ -180,7 +190,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 					{
 						if (method_exists($handler, $method))
 						{
-							AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . "::_run() Running add-on method $method");
+							Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . "::_run() Running add-on method $method");
 							$status = $handler->$method($this);
 							break;
 						}
@@ -214,7 +224,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Implements the abstract method
 	 *
-	 * @see akeeba/abstract/AEAbstractPart#_finalize()
+	 * @return void
 	 */
 	protected function _finalize()
 	{
@@ -224,57 +234,57 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Sends an email to the administrators
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function mail_administrators()
+	protected function mail_administrators()
 	{
 		$this->setStep('Processing emails to administrators');
 		$this->setSubstep('');
 
 		// Skip email for back-end backups
-		if (AEPlatform::getInstance()->get_backup_origin() == 'backend')
+		if (Platform::getInstance()->get_backup_origin() == 'backend')
 		{
 			return true;
 		}
 
-		$must_email = AEPlatform::getInstance()->get_platform_configuration_option('frontend_email_on_finish', 0) != 0;
+		$must_email = Platform::getInstance()->get_platform_configuration_option('frontend_email_on_finish', 0) != 0;
 
 		if (!$must_email)
 		{
 			return true;
 		}
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Preparing to send e-mail to administrators");
+		Factory::getLog()->log(LogLevel::DEBUG, "Preparing to send e-mail to administrators");
 
-		$email = AEPlatform::getInstance()->get_platform_configuration_option('frontend_email_address', '');
+		$email = Platform::getInstance()->get_platform_configuration_option('frontend_email_address', '');
 		$email = trim($email);
 
 		if (!empty($email))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Using pre-defined list of emails");
+			Factory::getLog()->log(LogLevel::DEBUG, "Using pre-defined list of emails");
 			$emails = explode(',', $email);
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Fetching list of Super Administrator emails");
-			$emails = AEPlatform::getInstance()->get_administrator_emails();
+			Factory::getLog()->log(LogLevel::DEBUG, "Fetching list of Super Administrator emails");
+			$emails = Platform::getInstance()->get_administrator_emails();
 		}
 
 		if (!empty($emails))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Creating email subject and body");
+			Factory::getLog()->log(LogLevel::DEBUG, "Creating email subject and body");
 			// Fetch user's preferences
-			$subject = trim(AEPlatform::getInstance()->get_platform_configuration_option('frontend_email_subject', ''));
-			$body = trim(AEPlatform::getInstance()->get_platform_configuration_option('frontend_email_body', ''));
+			$subject = trim(Platform::getInstance()->get_platform_configuration_option('frontend_email_subject', ''));
+			$body = trim(Platform::getInstance()->get_platform_configuration_option('frontend_email_body', ''));
 
 			// Get the statistics
-			$statistics = AEFactory::getStatistics();
+			$statistics = Factory::getStatistics();
 			$stat = $statistics->getRecord();
-			$parts = AEUtilStatistics::get_all_filenames($stat, false);
+			$parts = Factory::getStatistics()->get_all_filenames($stat, false);
 
-			$profile_number = AEPlatform::getInstance()->get_active_profile();
-			$profile_name = AEPlatform::getInstance()->get_profile_name($profile_number);
-			$parts = AEUtilStatistics::get_all_filenames($stat, false);
+			$profile_number = Platform::getInstance()->get_active_profile();
+			$profile_name = Platform::getInstance()->get_profile_name($profile_number);
+			$parts = Factory::getStatistics()->get_all_filenames($stat, false);
 			$stat = (object)$stat;
 			$num_parts = $stat->multipart;
 
@@ -296,17 +306,17 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 			// Get the remote storage status
 			$remote_status = '';
-			$post_proc_engine = AEFactory::getConfiguration()->get('akeeba.advanced.proc_engine');
+			$post_proc_engine = Factory::getConfiguration()->get('akeeba.advanced.postproc_engine');
 
 			if (!empty($post_proc_engine) && ($post_proc_engine != 'none'))
 			{
 				if (empty($stat->remote_filename))
 				{
-					$remote_status = AEPlatform::getInstance()->translate('COM_AKEEBA_EMAIL_POSTPROCESSING_FAILED');
+					$remote_status = Platform::getInstance()->translate('COM_AKEEBA_EMAIL_POSTPROCESSING_FAILED');
 				}
 				else
 				{
-					$remote_status = AEPlatform::getInstance()->translate('COM_AKEEBA_EMAIL_POSTPROCESSING_SUCCESS');
+					$remote_status = Platform::getInstance()->translate('COM_AKEEBA_EMAIL_POSTPROCESSING_SUCCESS');
 				}
 			}
 
@@ -314,26 +324,26 @@ class AECoreDomainFinalization extends AEAbstractPart
 			if (empty($subject))
 			{
 				// Get the default subject
-				$subject = AEPlatform::getInstance()->translate('EMAIL_SUBJECT_OK');
+				$subject = Platform::getInstance()->translate('EMAIL_SUBJECT_OK');
 			}
 			else
 			{
 				// Post-process the subject
-				$subject = AEUtilFilesystem::replace_archive_name_variables($subject);
+				$subject = Factory::getFilesystemTools()->replace_archive_name_variables($subject);
 			}
 
 			// Do we need a default body?
 			if (empty($body))
 			{
-				$body = AEPlatform::getInstance()->translate('EMAIL_BODY_OK');
-				$info_source = AEPlatform::getInstance()->translate('EMAIL_BODY_INFO');
+				$body = Platform::getInstance()->translate('EMAIL_BODY_OK');
+				$info_source = Platform::getInstance()->translate('EMAIL_BODY_INFO');
 				$body .= "\n\n" . sprintf($info_source, $profile_number, $num_parts) . "\n\n";
 				$body .= $parts_list;
 			}
 			else
 			{
 				// Post-process the body
-				$body = AEUtilFilesystem::replace_archive_name_variables($body);
+				$body = Factory::getFilesystemTools()->replace_archive_name_variables($body);
 				$body = str_replace('[PROFILENUMBER]', $profile_number, $body);
 				$body = str_replace('[PROFILENAME]', $profile_name, $body);
 				$body = str_replace('[PARTCOUNT]', $num_parts, $body);
@@ -345,13 +355,13 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 			foreach ($emails as $email)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Sending email to $email");
-				AEPlatform::getInstance()->send_email($email, $subject, $body);
+				Factory::getLog()->log(LogLevel::DEBUG, "Sending email to $email");
+				Platform::getInstance()->send_email($email, $subject, $body);
 			}
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "No email recipients found! Skipping email.");
+			Factory::getLog()->log(LogLevel::DEBUG, "No email recipients found! Skipping email.");
 		}
 
 		return true;
@@ -360,14 +370,14 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Removes temporary files
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function remove_temp_files()
+	protected function remove_temp_files()
 	{
 		$this->setStep('Removing temporary files');
 		$this->setSubstep('');
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Removing temporary files");
-		AEUtilTempfiles::deleteTempFiles();
+		Factory::getLog()->log(LogLevel::DEBUG, "Removing temporary files");
+		Factory::getTempFiles()->deleteTempFiles();
 
 		return true;
 	}
@@ -375,42 +385,46 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Runs the writer's post-processing steps
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function run_post_processing()
+	protected function run_post_processing()
 	{
 		$this->setStep('Post-processing');
+
 		// Do not run if the archive engine doesn't produce archives
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$this->setSubstep('');
 
-		$engine_name = $configuration->get('akeeba.advanced.proc_engine');
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Loading post-processing engine object ($engine_name)");
-		$post_proc = AEFactory::getPostprocEngine($engine_name);
+		$engine_name = $configuration->get('akeeba.advanced.postproc_engine');
+
+		Factory::getLog()->log(LogLevel::DEBUG, "Loading post-processing engine object ($engine_name)");
+
+		$post_proc = Factory::getPostprocEngine($engine_name);
 
 		// Initialize the archive part list if required
 		if (empty($this->backup_parts))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Initializing post-processing engine');
+			Factory::getLog()->log(LogLevel::INFO, 'Initializing post-processing engine');
 
 			// Initialize the flag for multistep post-processing of parts
 			$configuration->set('volatile.postproc.filename', null);
 			$configuration->set('volatile.postproc.directory', null);
 
 			// Populate array w/ absolute names of backup parts
-			$statistics = AEFactory::getStatistics();
+			$statistics = Factory::getStatistics();
 			$stat = $statistics->getRecord();
-			$this->backup_parts = AEUtilStatistics::get_all_filenames($stat, false);
+			$this->backup_parts = Factory::getStatistics()->get_all_filenames($stat, false);
 
 			if (is_null($this->backup_parts))
 			{
 				// No archive produced, or they are all already post-processed
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, 'No archive files found to post-process');
+				Factory::getLog()->log(LogLevel::INFO, 'No archive files found to post-process');
 
 				return true;
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, count($this->backup_parts) . ' files to process found');
+			Factory::getLog()->log(LogLevel::DEBUG, count($this->backup_parts) . ' files to process found');
+
 			$this->substeps_total = count($this->backup_parts);
 			$this->substeps_done = 0;
 
@@ -423,11 +437,11 @@ class AECoreDomainFinalization extends AEAbstractPart
 			}
 
 			// Break step before processing?
-			if ($post_proc->break_before && !AEFactory::getConfiguration()
+			if ($post_proc->break_before && !Factory::getConfiguration()
 													  ->get('akeeba.tuning.nobreak.finalization', 0)
 			)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Breaking step before post-processing run');
+				Factory::getLog()->log(LogLevel::DEBUG, 'Breaking step before post-processing run');
 				$configuration->set('volatile.breakflag', true);
 
 				return false;
@@ -443,37 +457,37 @@ class AECoreDomainFinalization extends AEAbstractPart
 		if (empty($filename))
 		{
 			$filename = $this->backup_parts[$this->backup_parts_index];
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Beginning post processing file ' . $filename);
+			Factory::getLog()->log(LogLevel::INFO, 'Beginning post processing file ' . $filename);
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Continuing post processing file ' . $filename);
+			Factory::getLog()->log(LogLevel::INFO, 'Continuing post processing file ' . $filename);
 		}
 
 		$this->setStep('Post-processing');
 		$this->setSubstep(basename($filename));
-		$timer = AEFactory::getTimer();
+		$timer = Factory::getTimer();
 		$startTime = $timer->getRunningTime();
 		$result = $post_proc->processPart($filename);
 		$this->propagateFromObject($post_proc);
 
 		if ($result === false)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, 'Failed to process file ' . $filename);
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, 'Error received from the post-processing engine:');
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, implode("\n", $this->getWarnings()));
+			Factory::getLog()->log(LogLevel::WARNING, 'Failed to process file ' . $filename);
+			Factory::getLog()->log(LogLevel::WARNING, 'Error received from the post-processing engine:');
+			Factory::getLog()->log(LogLevel::WARNING, implode("\n", $this->getWarnings()));
 			$this->setWarning('Failed to process file ' . $filename);
 		}
 		elseif ($result === true)
 		{
 			// The post-processing of this file ended successfully
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Finished post-processing file ' . $filename);
+			Factory::getLog()->log(LogLevel::INFO, 'Finished post-processing file ' . $filename);
 			$configuration->set('volatile.postproc.filename', null);
 		}
 		else
 		{
 			// More work required
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'More post-processing steps required for file ' . $filename);
+			Factory::getLog()->log(LogLevel::INFO, 'More post-processing steps required for file ' . $filename);
 			$configuration->set('volatile.postproc.filename', $filename);
 
 			// Do we need to break the step?
@@ -500,12 +514,12 @@ class AECoreDomainFinalization extends AEAbstractPart
 			&& ($result === true)
 		)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Deleting already processed file ' . $filename);
-			AEPlatform::getInstance()->unlink($filename);
+			Factory::getLog()->log(LogLevel::DEBUG, 'Deleting already processed file ' . $filename);
+			Platform::getInstance()->unlink($filename);
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Not removing processed file ' . $filename);
+			Factory::getLog()->log(LogLevel::DEBUG, 'Not removing processed file ' . $filename);
 		}
 
 		if ($result === true)
@@ -517,7 +531,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			$this->substeps_done++;
 
 			// Break step after processing?
-			if ($post_proc->break_after && !AEFactory::getConfiguration()->get('akeeba.tuning.nobreak.finalization', 0))
+			if ($post_proc->break_after && !Factory::getConfiguration()->get('akeeba.tuning.nobreak.finalization', 0))
 			{
 				$configuration->set('volatile.breakflag', true);
 			}
@@ -527,7 +541,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			{
 				if (!empty($post_proc->remote_path))
 				{
-					$statistics = AEFactory::getStatistics();
+					$statistics = Factory::getStatistics();
 					$remote_filename = $engine_name . '://';
 					$remote_filename .= $post_proc->remote_path;
 					$data = array(
@@ -548,7 +562,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			// Are we past the end of the array (i.e. we're finished)?
 			if ($this->backup_parts_index >= count($this->backup_parts))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Post-processing has finished for all files');
+				Factory::getLog()->log(LogLevel::INFO, 'Post-processing has finished for all files');
 
 				return true;
 			}
@@ -569,13 +583,13 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Runs the Kickstart post-processing step
 	 *
-	 * @return  boolean
+	 * @return  bool True on success
 	 */
-	private function kickstart_post_processing()
+	protected function kickstart_post_processing()
 	{
 		$this->setStep('Post-processing Kickstart');
 
-		$configuration = AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$this->setSubstep('');
 
 		// Do not run if we are not told to upload Kickstart
@@ -583,17 +597,17 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		if (!$uploadKickstart)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Getting ready to upload Kickstart");
+			Factory::getLog()->log(LogLevel::INFO, "Getting ready to upload Kickstart");
 
 			return true;
 		}
 
-		$engine_name = $configuration->get('akeeba.advanced.proc_engine');
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Loading post-processing engine object ($engine_name)");
-		$post_proc = AEFactory::getPostprocEngine($engine_name);
+		$engine_name = $configuration->get('akeeba.advanced.postproc_engine');
+		Factory::getLog()->log(LogLevel::DEBUG, "Loading post-processing engine object ($engine_name)");
+		$post_proc = Factory::getPostprocEngine($engine_name);
 
 		// Set $filename to kickstart's source file
-		$filename = AEPlatform::getInstance()->get_installer_images_path() . '/kickstart.txt';
+		$filename = Platform::getInstance()->get_installer_images_path() . '/kickstart.txt';
 
 		// Post-process the file
 		$this->setSubstep('kickstart.php');
@@ -602,16 +616,16 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		if ($result === false)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, 'Failed to upload kickstart.php');
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, 'Error received from the post-processing engine:');
-			AEUtilLogger::WriteLog(_AE_LOG_WARNING, implode("\n", $this->getWarnings()));
+			Factory::getLog()->log(LogLevel::WARNING, 'Failed to upload kickstart.php');
+			Factory::getLog()->log(LogLevel::WARNING, 'Error received from the post-processing engine:');
+			Factory::getLog()->log(LogLevel::WARNING, implode("\n", $this->getWarnings()));
 
 			$this->setWarning('Failed to upload kickstart.php');
 		}
 		elseif ($result === true)
 		{
 			// The post-processing of this file ended successfully
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Finished uploading kickstart.php');
+			Factory::getLog()->log(LogLevel::INFO, 'Finished uploading kickstart.php');
 			$configuration->set('volatile.postproc.filename', null);
 		}
 
@@ -622,31 +636,19 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Updates the backup statistics record
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function update_statistics()
+	protected function update_statistics()
 	{
 		$this->setStep('Updating backup record information');
 		$this->setSubstep('');
 
-		// Force a step break before updating stats (works around MySQL gone away issues)
-		// 3.2.5 : Added conditional break logic after the call to setStatistics()
-		/**
-		 * if(!$this->update_stats)
-		 * {
-		 * $this->update_stats = true;
-		 * $configuration = AEFactory::getConfiguration();
-		 * $configuration->set('volatile.breakflag', true);
-		 * return false;
-		 * }
-		 * /**/
-
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Updating statistics");
+		Factory::getLog()->log(LogLevel::DEBUG, "Updating statistics");
 		// We finished normally. Fetch the stats record
-		$statistics = AEFactory::getStatistics();
-		$registry = AEFactory::getConfiguration();
+		$statistics = Factory::getStatistics();
+		$registry = Factory::getConfiguration();
 		$data = array(
-			'backupend' => AEPlatform::getInstance()->get_timestamp_database(),
+			'backupend' => Platform::getInstance()->get_timestamp_database(),
 			'status'    => 'complete',
 			'multipart' => $registry->get('volatile.statistics.multipart', 0)
 		);
@@ -655,8 +657,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		if ($result === false)
 		{
 			// Most likely a "MySQL has gone away" issue...
-			$this->update_stats = true;
-			$configuration = AEFactory::getConfiguration();
+			$configuration = Factory::getConfiguration();
 			$configuration->set('volatile.breakflag', true);
 
 			return false;
@@ -665,19 +666,19 @@ class AECoreDomainFinalization extends AEAbstractPart
 		$this->propagateFromObject($statistics);
 
 		$stat = (object)$statistics->getRecord();
-		AEPlatform::getInstance()->remove_duplicate_backup_records($stat->archivename);
+		Platform::getInstance()->remove_duplicate_backup_records($stat->archivename);
 
 		return true;
 	}
 
-	private function update_filesizes()
+	protected function update_filesizes()
 	{
 		$this->setStep('Updating file sizes');
 		$this->setSubstep('');
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Updating statistics with file sizes");
+		Factory::getLog()->log(LogLevel::DEBUG, "Updating statistics with file sizes");
 
 		// Fetch the stats record
-		$statistics = AEFactory::getStatistics();
+		$statistics = Factory::getStatistics();
 		$record = $statistics->getRecord();
 		$filenames = $statistics->get_all_filenames($record);
 		$filesize = 0.0;
@@ -698,7 +699,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		// Get the part size in volatile storage, set from the immediate part uploading effected by the
 		// "Process each part immediately" option, and add it to the total file size
-		$volatileTotalSize = AEFactory::getConfiguration()->get('volatile.engine.archiver.totalsize', 0);
+		$volatileTotalSize = Factory::getConfiguration()->get('volatile.engine.archiver.totalsize', 0);
 
 		if ($volatileTotalSize)
 		{
@@ -709,7 +710,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			'total_size' => $filesize
 		);
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Total size of backup archive (in bytes): $filesize");
+		Factory::getLog()->log(LogLevel::DEBUG, "Total size of backup archive (in bytes): $filesize");
 
 		$statistics->setStatistics($data);
 		$this->propagateFromObject($statistics);
@@ -720,15 +721,15 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Applies the size and count quotas
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function apply_quotas()
+	protected function apply_quotas()
 	{
 		$this->setStep('Applying quotas');
 		$this->setSubstep('');
 
 		// If no quota settings are enabled, quit
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$useDayQuotas = $registry->get('akeeba.quota.maxage.enable');
 		$useCountQuotas = $registry->get('akeeba.quota.enable_count_quota');
 		$useSizeQuotas = $registry->get('akeeba.quota.enable_size_quota');
@@ -737,13 +738,13 @@ class AECoreDomainFinalization extends AEAbstractPart
 		{
 			$this->apply_obsolete_quotas();
 
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "No quotas were defined; old backup files will be kept intact");
+			Factory::getLog()->log(LogLevel::DEBUG, "No quotas were defined; old backup files will be kept intact");
 
 			return true; // No quota limits were requested
 		}
 
 		// Try to find the files to be deleted due to quota settings
-		$statistics = AEFactory::getStatistics();
+		$statistics = Factory::getStatistics();
 		$latestBackupId = $statistics->getId();
 
 		// Get quota values
@@ -753,7 +754,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		$preserveDay = $registry->get('akeeba.quota.maxage.keepday');
 
 		// Get valid-looking backup ID's
-		$validIDs = AEPlatform::getInstance()->get_valid_backup_records(true, array('NOT', 'restorepoint'));
+		$validIDs = Platform::getInstance()->get_valid_backup_records(true, array('NOT', 'restorepoint'));
 
 		// Create a list of valid files
 		$allFiles = array();
@@ -762,15 +763,15 @@ class AECoreDomainFinalization extends AEAbstractPart
 		{
 			foreach ($validIDs as $id)
 			{
-				$stat = AEPlatform::getInstance()->get_statistics($id);
+				$stat = Platform::getInstance()->get_statistics($id);
 
 				try
 				{
-					$backupstart = new DateTime($stat['backupstart']);
+					$backupstart = new \DateTime($stat['backupstart']);
 					$backupTS = $backupstart->format('U');
 					$backupDay = $backupstart->format('d');
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					$backupTS = 0;
 					$backupDay = 0;
@@ -787,7 +788,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 				}
 
 				// Multipart processing
-				$filenames = AEUtilStatistics::get_all_filenames($stat, true);
+				$filenames = Factory::getStatistics()->get_all_filenames($stat, true);
 
 				if (!is_null($filenames))
 				{
@@ -816,7 +817,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// If there are no files, exit early
 		if (count($allFiles) == 0)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "There were no old backup files to apply quotas on");
+			Factory::getLog()->log(LogLevel::DEBUG, "There were no old backup files to apply quotas on");
 
 			return true;
 		}
@@ -830,7 +831,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// Do we need to apply maximum backup age quotas?
 		if ($useDayQuotas)
 		{
-			$killDatetime = new DateTime();
+			$killDatetime = new \DateTime();
 			$killDatetime->modify('-' . $daysQuota . ($daysQuota == 1 ? ' day' : ' days'));
 			$killTS = $killDatetime->format('U');
 
@@ -885,7 +886,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			}
 			else
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Processing count quotas");
+				Factory::getLog()->log(LogLevel::DEBUG, "Processing count quotas");
 				// Yes, aply the quota setting. Add to $ret all entries minus the last
 				// $countQuota ones.
 				$totalRecords = count($allFiles);
@@ -936,7 +937,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// Do we need to apply size quotas?
 		if ($useSizeQuotas && is_numeric($sizeQuota) && !($sizeQuota <= 0) && (count($leftover) > 0) && !$useDayQuotas)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Processing size quotas");
+			Factory::getLog()->log(LogLevel::DEBUG, "Processing size quotas");
 			// OK, let's start counting bytes!
 			$runningSize = 0;
 
@@ -989,18 +990,18 @@ class AECoreDomainFinalization extends AEAbstractPart
 			foreach ($killids as $id)
 			{
 				$data = array('filesexist' => '0');
-				AEPlatform::getInstance()->set_or_update_statistics($id, $data, $this);
+				Platform::getInstance()->set_or_update_statistics($id, $data, $this);
 			}
 		}
 
 		// Apply quotas to backup archives
 		if (count($quotaFiles) > 0)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Applying quotas");
+			Factory::getLog()->log(LogLevel::DEBUG, "Applying quotas");
 
 			foreach ($quotaFiles as $file)
 			{
-				if (!@AEPlatform::getInstance()->unlink($file))
+				if (!@Platform::getInstance()->unlink($file))
 				{
 					$this->setWarning("Failed to remove old backup file " . $file);
 				}
@@ -1010,11 +1011,11 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// Apply quotas to log files
 		if (!empty($killLogs))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Removing obsolete log files");
+			Factory::getLog()->log(LogLevel::DEBUG, "Removing obsolete log files");
 
 			foreach ($killLogs as $logPath)
 			{
-				@AEPlatform::getInstance()->unlink($logPath);
+				@Platform::getInstance()->unlink($logPath);
 			}
 		}
 
@@ -1023,12 +1024,17 @@ class AECoreDomainFinalization extends AEAbstractPart
 		return true;
 	}
 
-	private function apply_remote_quotas()
+	/**
+	 * Apply quotas for remotely stored files
+	 *
+	 * @return bool True on success
+	 */
+	protected function apply_remote_quotas()
 	{
 		$this->setStep('Applying remote storage quotas');
 		$this->setSubstep('');
 		// Make sure we are enabled
-		$config = AEFactory::getConfiguration();
+		$config = Factory::getConfiguration();
 		$enableRemote = $config->get('akeeba.quota.remote', 0);
 
 		if (!$enableRemote)
@@ -1039,50 +1045,52 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// Get the list of files to kill
 		if (empty($this->remote_files_killlist))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Applying remote file quotas');
+			Factory::getLog()->log(LogLevel::DEBUG, 'Applying remote file quotas');
 			$this->remote_files_killlist = $this->get_remote_quotas();
 
 			if (empty($this->remote_files_killlist))
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'No remote files to apply quotas to were found');
+				Factory::getLog()->log(LogLevel::DEBUG, 'No remote files to apply quotas to were found');
 
 				return true;
 			}
 		}
 
 		// Remove the files
-		$timer = AEFactory::getTimer();
+		$timer = Factory::getTimer();
 
 		while ($timer->getRunningTime() && count($this->remote_files_killlist))
 		{
 			$filename = array_shift($this->remote_files_killlist);
+
 			list($engineName, $path) = explode('://', $filename);
-			$engine = AEFactory::getPostprocEngine($engineName);
+
+			$engine = Factory::getPostprocEngine($engineName);
 
 			if (!$engine->can_delete)
 			{
 				continue;
 			}
 
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Removing $filename");
+			Factory::getLog()->log(LogLevel::DEBUG, "Removing $filename");
 			$result = $engine->delete($path);
 
 			if (!$result)
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Removal failed: " . $engine->getWarning());
+				Factory::getLog()->log(LogLevel::DEBUG, "Removal failed: " . $engine->getWarning());
 			}
 		}
 
 		// Return false if we have more work to do or true if we're done
 		if (count($this->remote_files_killlist))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Remote file removal will continue in the next step");
+			Factory::getLog()->log(LogLevel::DEBUG, "Remote file removal will continue in the next step");
 
 			return false;
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Remote file quotas applied successfully");
+			Factory::getLog()->log(LogLevel::DEBUG, "Remote file quotas applied successfully");
 
 			return true;
 		}
@@ -1091,12 +1099,12 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Applies the size and count quotas
 	 *
-	 * @return bool
+	 * @return bool True on success
 	 */
-	private function get_remote_quotas()
+	protected function get_remote_quotas()
 	{
 		// Get all records with a remote filename
-		$allRecords = AEPlatform::getInstance()->get_valid_remote_records();
+		$allRecords = Platform::getInstance()->get_valid_remote_records();
 
 		// Bail out if no records found
 		if (empty($allRecords))
@@ -1105,7 +1113,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		}
 
 		// Try to find the files to be deleted due to quota settings
-		$statistics = AEFactory::getStatistics();
+		$statistics = Factory::getStatistics();
 		$latestBackupId = $statistics->getId();
 
 		// Filter out the current record
@@ -1131,7 +1139,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		}
 
 		// Get quota values
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$countQuota = $registry->get('akeeba.quota.count_quota');
 		$sizeQuota = $registry->get('akeeba.quota.size_quota');
 		$useCountQuotas = $registry->get('akeeba.quota.enable_count_quota');
@@ -1146,13 +1154,13 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 		if ($useDayQuotas)
 		{
-			$killDatetime = new DateTime();
+			$killDatetime = new \DateTime();
 			$killDatetime->modify('-' . $daysQuota . ($daysQuota == 1 ? ' day' : ' days'));
 			$killTS = $killDatetime->format('U');
 
 			foreach ($allRecords as $def)
 			{
-				$backupstart = new DateTime($def['backupstart']);
+				$backupstart = new \DateTime($def['backupstart']);
 				$backupTS = $backupstart->format('U');
 				$backupDay = $backupstart->format('d');
 
@@ -1165,6 +1173,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 						continue;
 					}
 				}
+
 				// Otherwise, check the timestamp
 				if ($backupTS < $killTS)
 				{
@@ -1190,7 +1199,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 			}
 			else
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Processing remote count quotas");
+				Factory::getLog()->log(LogLevel::DEBUG, "Processing remote count quotas");
 				// Yes, apply the quota setting.
 				$totalRecords = count($allRecords);
 
@@ -1221,7 +1230,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		// Do we need to apply size quotas?
 		if ($useSizeQuotas && ($sizeQuota > 0) && (count($leftover) > 0) && !$useDayQuotas)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Processing remote size quotas");
+			Factory::getLog()->log(LogLevel::DEBUG, "Processing remote size quotas");
 			// OK, let's start counting bytes!
 			$runningSize = 0;
 
@@ -1231,6 +1240,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 				// running size. If it's over the limit, add the archive to the $ret array.
 				$def = array_pop($leftover);
 				$runningSize += $def['total_size'];
+
 				if ($runningSize >= $sizeQuota)
 				{
 					$ret[] = $def['files'];
@@ -1266,14 +1276,22 @@ class AECoreDomainFinalization extends AEAbstractPart
 				}
 
 				$data = array('remote_filename' => '');
-				AEPlatform::getInstance()->set_or_update_statistics($id, $data, $this);
+				Platform::getInstance()->set_or_update_statistics($id, $data, $this);
 			}
 		}
 
 		return $quotaFiles;
 	}
 
-	private function get_remote_files($filename, $multipart)
+	/**
+	 * Get the full paths to all remote backup parts
+	 *
+	 * @param  string  $filename   The full filename of the last part stored in the database
+	 * @param  int     $multipart  How many parts does this archive consist of?
+	 *
+	 * @return array A list of the full paths of all remotely stored backup archive parts
+	 */
+	protected function get_remote_files($filename, $multipart)
 	{
 		$result = array();
 
@@ -1296,12 +1314,14 @@ class AECoreDomainFinalization extends AEAbstractPart
 
 	/**
 	 * Keeps a maximum number of "obsolete" records
+	 *
+	 * @return  void
 	 */
-	private function apply_obsolete_quotas()
+	protected function apply_obsolete_quotas()
 	{
 		$this->setStep('Applying quota limit on obsolete backup records');
 		$this->setSubstep('');
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$limit = $registry->get('akeeba.quota.obsolete_quota', 0);
 		$limit = (int)$limit;
 
@@ -1310,8 +1330,8 @@ class AECoreDomainFinalization extends AEAbstractPart
 			return;
 		}
 
-		$statsTable = AEPlatform::getInstance()->tableNameStats;
-		$db = AEFactory::getDatabase(AEPlatform::getInstance()->get_platform_database_options());
+		$statsTable = Platform::getInstance()->tableNameStats;
+		$db = Factory::getDatabase(Platform::getInstance()->get_platform_database_options());
 		$query = $db->getQuery(true)
 					->select(array(
 						$db->qn('id'),
@@ -1355,6 +1375,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 		{
 			$ids[] = $db->q($id);
 		}
+
 		$ids = implode(',', $ids);
 
 		$query = $db->getQuery(true)
@@ -1367,7 +1388,7 @@ class AECoreDomainFinalization extends AEAbstractPart
 	/**
 	 * Get the percentage of finalization steps done
 	 *
-	 * @see backend/akeeba/abstract/AEAbstractPart#getProgress()
+	 * @return  float
 	 */
 	public function getProgress()
 	{
@@ -1387,11 +1408,21 @@ class AECoreDomainFinalization extends AEAbstractPart
 		return $overall + ($local / $this->steps_total);
 	}
 
+	/**
+	 * Used by additional handler classes to relay their step to us
+	 *
+	 * @param string $step The current step
+	 */
 	public function relayStep($step)
 	{
 		$this->setStep($step);
 	}
 
+	/**
+	 * Used by additional handler classes to relay their substep to us
+	 *
+	 * @param string $substep The current sub-step
+	 */
 	public function relaySubstep($substep)
 	{
 		$this->setSubstep($substep);

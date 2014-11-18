@@ -13,6 +13,7 @@ use Awf\Router\Router;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 use Awf\User\Manager;
+use Akeeba\Engine\Platform;
 
 class Application extends \Awf\Application\Application
 {
@@ -61,7 +62,7 @@ class Application extends \Awf\Application\Application
 		// Load Akeeba Engine's configuration
 		try
 		{
-			\AEPlatform::getInstance()->load_configuration();
+			Platform::getInstance()->load_configuration();
 		}
 		catch (\Exception $e)
 		{

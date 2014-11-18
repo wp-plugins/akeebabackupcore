@@ -8,8 +8,15 @@
  *
  */
 
+namespace Akeeba\Engine\Core\Domain;
+
 // Protection against direct access
 defined('AKEEBAENGINE') or die();
+
+use Psr\Log\LogLevel;
+use Akeeba\Engine\Base\Part;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /* Windows system detection */
 if (!defined('_AKEEBA_IS_WINDOWS'))
@@ -28,9 +35,8 @@ if (!defined('_AKEEBA_IS_WINDOWS'))
  * Packing engine. Takes care of putting gathered files (the file list) into
  * an archive.
  */
-class AECoreDomainPack extends AEAbstractPart
+class Pack extends Part
 {
-
 	/** @var array Directories left to be scanned */
 	private $directory_list;
 
@@ -93,12 +99,13 @@ class AECoreDomainPack extends AEAbstractPart
 	/**
 	 * Public constructor of the class
 	 *
-	 * @return   AECoreDomainPack
+	 * @return   Pack
 	 */
 	public function __construct()
 	{
 		parent::__construct();
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: new instance");
+
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: new instance");
 	}
 
 	/**
@@ -108,11 +115,11 @@ class AECoreDomainPack extends AEAbstractPart
 	 */
 	protected function _prepare()
 	{
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Starting _prepare()");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Starting _prepare()");
 
 		// Get a list of directories to include
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Getting directory inclusion filters");
-		$filters = AEFactory::getFilters();
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Getting directory inclusion filters");
+		$filters = Factory::getFilters();
 		$this->root_definitions = $filters->getInclusions('dir');
 
 		$this->total_roots = count($this->root_definitions);
@@ -126,7 +133,7 @@ class AECoreDomainPack extends AEAbstractPart
 			array_unshift($this->root_definitions, $temp);
 
 			// We add a README.txt file in our virtual directory...
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Creating README.txt in the EFF virtual folder");
+			Factory::getLog()->log(LogLevel::DEBUG, "Creating README.txt in the EFF virtual folder");
 			$virtualContents = <<<ENDVCONTENT
 This directory contains directories above the web site's root you chose to
 include in the backup set.  This file helps you figure out which directory
@@ -135,7 +142,7 @@ structure. You'll have to restore these files manually!
 
 
 ENDVCONTENT;
-			$registry = AEFactory::getConfiguration();
+			$registry = Factory::getConfiguration();
 			$counter = 0;
 			$effini = "[eff]\n";
 			$vdir = trim($registry->get('akeeba.advanced.virtual_folder'), '/') . '/';
@@ -159,7 +166,7 @@ ENDVCONTENT;
 			}
 			// Add the file to our archive
 
-			$archiver = AEFactory::getArchiverEngine();
+			$archiver = Factory::getArchiverEngine();
 			if ($counter > 1)
 			{
 				$archiver->addVirtualFile('README.txt', $registry->get('akeeba.advanced.virtual_folder'), $virtualContents);
@@ -167,7 +174,7 @@ ENDVCONTENT;
 			}
 			else
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "README.txt was not created; all EFF directories are being backed up to the archive's root");
+				Factory::getLog()->log(LogLevel::DEBUG, "README.txt was not created; all EFF directories are being backed up to the archive's root");
 			}
 		}
 
@@ -210,7 +217,7 @@ ENDVCONTENT;
 			$this->root = $dir_definition[0];
 		}
 		// Translate the root into an absolute path
-		$stock_dirs = AEPlatform::getInstance()->get_stock_directories();
+		$stock_dirs = Platform::getInstance()->get_stock_directories();
 		$absolute_dir = substr($this->root, 0);
 		if (!empty($stock_dirs))
 		{
@@ -221,7 +228,7 @@ ENDVCONTENT;
 		}
 		$this->directory_list[] = $absolute_dir;
 		$this->remove_path_prefix = $absolute_dir;
-		$registry = AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$registry->set('volatile.filesystem.current_root', $absolute_dir);
 
 		$this->done_subdir_scanning = true;
@@ -233,20 +240,20 @@ ENDVCONTENT;
 
 		$this->setState('prepared');
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: prepared");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: prepared");
 	}
 
 	protected function _run()
 	{
 		// Run in a loop until we run out of time, or breakflag is set
-		$registry = AEFactory::getConfiguration();
-		$timer = AEFactory::getTimer();
+		$registry = Factory::getConfiguration();
+		$timer = Factory::getTimer();
 
 		while (($timer->getTimeLeft() > 0) && (!$registry->get('volatile.breakflag', false)))
 		{
 			if ($this->getState() == 'postrun')
 			{
-				AEUtilLogger::WriteLog(_AE_LOG_DEBUG, __CLASS__ . " :: Already finished");
+				Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Already finished");
 				$this->setStep("-");
 				$this->setSubstep("");
 				break;
@@ -310,8 +317,8 @@ ENDVCONTENT;
 	 */
 	protected function _finalize()
 	{
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, "Finalizing archive");
-		$archive = AEFactory::getArchiverEngine();
+		Factory::getLog()->log(LogLevel::INFO, "Finalizing archive");
+		$archive = Factory::getArchiverEngine();
 		$archive->finalize();
 		// Error propagation
 		$this->propagateFromObject($archive);
@@ -320,7 +327,7 @@ ENDVCONTENT;
 			return false;
 		}
 
-		AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Archive is finalized");
+		Factory::getLog()->log(LogLevel::DEBUG, "Archive is finalized");
 
 		$this->setState('finished');
 	}
@@ -338,7 +345,7 @@ ENDVCONTENT;
 	 *                    stack is empty. It also returns true if the folder is
 	 *                    filtered (we are told to skip it)
 	 */
-	private function getNextDirectory()
+	protected function getNextDirectory()
 	{
 		// Reset the file / folder scanning positions
 		$this->getFiles_position = null;
@@ -362,13 +369,13 @@ ENDVCONTENT;
 		list($root, $translated_root, $dir) = $this->getCleanDirectoryComponents();
 
 		// Get a filters instance
-		$filters = AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Apply DEF (directory exclusion filters)
 		// Note: the !empty($dir) prevents the site's root from being filtered out
 		if ($filters->isFiltered($dir, $root, 'dir', 'all') && !empty($dir))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Skipping directory " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Skipping directory " . $this->current_directory);
 			$this->done_subdir_scanning = true;
 			$this->done_file_scanning = true;
 
@@ -378,7 +385,7 @@ ENDVCONTENT;
 		// Apply Skip Contained Directories Filters
 		if ($filters->isFiltered($dir, $root, 'dir', 'children'))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Skipping subdirectories of directory " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Skipping subdirectories of directory " . $this->current_directory);
 
 			$this->done_subdir_scanning = true;
 		}
@@ -386,7 +393,7 @@ ENDVCONTENT;
 		// Apply Skipfiles
 		if ($filters->isFiltered($dir, $root, 'dir', 'content'))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Skipping files of directory " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Skipping files of directory " . $this->current_directory);
 
 			$this->done_file_scanning = true;
 
@@ -429,12 +436,12 @@ ENDVCONTENT;
 	 * @return   boolean   True if there were files packed, false otherwise
 	 *                     (empty filelist or fatal error)
 	 */
-	private function pack_files()
+	protected function pack_files()
 	{
 		// Get a reference to the archiver and the timer classes
-		$archiver = AEFactory::getArchiverEngine();
-		$timer = AEFactory::getTimer();
-		$configuration = AEFactory::getConfiguration();
+		$archiver = Factory::getArchiverEngine();
+		$timer = Factory::getTimer();
+		$configuration = Factory::getConfiguration();
 
 		// If post-processing after part creation is enabled, make sure we do post-process each part before moving on
 		if ($configuration->get('engine.postproc.common.after_part', 0) && !empty($archiver->finishedPart))
@@ -448,7 +455,7 @@ ENDVCONTENT;
 		// If the archiver has work to do, make sure it finished up before continuing
 		if ($configuration->get('volatile.engine.archiver.processingfile', false))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Continuing file packing from previous step");
+			Factory::getLog()->log(LogLevel::DEBUG, "Continuing file packing from previous step");
 			$result = $archiver->addFile('', '', '');
 			$this->propagateFromObject($archiver);
 
@@ -481,14 +488,14 @@ ENDVCONTENT;
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Packing files");
+			Factory::getLog()->log(LogLevel::DEBUG, "Packing files");
 			$packedSize = 0;
 			$numberOfFiles = 0;
 
 			list($usec, $sec) = explode(" ", microtime());
 			$opStartTime = ((float)$usec + (float)$sec);
 
-			$largeFileThreshold = AEFactory::getConfiguration()->get('engine.scan.common.largefile', 10485760);
+			$largeFileThreshold = Factory::getConfiguration()->get('engine.scan.common.largefile', 10485760);
 
 			while ((count($this->file_list) > 0))
 			{
@@ -501,12 +508,12 @@ ENDVCONTENT;
 				// Anticipatory file size algorithm
 				if (($numberOfFiles > 0) && ($size > $largeFileThreshold))
 				{
-					if (!AEFactory::getConfiguration()->get('akeeba.tuning.nobreak.beforelargefile', 0))
+					if (!Factory::getConfiguration()->get('akeeba.tuning.nobreak.beforelargefile', 0))
 					{
 						// If the file is bigger than the big file threshold, break the step
 						// to avoid potential timeouts
 						$this->setBreakFlag();
-						AEUtilLogger::WriteLog(_AE_LOG_INFO, "Breaking step _before_ large file: " . $file . " - size: " . $size);
+						Factory::getLog()->log(LogLevel::INFO, "Breaking step _before_ large file: " . $file . " - size: " . $size);
 						// Push the file back to the list.
 						array_unshift($this->file_list, $file);
 
@@ -537,10 +544,10 @@ ENDVCONTENT;
 				// Do we have enough time?
 				if ($timer->getTimeLeft() < $_reqTime)
 				{
-					if (!AEFactory::getConfiguration()->get('akeeba.tuning.nobreak.proactive', 0))
+					if (!Factory::getConfiguration()->get('akeeba.tuning.nobreak.proactive', 0))
 					{
 						array_unshift($this->file_list, $file);
-						AEUtilLogger::WriteLog(_AE_LOG_INFO, "Proactive step break - file: " . $file . " - size: " . $size . " - req. time " . sprintf('%2.2f', $_reqTime));
+						Factory::getLog()->log(LogLevel::INFO, "Proactive step break - file: " . $file . " - size: " . $size . " - req. time " . sprintf('%2.2f', $_reqTime));
 						$this->setBreakFlag();
 
 						return true;
@@ -571,9 +578,9 @@ ENDVCONTENT;
 				// the risk to hit a timeout.
 				if (($packedSize > $largeFileThreshold) && ($numberOfFiles == 1))
 				{
-					if (!AEFactory::getConfiguration()->get('akeeba.tuning.nobreak.afterlargefile', 0))
+					if (!Factory::getConfiguration()->get('akeeba.tuning.nobreak.afterlargefile', 0))
 					{
-						AEUtilLogger::WriteLog(_AE_LOG_INFO, "Breaking step *after* large file: " . $file . " - size: " . $size);
+						Factory::getLog()->log(LogLevel::INFO, "Breaking step *after* large file: " . $file . " - size: " . $size);
 						$this->setBreakFlag();
 
 						return true;
@@ -596,8 +603,6 @@ ENDVCONTENT;
 	 * Implements the getProgress() percentage calculation based on how many
 	 * roots we have fully backed up and how much of the current root we
 	 * have backed up.
-	 *
-	 * @see backend/akeeba/abstract/AEAbstractPart#getProgress()
 	 */
 	public function getProgress()
 	{
@@ -638,22 +643,22 @@ ENDVCONTENT;
 		return $percentage;
 	}
 
-	private function progressAddFile()
+	protected function progressAddFile()
 	{
 		$this->total_files++;
 	}
 
-	private function progressMarkFileDone()
+	protected function progressMarkFileDone()
 	{
 		$this->done_files++;
 	}
 
-	private function progressAddFolder()
+	protected function progressAddFolder()
 	{
 		$this->total_folders++;
 	}
 
-	private function progressMarkFolderDone()
+	protected function progressMarkFolderDone()
 	{
 		$this->done_folders++;
 	}
@@ -663,12 +668,14 @@ ENDVCONTENT;
 	 *
 	 * @return array
 	 */
-	private function getCleanDirectoryComponents()
+	protected function getCleanDirectoryComponents()
 	{
+		$fsUtils = Factory::getFilesystemTools();
+
 		// Break directory components
-		if (AEFactory::getConfiguration()->get('akeeba.platform.override_root', 0))
+		if (Factory::getConfiguration()->get('akeeba.platform.override_root', 0))
 		{
-			$siteroot = AEFactory::getConfiguration()->get('akeeba.platform.newroot', '[SITEROOT]');
+			$siteroot = Factory::getConfiguration()->get('akeeba.platform.newroot', '[SITEROOT]');
 		}
 		else
 		{
@@ -679,19 +686,19 @@ ENDVCONTENT;
 
 		if ($this->root == $siteroot)
 		{
-			$translated_root = AEUtilFilesystem::translateStockDirs($siteroot, true);
+			$translated_root = $fsUtils->translateStockDirs($siteroot, true);
 		}
 		else
 		{
 			$translated_root = $this->remove_path_prefix;
 		}
 
-		$dir = AEUtilFilesystem::TrimTrailingSlash($this->current_directory);
+		$dir = $fsUtils->TrimTrailingSlash($this->current_directory);
 
 		if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN')
 		{
-			$translated_root = AEUtilFilesystem::TranslateWinPath($translated_root);
-			$dir = AEUtilFilesystem::TranslateWinPath($dir);
+			$translated_root = $fsUtils->TranslateWinPath($translated_root);
+			$dir = $fsUtils->TranslateWinPath($dir);
 		}
 
 		if (substr($dir, 0, strlen($translated_root)) == $translated_root)
@@ -720,22 +727,22 @@ ENDVCONTENT;
 	 *
 	 * @return  boolean  True on success, false on fatal error
 	 */
-	private function scanSubdirs()
+	protected function scanSubdirs()
 	{
-		$engine = AEFactory::getScanEngine();
+		$engine = Factory::getScanEngine();
 
 		list($root, $translated_root, $dir) = $this->getCleanDirectoryComponents();
 
 		// Get a filters instance
-		$filters = AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		if (is_null($this->getFolders_position))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Scanning directories of " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Scanning directories of " . $this->current_directory);
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Resuming scanning directories of " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Resuming scanning directories of " . $this->current_directory);
 		}
 
 		// Get subdirectories
@@ -745,10 +752,10 @@ ENDVCONTENT;
 		$this->propagateFromObject($engine);
 
 		// If the list contains "too many" items, please break this step!
-		if (AEFactory::getConfiguration()->get('volatile.breakflag', false))
+		if (Factory::getConfiguration()->get('volatile.breakflag', false))
 		{
 			// Log the step break decision, for debugging reasons
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Large directory " . $this->current_directory . " while scanning for subdirectories; I will resume scanning in next step.");
+			Factory::getLog()->log(LogLevel::INFO, "Large directory " . $this->current_directory . " while scanning for subdirectories; I will resume scanning in next step.");
 
 			// Return immediately, marking that we are not done yet!
 			return true;
@@ -763,7 +770,7 @@ ENDVCONTENT;
 		// Start adding the subdirectories
 		if (!empty($subdirectories) && is_array($subdirectories))
 		{
-			$dereferenceSymlinks = AEFactory::getConfiguration()->get('engine.archiver.common.dereference_symlinks');
+			$dereferenceSymlinks = Factory::getConfiguration()->get('engine.archiver.common.dereference_symlinks');
 
 			// If we have to treat symlinks as real directories just add everything
 			if ($dereferenceSymlinks)
@@ -794,11 +801,11 @@ ENDVCONTENT;
 						}
 
 						$check = $dirSlash . basename($subdirectory);
-						AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "Directory symlink detected: $check");
+						Factory::getLog()->log(LogLevel::DEBUG, "Directory symlink detected: $check");
 
 						if (_AKEEBA_IS_WINDOWS)
 						{
-							$check = AEUtilFilesystem::TranslateWinPath($check);
+							$check = Factory::getFilesystemTools()->TranslateWinPath($check);
 						}
 
 						// Do I need this? $dir contains a path relative to the root anyway...
@@ -807,11 +814,11 @@ ENDVCONTENT;
 						// Check for excluded symlinks (note that they are excluded as DIRECTORIES in the GUI)
 						if ($filters->isFiltered($check, $root, 'dir', 'all'))
 						{
-							AEUtilLogger::WriteLog(_AE_LOG_INFO, "Skipping directory symlink " . $check);
+							Factory::getLog()->log(LogLevel::INFO, "Skipping directory symlink " . $check);
 						}
 						else
 						{
-							AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Adding folder symlink: ' . $check);
+							Factory::getLog()->log(LogLevel::DEBUG, 'Adding folder symlink: ' . $check);
 							$this->file_list[] = $subdirectory;
 							$this->progressAddFile();
 						}
@@ -840,23 +847,23 @@ ENDVCONTENT;
 	 *
 	 * @return  boolean  True on success, false on fatal error
 	 */
-	private function scanFiles()
+	protected function scanFiles()
 	{
-		$engine = AEFactory::getScanEngine();
+		$engine = Factory::getScanEngine();
 
 		list($root, $translated_root, $dir) = $this->getCleanDirectoryComponents();
 
 		// Get a filters instance
-		$filters = AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		if (is_null($this->getFiles_position))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Scanning files of " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Scanning files of " . $this->current_directory);
 			$this->processed_files_counter = 0;
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Resuming scanning files of " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Resuming scanning files of " . $this->current_directory);
 		}
 
 		// Get file listing
@@ -866,10 +873,10 @@ ENDVCONTENT;
 		$this->propagateFromObject($engine);
 
 		// If the list contains "too many" items, please break this step!
-		if (AEFactory::getConfiguration()->get('volatile.breakflag', false))
+		if (Factory::getConfiguration()->get('volatile.breakflag', false))
 		{
 			// Log the step break decision, for debugging reasons
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Large directory " . $this->current_directory . " while scanning for files; I will resume scanning in next step.");
+			Factory::getLog()->log(LogLevel::INFO, "Large directory " . $this->current_directory . " while scanning for files; I will resume scanning in next step.");
 
 			// Return immediately, marking that we are not done yet!
 			return true;
@@ -906,7 +913,7 @@ ENDVCONTENT;
 
 					if (_AKEEBA_IS_WINDOWS)
 					{
-						$check = AEUtilFilesystem::TranslateWinPath($check);
+						$check = Factory::getFilesystemTools()->TranslateWinPath($check);
 					}
 
 					// Do I need this? $dir contains a path relative to the root anyway...
@@ -916,7 +923,7 @@ ENDVCONTENT;
 
 					if ($skipThisFile)
 					{
-						AEUtilLogger::WriteLog(_AE_LOG_INFO, "Skipping file $fileName (filter: $byFilter)");
+						Factory::getLog()->log(LogLevel::INFO, "Skipping file $fileName (filter: $byFilter)");
 					}
 					else
 					{
@@ -940,9 +947,9 @@ ENDVCONTENT;
 		// be restored.
 		if ($this->done_file_scanning && ($this->processed_files_counter == 0))
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Empty directory " . $this->current_directory);
+			Factory::getLog()->log(LogLevel::INFO, "Empty directory " . $this->current_directory);
 
-			$archiver = AEFactory::getArchiverEngine();
+			$archiver = Factory::getArchiverEngine();
 
 			if ($this->current_directory != $this->remove_path_prefix)
 			{
@@ -969,13 +976,13 @@ ENDVCONTENT;
 	 *
 	 * @return  boolean  True if there was a new root to scan
 	 */
-	private function getNextRoot()
+	protected function getNextRoot()
 	{
 		// We have finished with our directory list. Hmm... Do we have extra directories?
 		if (count($this->root_definitions) > 0)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, "More off-site directories detected");
-			$registry = AEFactory::getConfiguration();
+			Factory::getLog()->log(LogLevel::DEBUG, "More off-site directories detected");
+			$registry = Factory::getConfiguration();
 			$dir_definition = array_shift($this->root_definitions);
 
 			$this->remove_path_prefix = $dir_definition[0]; // Remove absolute path to directory when storing the file
@@ -1002,7 +1009,7 @@ ENDVCONTENT;
 			$this->root = $dir_definition[0];
 
 			// Translate the root into an absolute path
-			$stock_dirs = AEPlatform::getInstance()->get_stock_directories();
+			$stock_dirs = Platform::getInstance()->get_stock_directories();
 			$absolute_dir = substr($this->root, 0);
 
 			if (!empty($stock_dirs))
@@ -1023,7 +1030,7 @@ ENDVCONTENT;
 			$this->total_folders = 0;
 			$this->done_folders = 0;
 
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, "Including new off-site directory to " . $dir_definition[1]);
+			Factory::getLog()->log(LogLevel::INFO, "Including new off-site directory to " . $dir_definition[1]);
 
 			return true;
 		}
@@ -1037,22 +1044,22 @@ ENDVCONTENT;
 	}
 
 	/**
-	 * @param AEAbstractArchiver $archiver
-	 * @param AEConfiguration $configuration
+	 * @param \Akeeba\Engine\Archiver\Base $archiver
+	 * @param \Akeeba\Engine\Configuration $configuration
 	 *
 	 * @return bool
 	 */
-	private function postProcessDonePartFile($archiver, $configuration)
+	protected function postProcessDonePartFile(\Akeeba\Engine\Archiver\Base $archiver, \Akeeba\Engine\Configuration $configuration)
 	{
 		$filename = array_shift($archiver->finishedPart);
-		AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Preparing to post process ' . basename($filename));
+		Factory::getLog()->log(LogLevel::INFO, 'Preparing to post process ' . basename($filename));
 
 		// Add this part's size to the volatile storage
 		$volatileTotalSize = $configuration->get('volatile.engine.archiver.totalsize', 0);
 		$volatileTotalSize += (int)@filesize($filename);
 		$configuration->set('volatile.engine.archiver.totalsize', $volatileTotalSize);
 
-		$post_proc = AEFactory::getPostprocEngine();
+		$post_proc = Factory::getPostprocEngine();
 		$result = $post_proc->processPart($filename);
 		$this->propagateFromObject($post_proc);
 
@@ -1062,7 +1069,7 @@ ENDVCONTENT;
 		}
 		else
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_INFO, 'Successfully processed file ' . basename($filename));
+			Factory::getLog()->log(LogLevel::INFO, 'Successfully processed file ' . basename($filename));
 		}
 
 		// Should we delete the file afterwards?
@@ -1072,8 +1079,8 @@ ENDVCONTENT;
 			&& ($result !== false)
 		)
 		{
-			AEUtilLogger::WriteLog(_AE_LOG_DEBUG, 'Deleting already processed file ' . basename($filename));
-			AEPlatform::getInstance()->unlink($filename);
+			Factory::getLog()->log(LogLevel::DEBUG, 'Deleting already processed file ' . basename($filename));
+			Platform::getInstance()->unlink($filename);
 		}
 
 		if ($post_proc->break_after && ($result !== false))

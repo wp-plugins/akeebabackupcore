@@ -7,6 +7,7 @@
 
 namespace Solo\View\Main;
 
+use Akeeba\Engine\Platform;
 use Awf\Mvc\Model;
 use Awf\Mvc\View;
 use Solo\Model\Main;
@@ -19,7 +20,7 @@ class Html extends \Solo\View\Html
 		/** @var Main $model */
 		$model = $this->getModel();
 
-		$this->profile = \AEPlatform::getInstance()->get_active_profile();
+		$this->profile = Platform::getInstance()->get_active_profile();
 		$this->profileList = $model->getProfileList();
 		$this->latestBackupDetails = $model->getLatestBackupDetails();
 

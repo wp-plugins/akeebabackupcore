@@ -11,6 +11,8 @@ use Awf\Application\Application;
 use Awf\Date\Date;
 use Awf\Router\Router;
 use Awf\Text\Text;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 class Remote extends ControllerDefault
 {
@@ -54,16 +56,17 @@ class Remote extends ControllerDefault
 		}
 
 		// Start the backup
-		\AECoreKettenrad::reset(array(
+		Factory::resetState(array(
 			'maxrun' => 0
 		));
-		\AEUtilTempfiles::deleteTempFiles();
+		Factory::getTempFiles()->deleteTempFiles();
 		$tempVarsTag = AKEEBA_BACKUP_ORIGIN;
 		$tempVarsTag .= empty($backupId) ? '' : ('.' . $backupId);
 
-		\AEUtilTempvars::reset($tempVarsTag);
+		Factory::getFactoryStorage()->reset($tempVarsTag);
 
-		$kettenrad = \AECoreKettenrad::load(AKEEBA_BACKUP_ORIGIN, $backupId);
+		Factory::loadState(AKEEBA_BACKUP_ORIGIN, $backupId);
+		$kettenrad = Factory::getKettenrad();
 		$kettenrad->setBackupId($backupId);
 
 		$dateNow = new Date();
@@ -76,7 +79,7 @@ class Remote extends ControllerDefault
 		$kettenrad->tick();
 		$kettenrad->tick();
 		$array = $kettenrad->getStatusArray();
-		\AECoreKettenrad::save(AKEEBA_BACKUP_ORIGIN, $backupId);
+		Factory::saveState(AKEEBA_BACKUP_ORIGIN, $backupId);
 
 		$noredirect = $this->input->get('noredirect', 0, 'int');
 
@@ -98,8 +101,8 @@ class Remote extends ControllerDefault
 		elseif ($array['HasRun'] == 1)
 		{
 			// All done
-			\AEFactory::nuke();
-			\AEUtilTempvars::reset();
+			Factory::nuke();
+			Factory::getFactoryStorage()->reset();
 
 			@ob_end_clean();
 			echo '200 OK';
@@ -143,13 +146,14 @@ class Remote extends ControllerDefault
 			$backupId = null;
 		}
 
-		$kettenrad = \AECoreKettenrad::load(AKEEBA_BACKUP_ORIGIN, $backupId);
+		Factory::loadState(AKEEBA_BACKUP_ORIGIN, $backupId);
+		$kettenrad = Factory::getKettenrad();
 		$kettenrad->setBackupId($backupId);
 
 		$kettenrad->tick();
 		$array = $kettenrad->getStatusArray();
 		$kettenrad->resetWarnings(); // So as not to have duplicate warnings reports
-		\AECoreKettenrad::save(AKEEBA_BACKUP_ORIGIN, $backupId);
+		Factory::saveState(AKEEBA_BACKUP_ORIGIN, $backupId);
 
 		$noredirect = $this->input->get('noredirect', 0, 'int');
 
@@ -171,8 +175,8 @@ class Remote extends ControllerDefault
 		elseif ($array['HasRun'] == 1)
 		{
 			// All done
-			\AEFactory::nuke();
-			\AEUtilTempvars::reset();
+			Factory::nuke();
+			Factory::getFactoryStorage()->reset();
 
 			@ob_end_clean();
 			echo '200 OK';
@@ -210,10 +214,10 @@ class Remote extends ControllerDefault
 	private function checkPermissions()
 	{
 		// Is frontend backup enabled?
-		$febEnabled = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
+		$febEnabled = Platform::getInstance()->get_platform_configuration_option('frontend_enable', 0);
 		$febEnabled = in_array($febEnabled, array('on', 'checked', 'true', 1, 'yes'));
 
-		$validKey = \AEPlatform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
+		$validKey = Platform::getInstance()->get_platform_configuration_option('frontend_secret_word', '');
 		$validKeyTrim = trim($validKey);
 
 		if (!$febEnabled || empty($validKey))
@@ -243,6 +247,6 @@ class Remote extends ControllerDefault
 		$session = Application::getInstance()->getContainer()->segment;
 		$session->profile = $profile;
 
-		\AEPlatform::getInstance()->load_configuration($profile);
+		Platform::getInstance()->load_configuration($profile);
 	}
 } 

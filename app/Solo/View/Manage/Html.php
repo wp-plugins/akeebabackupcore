@@ -7,10 +7,12 @@
 
 namespace Solo\View\Manage;
 
+use Akeeba\Engine\Platform;
 use Awf\Document\Menu\Item;
 use Awf\Mvc\View;
 use Awf\Router\Router;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
 
 class Html extends \Solo\View\Html
 {
@@ -69,7 +71,7 @@ class Html extends \Solo\View\Html
 
 		$this->enginesPerProfile = $model->getPostProcessingEnginePerProfile();
 
-		$scripting = \AEUtilScripting::loadScripting();
+		$scripting = Factory::getEngineParamsProvider()->loadScripting();
 		$this->backupTypes = array();
 
 		foreach ($scripting['scripts'] as $key => $data)
@@ -153,7 +155,7 @@ class Html extends \Solo\View\Html
 		$model = $this->getModel();
 
 		$this->recordId = $model->getState('id', -1);
-		$this->record = \AEPlatform::getInstance()->get_statistics($this->recordId);
+		$this->record = Platform::getInstance()->get_statistics($this->recordId);
 
 		$buttons = array(
 			array(

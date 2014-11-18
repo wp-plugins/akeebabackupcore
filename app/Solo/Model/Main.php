@@ -8,11 +8,12 @@
 namespace Solo\Model;
 
 use Awf\Database\Driver;
-use Awf\Filesystem\Factory;
 use Awf\Html\Select;
 use Awf\Mvc\Model;
 use Awf\Uri\Uri;
 use Solo\Application;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 class Main extends Model
 {
@@ -174,18 +175,18 @@ HTML;
 		$db->setQuery($query);
 		$id = $db->loadResult();
 
-		$backup_types = \AEUtilScripting::loadScripting();
+		$backup_types = Factory::getEngineParamsProvider()->loadScripting();
 
 		if (empty($id))
 		{
 			return array();
 		}
 
-		$record = \AEPlatform::getInstance()->get_statistics($id);
+		$record = Platform::getInstance()->get_statistics($id);
 
 		if (array_key_exists($record['type'], $backup_types['scripts']))
 		{
-			$record['type_translated'] = \AEPlatform::getInstance()->translate($backup_types['scripts'][$record['type']]['text']);
+			$record['type_translated'] = Platform::getInstance()->translate($backup_types['scripts'][$record['type']]['text']);
 		}
 		else
 		{
@@ -227,9 +228,9 @@ HTML;
 	 */
 	public function getBackupUrl()
 	{
-		$stock_dirs = \AEPlatform::getInstance()->get_stock_directories();
+		$stock_dirs = Platform::getInstance()->get_stock_directories();
 
-		$registry = \AEFactory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$backupPath = $registry->get('akeeba.basic.output_directory');
 
 		foreach ($stock_dirs as $macro => $replacement)
@@ -299,7 +300,7 @@ HTML;
 	public function checkEngineSettingsEncryption()
 	{
 		$secretKeyFile = $this->container->basePath . Application::secretKeyRelativePath;
-		$encryptionEnabled = \AEPlatform::getInstance()->get_platform_configuration_option('useencryption', -1);
+		$encryptionEnabled = Platform::getInstance()->get_platform_configuration_option('useencryption', -1);
 		$fileExists = @file_exists($secretKeyFile);
 
 		if ($fileExists && ($encryptionEnabled == 0))
@@ -324,7 +325,7 @@ HTML;
 	 */
 	protected function disableEngineSettingsEncryption($secretKeyFile)
 	{
-		$key = \AEUtilSecuresettings::getKey();
+		$key = Factory::getSecureSettings()->getKey();
 
 		// Loop all profiles and decrypt their settings
 		$db = $this->container->db;
@@ -336,7 +337,7 @@ HTML;
 		foreach ($profiles as $profile)
 		{
 			$id = $profile->id;
-			$config = \AEUtilSecuresettings::decryptSettings($profile->configuration, $key);
+			$config = Factory::getSecureSettings()->decryptSettings($profile->configuration, $key);
 			$sql = $db->getQuery(true)
 				->update($db->qn('#__ak_profiles'))
 				->set($db->qn('configuration') . ' = ' . $db->q($config))
@@ -386,7 +387,7 @@ HTML;
 			foreach ($profiles as $profile)
 			{
 				$id = $profile->id;
-				$config = \AEUtilSecuresettings::encryptSettings($profile->configuration, $key);
+				$config = Factory::getSecureSettings()->encryptSettings($profile->configuration, $key);
 				$sql = $db->getQuery(true)
 					->update($db->qn('#__ak_profiles'))
 					->set($db->qn('configuration') . ' = ' . $db->q($config))
@@ -442,7 +443,7 @@ HTML;
 			return $ret;
 		}
 
-		$downloadId = \AEPlatform::getInstance()->get_platform_configuration_option('update_dlid', '');
+		$downloadId = Platform::getInstance()->get_platform_configuration_option('update_dlid', '');
 
 		if (preg_match('/^([0-9]{1,}:)?[0-9a-f]{32}$/i', $downloadId))
 		{
@@ -469,7 +470,7 @@ HTML;
 		}
 		else
 		{
-			$dlid = \AEPlatform::getInstance()->get_platform_configuration_option('update_dlid', '');
+			$dlid = Platform::getInstance()->get_platform_configuration_option('update_dlid', '');
 
 			if (preg_match('/^([0-9]{1,}:)?[0-9a-f]{32}$/i', $dlid))
 			{
@@ -519,7 +520,7 @@ HTML;
 	public function flagStuckBackups()
 	{
 		// Invalidate stale backups
-		\AECoreKettenrad::reset(array(
+		Factory::resetState(array(
 			'global' => true,
 			'log'    => false,
 			'maxrun' => $this->container->appConfig->get('options.failure_timeout', 180)
@@ -541,7 +542,7 @@ HTML;
 		$filters[] = array('field' => 'origin'     , 'operand' => '<>', 'value'   => 'restorepoint');
 		$filters[] = array('field' => 'backupstart', 'operand' => '>' , 'value'   => $last);
 
-		$failed = \AEPlatform::getInstance()->get_statistics_list(array('filters' => $filters));
+		$failed = Platform::getInstance()->get_statistics_list(array('filters' => $filters));
 
 		// Well, everything went ok.
 		if(!$failed)
@@ -558,7 +559,7 @@ HTML;
 
 		if(!$emails)
 		{
-			$emails = \AEPlatform::getInstance()->get_administrator_emails();
+			$emails = Platform::getInstance()->get_administrator_emails();
 		}
 
 		if(empty($emails))
@@ -629,13 +630,13 @@ This email is sent to you by your own site, [SITENAME]
 ENDBODY;
 		}
 
-		$email_subject = \AEUtilFilesystem::replace_archive_name_variables($email_subject);
-		$email_body    = \AEUtilFilesystem::replace_archive_name_variables($email_body);
+		$email_subject = Factory::getFilesystemTools()->replace_archive_name_variables($email_subject);
+		$email_body    = Factory::getFilesystemTools()->replace_archive_name_variables($email_body);
 		$email_body    = str_replace('[FAILEDLIST]', $failedReport, $email_body);
 
 		foreach($emails as $email)
 		{
-			\AEPlatform::getInstance()->send_email($email, $email_subject, $email_body);
+			Platform::getInstance()->send_email($email, $email_subject, $email_body);
 		}
 
 		// Let's update the last time we check, so we will avoid to send
@@ -655,7 +656,7 @@ ENDBODY;
 	{
 		$db = $this->container->db;
 
-		$now = \AEPlatform::getInstance()->get_timestamp_database();
+		$now = Platform::getInstance()->get_timestamp_database();
 
 		if($exists)
 		{

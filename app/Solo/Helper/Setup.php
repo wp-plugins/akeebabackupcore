@@ -11,6 +11,7 @@ use Awf\Database\Driver;
 use Awf\Date\Date;
 use Awf\Html\Select;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
 
 /**
  * Setup helper class
@@ -59,7 +60,7 @@ abstract class Setup
 	 */
 	public static function restorationScriptSelect($selected = '', $name = 'installer')
 	{
-		$installers = \AEUtilInihelper::getInstallerList(true);
+		$installers = Factory::getEngineParamsProvider()->getInstallerList(true);
 
 		$options = array();
 
@@ -82,7 +83,7 @@ abstract class Setup
 	public static function scriptTypesSelect($selected = '', $name = 'scripttype')
 	{
 
-		$scriptTypes = array('generic', 'wordpress', 'joomla', 'phpbb', 'prestashop');
+		$scriptTypes = array('generic', 'wordpress', 'joomla', 'phpbb', 'prestashop', 'moodle', 'magento');
 
 		$options = array();
 
@@ -250,4 +251,4 @@ abstract class Setup
 
 		return $html;
 	}
-} 
+}

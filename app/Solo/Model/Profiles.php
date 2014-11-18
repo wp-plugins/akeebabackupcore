@@ -24,6 +24,8 @@ class Profiles extends DataModel
 		$this->idFieldName = 'id';
 
 		parent::__construct($container);
+
+		$this->addBehaviour('filters');
 	}
 
 	/**

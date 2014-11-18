@@ -7,6 +7,8 @@
 
 // Bootstrap file for Akeeba Solo for WordPress
 use Awf\Session;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 /**
  * Make sure we are being called from Akeeba Solo
@@ -134,7 +136,7 @@ if (defined('AKEEBADEBUG'))
 
 // Include the Akeeba Engine and ALICE factories
 define('AKEEBAENGINE', 1);
-$factoryPath = $akeebaBackupWpRoot . 'Solo/engine/factory.php';
+$factoryPath = $akeebaBackupWpRoot . 'Solo/engine/Factory.php';
 $alicePath = $akeebaBackupWpRoot . 'Solo/alice/factory.php';
 
 // Load the engine
@@ -169,9 +171,9 @@ if(file_exists($alicePath))
 	require_once $alicePath;
 }
 
-\AEPlatform::addPlatform('solowp', __DIR__ . '/platform/solowp');
-\AEPlatform::getInstance()->load_version_defines();
-\AEPlatform::getInstance()->apply_quirk_definitions();
+Platform::addPlatform('Wordpress', __DIR__ . '/Platform/Wordpress');
+Platform::getInstance()->load_version_defines();
+Platform::getInstance()->apply_quirk_definitions();
 
 try
 {
@@ -194,13 +196,13 @@ try
 
 				if (isset($_REAL_REQUEST))
 				{
-					return new \Awf\Input\Input($_REAL_REQUEST);
+					return new \Awf\Input\Input($_REAL_REQUEST, array('magicQuotesWorkaround' => true));
 				}
 				elseif (defined('WPINC'))
 				{
 					$fakeRequest   = array_map('stripslashes_deep', $_REQUEST);
 
-					return new \Awf\Input\Input($fakeRequest);
+					return new \Awf\Input\Input($fakeRequest, array('magicQuotesWorkaround' => true));
 				}
 				else
 				{

@@ -119,7 +119,7 @@ class Update extends Model
 		if (!$force)
 		{
 			// Force reload if more than 6 hours have elapsed
-			if (abs(time() - $this->lastCheck) < 21600)
+			if (abs(time() - $this->lastCheck) >= 21600)
 			{
 				$force = true;
 			}
@@ -432,6 +432,25 @@ class Update extends Model
 
 				$theirs = new Date($date);
 
+				// Do we have the same time? This happens when we release two versions in the same day
+				// In such cases we have to check vs the version number
+				if($mine->toUnix() == $theirs->toUnix())
+				{
+					$mine = $this->currentVersion;
+
+					if (empty($mine))
+					{
+						$mine = '0.0.0';
+					}
+
+					if (empty($version))
+					{
+						$version = '0.0.0';
+					}
+
+					return (version_compare($version, $mine, 'gt'));
+				}
+
 				return ($theirs->toUnix() > $mine->toUnix());
 
 				break;
@@ -620,6 +639,15 @@ class Update extends Model
 		// Get the absolute path to site's root
 		$siteRoot = (isset($this->container['filesystemBase'])) ? $this->container['filesystemBase'] : APATH_BASE;
 		$siteRoot = str_replace('\\', '/', $siteRoot);
+		$siteRoot = str_replace('//', '/', $siteRoot);
+
+		// On WordPress we need to go one level up
+		if (defined('WPINC'))
+		{
+			$parts = explode('/', $siteRoot);
+			array_pop($parts);
+			$siteRoot = implode('/', $parts);
+		}
 
 		$tempdir = APATH_BASE . '/tmp';
 		$file = $tempdir . '/update.zip';
@@ -695,15 +723,21 @@ ENDDATA;
 
 		$data .= ');';
 
-		// Remove the old file, if it's there...
 
 		$configpath = $siteRoot . '/restoration.php';
 
+		if (defined('WPINC'))
+		{
+			$configpath = $siteRoot . '/app/restoration.php';
+		}
+
+		// Remove the old file, if it's there...
 		if (file_exists($configpath))
 		{
 			$fs->delete($configpath);
 		}
 
+		// Write the new file
 		$fs->write($configpath, $data);
 
 		return true;

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -78,8 +78,9 @@ class Wizard extends ControllerDefault
 
 	public function ajax()
 	{
-		$act = $this->input->getCmd('act', '');
+		$act = $this->input->getCmd('akact', '');
 
+		/** @var \Solo\Model\Wizard $model */
 		$model = $this->getModel();
 		$model->setState('act', $act);
 		$ret = $model->runAjax();
@@ -89,4 +90,4 @@ class Wizard extends ControllerDefault
 		flush();
 		$this->container->application->close();
 	}
-} 
+}

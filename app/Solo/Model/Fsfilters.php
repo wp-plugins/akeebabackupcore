@@ -7,8 +7,9 @@
 
 namespace Solo\Model;
 
-
 use Awf\Mvc\Model;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Fsfilters extends Model
 {
@@ -27,7 +28,7 @@ class Fsfilters extends Model
 		$directory = substr($root, 0);
 
 		// Replace stock directory tags, like [SITEROOT]
-		$stock_dirs = \AEPlatform::getInstance()->get_stock_directories();
+		$stock_dirs = Platform::getInstance()->get_stock_directories();
 
 		if (!empty($stock_dirs))
 		{
@@ -37,10 +38,10 @@ class Fsfilters extends Model
 			}
 		}
 
-		$directory = \AEUtilFilesystem::TranslateWinPath($directory);
+		$directory = Factory::getFilesystemTools()->TranslateWinPath($directory);
 
 		// Clean and add the node
-		$node = \AEUtilFilesystem::TranslateWinPath($node);
+		$node = Factory::getFilesystemTools()->TranslateWinPath($node);
 
 		if (($node == '/'))
 		{
@@ -64,10 +65,10 @@ class Fsfilters extends Model
 		}
 
 		// Get a filters instance
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get a listing of folders and process it
-		$folders = \AEUtilScanner::getFolders($directory);
+		$folders = Factory::getFileLister()->getFolders($directory);
 
 		asort($folders);
 
@@ -77,7 +78,7 @@ class Fsfilters extends Model
 		{
 			foreach ($folders as $folder)
 			{
-				$folder = \AEUtilFilesystem::TranslateWinPath($folder);
+				$folder = Factory::getFilesystemTools()->TranslateWinPath($folder);
 
 				$json_folder = json_encode($folder);
 				$folder = json_decode($json_folder);
@@ -111,7 +112,7 @@ class Fsfilters extends Model
 		$folders = $folders_out;
 
 		// Get a listing of files and process it
-		$files = \AEUtilScanner::getFiles($directory);
+		$files = Factory::getFileLister()->getFiles($directory);
 		asort($files);
 		$files_out = array();
 
@@ -267,13 +268,13 @@ class Fsfilters extends Model
 		}
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the object to toggle
 		$node = $this->glue_crumbs($crumbs, $item);
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		$success = $filter->toggle($root, $node, $new_status);
@@ -312,13 +313,13 @@ class Fsfilters extends Model
 		}
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the object to toggle
 		$node = $this->glue_crumbs($crumbs, $item);
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		$success = $filter->set($root, $node);
@@ -358,14 +359,14 @@ class Fsfilters extends Model
 		}
 
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Get the object to toggle
 		$old_node = $this->glue_crumbs($crumbs, $old_item);
 		$new_node = $this->glue_crumbs($crumbs, $new_item);
 
 		// Get the specific filter object
-		$filter = \AEFactory::getFilterObject($filter);
+		$filter = Factory::getFilterObject($filter);
 
 		// Toggle the filter
 		if (!empty($old_item))
@@ -405,7 +406,7 @@ class Fsfilters extends Model
 	public function &get_filters($root)
 	{
 		// A reference to the global Akeeba Engine filter object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
 		// Initialize the return array
 		$ret = array();
@@ -457,18 +458,18 @@ class Fsfilters extends Model
 	public function resetFilters($root)
 	{
 		// Get a reference to the global Filters object
-		$filters = \AEFactory::getFilters();
+		$filters = Factory::getFilters();
 
-		$filter = \AEFactory::getFilterObject('directories');
+		$filter = Factory::getFilterObject('directories');
 		$filter->reset($root);
 
-		$filter = \AEFactory::getFilterObject('files');
+		$filter = Factory::getFilterObject('files');
 		$filter->reset($root);
 
-		$filter = \AEFactory::getFilterObject('skipdirs');
+		$filter = Factory::getFilterObject('skipdirs');
 		$filter->reset($root);
 
-		$filter = \AEFactory::getFilterObject('skipfiles');
+		$filter = Factory::getFilterObject('skipfiles');
 		$filter->reset($root);
 
 		$filters->save();

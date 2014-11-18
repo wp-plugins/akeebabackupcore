@@ -40,6 +40,10 @@ class PostUpgradeScript
 		'media/js/solo/system.js',
 		'media/js/solo/update.js',
 		'media/js/solo/wizard.js',
+		// Removed in version 1.2 (introducing Akeeba Engine 2)
+		'Solo/engine/platform/abstract.php',
+		'Solo/engine/platform/interface.php',
+		'Solo/engine/platform/platform.php',
 	);
 
 	/**
@@ -79,6 +83,14 @@ class PostUpgradeScript
 	 * @var array Folders to remove from all versions
 	 */
 	protected $removeFoldersAllVersions = array(
+		// Removed in version 1.2 (introducing Akeeba Engine 2)
+		'Solo/engine/platform/solo',
+		'Solo/engine/abstract',
+		'Solo/engine/drivers',
+		'Solo/engine/engines',
+		'Solo/engine/filters',
+		'Solo/engine/plugins',
+		'Solo/engine/utils',
 	);
 
 	/**
@@ -183,7 +195,28 @@ class PostUpgradeScript
 	 */
 	private function _WordPressActions()
 	{
+		$this->_WordPressRemoveFolders();
+	}
 
+	/**
+	 * Remove obsolete folders from the WordPress installation
+	 *
+	 * @return  void
+	 */
+	private function _WordPressRemoveFolders()
+	{
+		$removeFolders = array(
+			// Obsolete folders after the introduction of Akeeba Engine 2
+			'helpers/platform/solowp',
+		);
+
+		$fsBase = rtrim($this->container->filesystemBase, '/' . DIRECTORY_SEPARATOR) . '/../';
+		$fs = $this->container->fileSystem;
+
+		foreach($removeFolders as $folder)
+		{
+			$fs->rmdir($fsBase . $folder, true);
+		}
 	}
 
 	/**

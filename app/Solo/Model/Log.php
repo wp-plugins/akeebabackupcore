@@ -11,6 +11,8 @@ namespace Solo\Model;
 use Awf\Html\Select;
 use Awf\Mvc\Model;
 use Awf\Text\Text;
+use Akeeba\Engine\Factory;
+use Akeeba\Engine\Platform;
 
 class Log extends Model
 {
@@ -21,10 +23,10 @@ class Log extends Model
 	 */
 	function getLogFiles()
 	{
-		$configuration = \AEFactory::getConfiguration();
+		$configuration = Factory::getConfiguration();
 		$outputDirectory = $configuration->get('akeeba.basic.output_directory');
 
-		$files = \AEUtilScanner::getFiles($outputDirectory);
+		$files = Factory::getFileLister()->getFiles($outputDirectory);
 		$ret = array();
 
 		if (!empty($files) && is_array($files))
@@ -96,7 +98,7 @@ class Log extends Model
 		echo "\r\n";
 		echo "--- START OF RAW LOG --\r\n";
 		// The at sign is necessary to skip showing PHP errors if the file doesn't exist or isn't readable for some reason
-		@readfile(\AEUtilLogger::logName($tag));
+		@readfile(Factory::getLog()->getLogFilename($tag));
 		echo "--- END OF RAW LOG ---\r\n";
 	}
 } 

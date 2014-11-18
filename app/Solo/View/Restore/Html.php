@@ -7,6 +7,7 @@
 
 namespace Solo\View\Restore;
 
+use Akeeba\Engine\Factory;
 use Awf\Mvc\View;
 use Awf\Uri\Uri;
 use Awf\Utils\Template;
@@ -50,7 +51,7 @@ class Html extends BaseHtml
 		}
 		else
 		{
-			$this->siteURL = \AEFactory::getConfiguration()->get('akeeba.platform.site_url', '');
+			$this->siteURL = Factory::getConfiguration()->get('akeeba.platform.site_url', '');
 		}
 
 		$this->siteURL = trim($this->siteURL);

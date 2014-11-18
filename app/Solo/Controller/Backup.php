@@ -7,6 +7,8 @@
 
 namespace Solo\Controller;
 use Awf\Date\Date;
+use Akeeba\Engine\Platform;
+use Akeeba\Engine\Factory;
 
 /**
  * The controller for the Backup view
@@ -66,7 +68,7 @@ class Backup extends ControllerDefault
 	{
 		$model = $this->getModel();
 
-		$model->setState('profile',			$this->input->get('profile', \AEPlatform::getInstance()->get_active_profile(), 'int'));
+		$model->setState('profile',			$this->input->get('profile', Platform::getInstance()->get_active_profile(), 'int'));
 		$model->setState('ajax',			$this->input->get('ajax', '', 'cmd'));
 		$model->setState('description',		$this->input->get('description', '', 'raw'));
 		$model->setState('comment',			$this->input->get('comment', '','default', 'raw'));
@@ -105,7 +107,7 @@ class Backup extends ControllerDefault
 	private function applyProfile()
 	{
 		// Get the currently active profile
-		$current_profile = \AEPlatform::getInstance()->get_active_profile();
+		$current_profile = Platform::getInstance()->get_active_profile();
 
 		// Get the profile from the request
 		$profile = (int)$this->input->get('profile', $current_profile, 'int');
@@ -121,7 +123,7 @@ class Backup extends ControllerDefault
 		{
 			$session = \Awf\Application\Application::getInstance()->getContainer()->segment;
 			$session->profile = $profile;
-			\AEPlatform::getInstance()->load_configuration($profile);
+			Platform::getInstance()->load_configuration($profile);
 		}
 	}
 } 
