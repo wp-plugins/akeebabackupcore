@@ -97,17 +97,19 @@ class Large extends Base
 		$counter = 0;
 		$maxCounter = $registry->get("engine.scan.large.{$threshold_key}_threshold", $threshold_default);
 
-		while($di->valid())
+		while ($di->valid())
 		{
 			if ($di->isDot())
 			{
 				$di->next();
+
 				continue;
 			}
 
 			if ($di->isDir() != $forFolders)
 			{
 				$di->next();
+
 				continue;
 			}
 

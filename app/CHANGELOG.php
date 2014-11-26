@@ -1,6 +1,18 @@
 <?php die();?>
+Akeeba Solo 1.2.0.rc5
+================================================================================
+! DirectoryIterator::getExtension is not compatible with PHP 5.3.4 and 5.3.5
+- Removed the (broken) multipart upload from the legacy S3 post-processing engine. Please use the new "Upload to Amazon S3" option for multipart uploads.
+# [HIGH] Bug in third party Guzzle library causes Amazon S3 multipart uploads of archives larger than the remaining RAM size to fail due to memory exhaustion.
+# [HIGH] ANGIE for WordPress: The .htaccess was broken on restoration due to two typos in the code
+# [MEDIUM] Fatal error on sites with open_basedir restrictions on the site's root
 
-Akeeba Solo 1.2.0.b1
+Akeeba Solo 1.2.0.rc4
+================================================================================
+# [LOW] 500 error on some sites after updating to version 1.2
+~ There are no 1.2.0.rc3 and 1.2.0.rc4 versions; these version numbers were reserved for use by Akeeba Backup CORE for WordPress.
+
+Akeeba Solo 1.2.0.rc1
 ================================================================================
 + New and improved backup engine
 + ANGIE for WordPress: Update serialised data

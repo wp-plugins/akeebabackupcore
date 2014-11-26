@@ -507,6 +507,11 @@ class Factory
 			$registry = self::getConfiguration();
 			$engine = $registry->get('akeeba.advanced.archiver_engine');
 			$class_name = '\\Akeeba\\Engine\\Archiver\\' . ucfirst($engine);
+
+			if (!class_exists($class_name, true))
+			{
+				$class_name = '\\Akeeba\\Engine\\Archiver\\Jpa';
+			}
 		}
 
 		if ($reset)
@@ -533,6 +538,11 @@ class Factory
 			$registry = self::getConfiguration();
 			$engine = $registry->get('akeeba.advanced.dump_engine');
 			$class_name = '\\Akeeba\\Engine\\Dump\\' . ucfirst($engine);
+
+			if (!class_exists($class_name, true))
+			{
+				$class_name = '\\Akeeba\\Engine\\Dump\\Native';
+			}
 		}
 
 		if ($reset)
@@ -564,6 +574,11 @@ class Factory
 			$registry = self::getConfiguration();
 			$engine = $registry->get('akeeba.advanced.scan_engine');
 			$class_name = '\\Akeeba\\Engine\\Scan\\' . ucfirst($engine);
+
+			if (!class_exists($class_name, true))
+			{
+				$class_name = '\\Akeeba\\Engine\\Scan\\Large';
+			}
 		}
 
 		if ($reset)
@@ -578,20 +593,32 @@ class Factory
 	 * Returns the current post-processing engine. If no class is specified we
 	 * return the post-processing engine configured in akeeba.advanced.postproc_engine
 	 *
-	 * @param   string $myClass The name of the post-processing class to forcibly return
+	 * @param   string $engine The name of the post-processing class to forcibly return
 	 *
 	 * @return  \Akeeba\Engine\Postproc\Base
 	 */
-	public static function &getPostprocEngine($myClass = null)
+	public static function &getPostprocEngine($engine = null)
 	{
-		static $class_name;
+		$class_name = '\\Akeeba\\Engine\\Postproc\\Fake';
 
-		if (is_null($class_name) && is_null($myClass))
+		if (!is_null($engine))
 		{
-			$myClass = self::getConfiguration()->get('akeeba.advanced.postproc_engine');
+			$class_name = '\\Akeeba\\Engine\\Postproc\\' . ucfirst($engine);
 		}
 
-		return self::getObjectInstance('\\Akeeba\\Engine\\Postproc\\' . ucfirst($myClass));
+		if (is_null($engine) || !class_exists($class_name, true))
+		{
+			$registry = self::getConfiguration();
+			$engine = $registry->get('akeeba.advanced.postproc_engine');
+			$class_name = '\\Akeeba\\Engine\\Postproc\\' . ucfirst($engine);
+
+			if (!class_exists($class_name, true))
+			{
+				$class_name = '\\Akeeba\\Engine\\Postproc\\None';
+			}
+		}
+
+		return self::getObjectInstance($class_name);
 	}
 
 	/**

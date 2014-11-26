@@ -167,6 +167,16 @@ abstract class Base implements PlatformInterface
 				$protected_keys = $registry->getProtectedKeys();
 				$registry->resetProtectedKeys();
 				$registry->mergeArray($ini_data, false, false);
+
+				// Old profiles have advanced.proc_engine instead of advanced.postproc_engine. Migrate them.
+				$procEngine = $registry->get('akeeba.advanced.proc_engine', null);
+
+				if (!empty($procEngine))
+				{
+					$registry->set('akeeba.advanced.postproc_engine', $procEngine);
+					$registry->set('akeeba.advanced.proc_engine', null);
+				}
+
 				$registry->setProtectedKeys($protected_keys);
 			}
 		}

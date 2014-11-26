@@ -80,7 +80,9 @@ class Filters extends Object
 					continue;
 				}
 
-				if ($file->getExtension() != 'php')
+				// PHP 5.3.5 and earlier do not support getExtension
+				//if ($file->getExtension() != 'php')
+				if (substr($file->getBasename(), -4) != '.php')
 				{
 					continue;
 				}
@@ -164,7 +166,9 @@ class Filters extends Object
 					continue;
 				}
 
-				if ($file->getExtension() != 'php')
+				// PHP 5.3.5 and earlier do not support getExtension
+				// if ($file->getExtension() != 'php')
+				if (substr($file->getBasename(), -4) != '.php')
 				{
 					continue;
 				}

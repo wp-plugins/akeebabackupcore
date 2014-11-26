@@ -83,6 +83,11 @@ class Smart extends Base
 		/** @var \DirectoryIterator $file */
 		foreach ($di as $file)
 		{
+			if ($file->isDot())
+			{
+				continue;
+			}
+
 			if ($breakflag)
 			{
 				break;
@@ -162,12 +167,12 @@ class Smart extends Base
 				break;
 			}
 
-			if (!$file->isDir())
+			if ($file->isDot())
 			{
 				continue;
 			}
 
-			if ($file->isDot())
+			if (!$file->isDir())
 			{
 				continue;
 			}

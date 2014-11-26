@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.2.0.rc3
+Stable tag: 4.1.0.rc5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -142,8 +142,23 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 == Changelog ==
 
+= 1.2.0.rc5 =
+* DirectoryIterator::getExtension is not compatible with PHP 5.3.4 and 5.3.5
+* Removed the (broken) multipart upload from the legacy S3 post-processing engine. Please use the new "Upload to Amazon S3" option for multipart uploads.
+* [HIGH] Bug in third party Guzzle library causes Amazon S3 multipart uploads of archives larger than the remaining RAM size to fail due to memory exhaustion.
+* [HIGH] ANGIE for WordPress: The .htaccess was broken on restoration due to two typos in the code
+* [MEDIUM] Fatal error on sites with open_basedir restrictions on the site's root
 
-= 1.2.0 =
+= 1.2.0.rc4 =
+* [LOW] 500 error on some sites after updating to version 1.2
+
+= 1.2.0.rc3 =
+* Core version on WordPress.org had filenames in lowercase instead of uppercase, leading to immediate error loading the plugin
+
+= 1.2.0.rc2 =
+* Wrongly tagged Core version on WordPress.org
+
+= 1.2.0.rc1 =
 * New and improved backup engine
 * ANGIE for WordPress: Update serialised data on restoration
 * ANGIE: Add warning about Live site URL on Windows
@@ -267,9 +282,6 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 
 == Upgrade Notice ==
-
-= 1.2.0.rc3 =
-There was a problem with some filenames being in lowercase in previous versios. This versions hopefulyl fixes this. Unfortunately the Subversion repository used by WordPress.org to provision the plugins doesn't let us test this before release. We apologise for the inconvenience.
 
 = 1.2.0.rc1 =
 This is a RELEASE CANDIDATE version. Even though it has been extensively tested there might be something amiss. Please let us know if you spot a problem.
