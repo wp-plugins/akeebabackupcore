@@ -1,4 +1,10 @@
 <?php die();?>
+Akeeba Solo 1.2.0
+================================================================================
+~ New icon set in the main page
++ Now supports WordPress Multisite for restoration on new servers (you have to keep the same subdomain or subdirectory layout for your multisites)
+# [LOW] Upload to Dropbox may not work on servers without a global cacert.pem file
+
 Akeeba Solo 1.2.0.rc5
 ================================================================================
 ! DirectoryIterator::getExtension is not compatible with PHP 5.3.4 and 5.3.5

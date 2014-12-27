@@ -3,8 +3,8 @@ Contributors: nikosdion
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=10903325
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
-Tested up to: 4.0
-Stable tag: 1.2.0.rc6
+Tested up to: 4.1
+Stable tag: 1.2.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -141,6 +141,12 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.2.0 =
+* New icon set in the main page
+* Now supports WordPress Multisite for restoration on new servers (you have to keep the same subdomain or subdirectory layout for your multisites)
+* [HIGH] Javascript conflict with some plugins
+* [LOW] Upload to Dropbox may not work on servers without a global cacert.pem file
 
 = 1.2.0.rc5 =
 * DirectoryIterator::getExtension is not compatible with PHP 5.3.4 and 5.3.5
