@@ -38,13 +38,27 @@ class Application extends \Awf\Application\Application
 			$name = $container->input->get('option', null);
 		}
 
+		$classNames = array(
+			'\\' . ucfirst($name) . '\\Application',
+			'\\' . ucfirst(strtolower($name)) . '\\Application',
+		);
+
 		$name = strtolower($name);
 
 		if (!array_key_exists($name, self::$instances))
 		{
-			$className = '\\' . ucfirst($name) . '\\Application';
+			$className = null;
 
-			if (!class_exists($className))
+			foreach ($classNames as $possibleClassName)
+			{
+				if (class_exists($possibleClassName))
+				{
+					$className = $possibleClassName;
+					break;
+				}
+			}
+
+			if (empty($className))
 			{
 				$filePath = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_SITE) . '/components/com_'
 					. strtolower($name) . '/' . $name . '/application.php';
@@ -99,10 +113,29 @@ class Application extends \Awf\Application\Application
 
 		// Load the extra language files
 		$appName = $this->container->application_name;
+
+		if (Helper::isBackend() && (substr($appName, -5) == 'Admin'))
+		{
+			$appName = substr($appName, 0, -5);
+		}
+
 		$appNameLower = strtolower($appName);
 		$languageTag = \JFactory::getLanguage()->getTag();
 		Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', false, $this->container->languagePath);
 		Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
+
+		// Load the framework's language file
+		Text::loadLanguage('en-GB', 'lib_awf', '.ini', false, $this->container->languagePath);
+		Text::loadLanguage($languageTag, 'lib_awf', '.ini', false, $this->container->languagePath);
+
+		// In the back-end, also load front-end languages
+		if (Helper::isBackend())
+		{
+			Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', true, JPATH_SITE . '/language');
+			Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, JPATH_SITE . '/language');
+			Text::loadLanguage('en-GB', 'lib_awf', '.ini', true, JPATH_SITE . '/language');
+			Text::loadLanguage($languageTag, 'lib_awf', '.ini', false, JPATH_SITE . '/language');
+		}
 	}
 
 	/**

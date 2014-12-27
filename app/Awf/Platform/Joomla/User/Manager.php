@@ -7,7 +7,6 @@
 
 namespace Awf\Platform\Joomla\User;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\User\UserInterface;
 
@@ -38,13 +37,13 @@ class Manager extends \Awf\User\Manager
 			// We don't have a current user yet? Let's load it!
 			if (!is_object($this->currentUser))
 			{
-				$this->currentUser = new User(\JFactory::getUser($id));
+				$this->currentUser = new User($id);
 			}
 
 			return $this->currentUser;
 		}
 
-		return new User(\JFactory::getUser($id));
+		return new User($id);
 	}
 
 	/**
@@ -150,7 +149,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function registerPrivilegePlugin($name, $privilege)
 	{
-		throw new \RuntimeException('registerPrivilegePlugin is not availabe under Joomla!');
+		throw new \RuntimeException('registerPrivilegePlugin is not available under Joomla!');
 	}
 
 	/**
@@ -164,7 +163,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function unregisterPrivilegePlugin($name)
 	{
-		throw new \RuntimeException('unregisterPrivilegePlugin is not availabe under Joomla!');
+		throw new \RuntimeException('unregisterPrivilegePlugin is not available under Joomla!');
 	}
 
 	/**
@@ -179,7 +178,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function registerAuthenticationPlugin($name, $authentication)
 	{
-		throw new \RuntimeException('registerAuthenticationPlugin is not availabe under Joomla!');
+		throw new \RuntimeException('registerAuthenticationPlugin is not available under Joomla!');
 	}
 
 	/**
@@ -193,6 +192,6 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function unregisterAuthenticationPlugin($name)
 	{
-		throw new \RuntimeException('unregisterAuthenticationPlugin is not availabe under Joomla!');
+		throw new \RuntimeException('unregisterAuthenticationPlugin is not available under Joomla!');
 	}
 } 

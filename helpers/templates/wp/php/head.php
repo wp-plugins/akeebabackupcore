@@ -50,14 +50,18 @@ $wpVersion = get_bloginfo('version', 'raw');
 if (version_compare($wpVersion, '4.0', 'lt')):
 // Template scripts
 ?>
+	<!--
 	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery.js'?>"></script>
+	-->
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/akjqnamespace.min.js"></script>
 	<script type="text/javascript" src="<?php echo content_url() . '/js/jquery/jquery-migrate.js'?>"></script>
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/bootstrap.min.js"></script>
 <?php
 else:
 ?>
+	<!--
 	<script type="text/javascript" src="<?php echo includes_url() . '/js/jquery/jquery.js'?>"></script>
+	-->
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/akjqnamespace.min.js"></script>
 	<script type="text/javascript" src="<?php echo includes_url() . '/js/jquery/jquery-migrate.js'?>"></script>
 	<script type="text/javascript" src="<?php echo Uri::base(); ?>media/js/bootstrap.min.js"></script>

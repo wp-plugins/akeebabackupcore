@@ -30,14 +30,14 @@ $wpVersion = get_bloginfo('version', 'raw');
 if (version_compare($wpVersion, '4.0', 'lt'))
 {
 	// Template scripts
-	AkeebaBackupWP::enqueueScript(content_url() . '/js/jquery/jquery.js');
+//	AkeebaBackupWP::enqueueScript(content_url() . '/js/jquery/jquery.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/akjqnamespace.min.js');
 	AkeebaBackupWP::enqueueScript(content_url() . '/js/jquery/jquery-migrate.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap.min.js');
 }
 else
 {
-	AkeebaBackupWP::enqueueScript(includes_url() . '/js/jquery/jquery.js');
+//	AkeebaBackupWP::enqueueScript(includes_url() . '/js/jquery/jquery.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/akjqnamespace.min.js');
 	AkeebaBackupWP::enqueueScript(includes_url() . '/js/jquery/jquery-migrate.js');
 	AkeebaBackupWP::enqueueScript(Uri::base() . 'media/js/bootstrap.min.js');

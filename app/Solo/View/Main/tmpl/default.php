@@ -110,41 +110,42 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 			</div>
 			<div class="panel-body">
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=wizard') ?>">
-					<span class="icon fa fa-magic"></span>
+					<span class="ak-icon ak-icon-wizard"></span>
 					<span class="title"><?php echo Text::_('AKEEBA_CONFWIZ') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=configuration') ?>">
-					<span class="icon fa fa-cog"></span>
+					<span class="ak-icon ak-icon-configuration"></span>
 					<span class="title"><?php echo Text::_('CONFIGURATION') ?></span>
 				</a>
 				<a class="btn btn-primary cpanel-icon" href="<?php echo $router->route('index.php?view=backup') ?>">
-					<span class="icon glyphicon glyphicon-compressed"></span>
+					<span class="ak-icon ak-icon-backup"></span>
 					<span class="title"><?php echo Text::_('BACKUP') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=manage') ?>">
-					<span class="icon glyphicon glyphicon-list"></span>
+					<span class="ak-icon ak-icon-manage"></span>
 					<span class="title"><?php echo Text::_('BUADMIN') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=log') ?>">
-					<span class="icon fa fa-edit"></span>
+					<span class="ak-icon ak-icon-viewlog"></span>
 					<span class="title"><?php echo Text::_('VIEWLOG') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=alice') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-fire-extinguisher <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="ak-icon ak-icon-alice <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
 					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('AKEEBA_ALICE') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=discover') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon glyphicon glyphicon-import <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('DISCOVER') ?></span>
+					<span class="ak-icon ak-icon-import <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('DISCOVER') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=s3import') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon glyphicon glyphicon-cloud-download" <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>></span>
-					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('S3IMPORT') ?></span>
+					<span class="ak-icon ak-icon-import-from-s3 <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('S3IMPORT') ?></span>
 				</a>
 
 				<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=update') ?>">
-					<span class="icon glyphicon glyphicon-retweet"></span>
+					<span class="ak-icon ak-icon-update" id="soloUpdateAvailable" style="display: none"></span>
+					<span class="ak-icon ak-icon-ok" id="soloUpdateUpToDate" style="display: none"></span>
 					<span class="title">
 						<?php echo Text::_('SOLO_UPDATE_TITLE') ?>
 						<span class="label label-danger" id="soloUpdateAvailable" style="display: none">
@@ -165,12 +166,12 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 			</div>
 			<div class="panel-body">
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=multidb') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-th-large <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('MULTIDB') ?></span>
+					<span class="ak-icon ak-icon-multidb <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('MULTIDB') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=extradirs') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-files-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('EXTRADIRS') ?></span>
+					<span class="ak-icon ak-icon-extradirs <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('EXTRADIRS') ?></span>
 				</a>
 			</div>
 		</div>
@@ -181,19 +182,19 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 			</div>
 			<div class="panel-body">
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=fsfilters') ?>">
-					<span class="icon fa fa-folder"></span>
-					<span class="title"><?php echo Text::_('FSFILTERS') ?></span>
+					<span class="ak-icon ak-icon-fsfilter"></span>
+					<span class="title small-text"><?php echo Text::_('FSFILTERS') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=dbfilters') ?>">
-					<span class="icon glyphicon glyphicon-hdd"></span>
-					<span class="title"><?php echo Text::_('DBEF') ?></span>
+					<span class="ak-icon ak-icon-dbfilter"></span>
+					<span class="title small-text"><?php echo Text::_('DBEF') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexfsfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-folder-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="ak-icon ak-icon-regexfiles <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
 					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXFSFILTERS') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexdbfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="icon fa fa-hdd-o <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
+					<span class="ak-icon ak-icon-regexdb <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
 					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXDBFILTERS') ?></span>
 				</a>
 			</div>
@@ -206,20 +207,20 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 			<div class="panel-body">
 				<?php if (!$inCMS): ?>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=users') ?>">
-					<span class="icon fa fa-users"></span>
+					<span class="ak-icon ak-icon-users"></span>
 					<span class="title"><?php echo Text::_('SOLO_MAIN_LBL_USERS') ?></span>
 				</a>
 				<?php endif; ?>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=profiles') ?>">
-					<span class="icon fa fa-briefcase"></span>
+					<span class="ak-icon ak-icon-profiles"></span>
 					<span class="title"><?php echo Text::_('PROFILES') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=schedule') ?>">
-					<span class="icon fa fa-calendar"></span>
+					<span class="ak-icon ak-icon-scheduling"></span>
 					<span class="title"><?php echo Text::_('AKEEBA_SCHEDULE') ?></span>
 				</a>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=sysconfig') ?>">
-					<span class="icon fa fa-cogs"></span>
+					<span class="ak-icon ak-icon-sysconfig"></span>
 					<span class="title"><?php echo Text::_('SOLO_MAIN_LBL_SYSCONFIG') ?></span>
 				</a>
 			</div>
@@ -349,10 +350,12 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 				{
 					$('#soloUpdateNotification').html(data.noticeHTML);
 					$('#soloUpdateAvailable').show();
+					$('#soloUpdateAvailableIcon').show();
 				}
 				else
 				{
 					$('#soloUpdateUpToDate').show();
+					$('#soloUpdateUpToDateIcon').show();
 				}
 			})
 		<?php endif; ?>
