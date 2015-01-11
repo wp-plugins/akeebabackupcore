@@ -6,12 +6,17 @@
  */
 
 namespace Awf\Filesystem;
+use Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * SFTP filesystem abstraction layer
  */
 class Sftp implements FilesystemInterface
 {
+    /** @var  Container Application container */
+    protected $container;
+
 	/**
 	 * SFTP server's hostname or IP address
 	 *
@@ -78,14 +83,22 @@ class Sftp implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  Sftp
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+        $this->container = $container;
+
 		if (isset($options['host']))
 		{
 			$this->host = $options['host'];
@@ -118,7 +131,7 @@ class Sftp implements FilesystemInterface
 
 		if (isset($options['publicKey']))
 		{
-			$this->privateKey = $options['publicKey'];
+			$this->publicKey = $options['publicKey'];
 		}
 
 		$this->connect();
@@ -322,7 +335,7 @@ class Sftp implements FilesystemInterface
 
 		$ret = @ssh2_sftp_mkdir($this->sftpHandle, $targetDir, $permissions, true);
 
-		return true;
+		return $ret;
 	}
 
 	/**
@@ -387,9 +400,10 @@ class Sftp implements FilesystemInterface
 	{
 		$fileName = str_replace('\\', '/', $fileName);
 
-		$realDir = rtrim($this->directory, '/');
+		$realDir  = rtrim($this->directory, '/');
 		$realDir .= '/' . dirname($fileName);
-		$realDir = '/' . ltrim($realDir, '/');
+		$realDir  = '/' . ltrim($realDir, '/');
+
 		$fileName = $realDir . '/' . basename($fileName);
 
 		return $fileName;
@@ -413,7 +427,7 @@ class Sftp implements FilesystemInterface
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
 		$list = array();
-		$dir = ltrim($dir, '/');
+		$dir  = ltrim($dir, '/');
 
 		try
 		{
@@ -454,4 +468,4 @@ class Sftp implements FilesystemInterface
 
 		return $list;
 	}
-} 
+}

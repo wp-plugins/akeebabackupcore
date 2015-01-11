@@ -1,4 +1,9 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.2.1
+================================================================================
+# [HIGH] Control Panel icons not shown on some extremely low quality hosts which disable the innocuous parse_ini_file function. If you were affected SWITCH HOSTS, IMMEDIATELY!
+# [HIGH] Old PHP 5.3 versions have a bug regarding Interface implementation, causing a PHP fatal error
+
 Akeeba Backup for WordPress 1.2.0
 ================================================================================
 ~ New icon set in the main page

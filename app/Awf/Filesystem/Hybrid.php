@@ -6,6 +6,8 @@
  */
 
 namespace Awf\Filesystem;
+use Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * Hybrid filesystem abstraction. It uses direct file writing. When it detects that the write failed, it switches to
@@ -30,13 +32,19 @@ class Hybrid implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
-		$this->fileAdapter = new File($options);
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+		$this->fileAdapter = new File($options, $container);
 
 		if (isset($options['driver']))
 		{
@@ -46,7 +54,7 @@ class Hybrid implements FilesystemInterface
 			{
 				try
 				{
-					$this->abstractionAdapter = new $class($options);
+					$this->abstractionAdapter = new $class($options, $container);
 				}
 				// If we can't instantiate the abstraction adapter we'll only use the direct file write method
 				catch (\RuntimeException $e)
@@ -250,4 +258,4 @@ class Hybrid implements FilesystemInterface
 
 		return $list;
 	}
-} 
+}

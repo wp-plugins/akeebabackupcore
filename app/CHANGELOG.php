@@ -1,4 +1,10 @@
 <?php die();?>
+Akeeba Solo 1.2.1
+================================================================================
+# [LOW] Username filtering doesn't work in the Users page
+# [HIGH] Control Panel icons and translations not shown on some extremely low quality hosts which disable the innocuous parse_ini_file function. If you were affected SWITCH HOSTS, IMMEDIATELY!
+# [HIGH] Old PHP 5.3 versions have a bug regarding Interface implementation, causing a PHP fatal error
+
 Akeeba Solo 1.2.0
 ================================================================================
 ~ New icon set in the main page
