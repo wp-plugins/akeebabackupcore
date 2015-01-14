@@ -1,0 +1,2 @@
+var akeeba = {};
+akeeba.jQuery = jQuery;
