@@ -1,4 +1,12 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.2.1.2
+================================================================================
+# [HIGH] Core: the front-end backup was broken
+
+Akeeba Backup for WordPress 1.2.1.1
+================================================================================
+~ Core: WordPress.org was sending out unnecessary files with the package
+
 Akeeba Backup for WordPress 1.2.1
 ================================================================================
 # [HIGH] Control Panel icons not shown on some extremely low quality hosts which disable the innocuous parse_ini_file function. If you were affected SWITCH HOSTS, IMMEDIATELY!

@@ -62,8 +62,6 @@ class PostUpgradeScript
 		'Solo/Model/Regexdbfilters.php',
 		'Solo/Controller/Regexfsfilters.php',
 		'Solo/Model/Regexfsfilters.php',
-		'Solo/Controller/Remote.php',
-		'Solo/Model/Remote.php',
 		'Solo/Controller/Remotefiles.php',
 		'Solo/Model/Remotefiles.php',
 		'Solo/Controller/S3import.php',
