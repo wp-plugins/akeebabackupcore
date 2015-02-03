@@ -88,7 +88,8 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 		Solo.Fsfilters.translations['UI-ROOT'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIROOT')) ?>';
 		Solo.Fsfilters.translations['UI-ERROR-FILTER'] = '<?php echo Escape::escapeJS(Text::_('FILTERS_LABEL_UIERRORFILTER')) ?>';
 		<?php
-			$filters = array('directories', 'skipfiles', 'skipdirs', 'files');
+			$filters = array('directories', 'skipfiles', 'skipdirs', 'files', 'directories_all', 'skipfiles_all', 'skipdirs_all',
+	            'files_all', 'applytoalldirs', 'applytoallfiles');
 			foreach($filters as $type)
 			{
 				echo "\tSolo.Fsfilters.translations['UI-FILTERTYPE-" . strtoupper($type)."'] = '".

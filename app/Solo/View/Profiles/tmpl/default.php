@@ -78,7 +78,7 @@ $model = $this->getModel();
 				<?php echo $profile->id; ?>
 			</td>
 			<td>
-				<button class="btn btn-sm btn-primary" onclick="window.location='<?php echo $router->route('index.php?view=main&task=switchProfile&profile=' . $profile->id . '&returnurl=' . $configURL . '&' . $token . '=1')?>'; return false;">
+				<button class="btn btn-sm btn-primary" onclick="window.location='<?php echo $router->route('index.php?view=main&task=switchProfile&profile=' . $profile->id . '&returnurl=' . $configURL . '&token=' . $token)?>'; return false;">
 					<span class="glyphicon glyphicon-cog"></span>
 					<?php echo Text::_('CONFIG_UI_CONFIG'); ?>
 				</button>

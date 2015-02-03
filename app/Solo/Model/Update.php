@@ -220,7 +220,7 @@ class Update extends Model
 			// Try to fetch from URL
 			try
 			{
-				$download = new Download();
+				$download = new Download($this->container);
 				$rawInfo = $download->getFromURL($this->updateStreamURL);
 				$this->updateInfo->loadString($rawInfo, 'INI');
 				$this->updateInfo->set('stuck', 0);
@@ -565,7 +565,7 @@ class Update extends Model
 			'localFilename' => 'update.zip',
 		);
 
-		$download = new Download();
+		$download = new Download($this->container);
 
 		if ($staggered)
 		{

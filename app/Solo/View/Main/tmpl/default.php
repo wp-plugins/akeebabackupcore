@@ -144,8 +144,8 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 
 				<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=update') ?>">
-					<span class="ak-icon ak-icon-update" id="soloUpdateAvailable" style="display: none"></span>
-					<span class="ak-icon ak-icon-ok" id="soloUpdateUpToDate" style="display: none"></span>
+					<span class="ak-icon ak-icon-update" id="soloUpdateAvailableIcon" style="display: none"></span>
+					<span class="ak-icon ak-icon-ok" id="soloUpdateUpToDateIcon" style="display: none"></span>
 					<span class="title">
 						<?php echo Text::_('SOLO_UPDATE_TITLE') ?>
 						<span class="label label-danger" id="soloUpdateAvailable" style="display: none">
@@ -307,7 +307,16 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 				$('#backup-readable-error').css('display', 'block');
 			});
 		<?php endif; ?>
-		<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
+
+	}(akeeba.jQuery));
+};
+</script>
+<?php endif; ?>
+
+<script type="text/javascript">
+	Solo.loadScripts[Solo.loadScripts.length] = function () {
+		(function($){
+			<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
 			$.get('<?php echo $router->route('index.php?view=main&format=raw&task=getUpdateInformation&' . $this->getContainer()->session->getCsrfToken()->getValue() . '=1'); ?>', function(msg){
 				// Initialize
 				var junk = null;
@@ -358,14 +367,13 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 					$('#soloUpdateUpToDateIcon').show();
 				}
 			})
-		<?php endif; ?>
+			<?php endif; ?>
+		}(akeeba.jQuery));
 
-	}(akeeba.jQuery));
-};
-	function soloFeatureNotInCore()
-	{
-		alert('<?php echo Text::_('SOLO_MAIN_ERR_NOTINCORE')?>');
-	}
+		function soloFeatureNotInCore()
+		{
+			alert('<?php echo Text::_('SOLO_MAIN_ERR_NOTINCORE')?>');
+		}
+	};
 
 </script>
-<?php endif; ?>

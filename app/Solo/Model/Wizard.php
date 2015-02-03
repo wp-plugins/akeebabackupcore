@@ -578,6 +578,15 @@ class Wizard extends Model
 	 */
 	private function ping()
 	{
+		// If this is Akeeba Backup for WordPress set the embedded installer to ANGIE for WordPress
+		if (defined('WPINC'))
+		{
+			$profile_id = Platform::getInstance()->get_active_profile();
+			$config = Factory::getConfiguration();
+			$config->set('akeeba.advanced.embedded_installer', 'angie-wordpress');
+			Platform::getInstance()->save_configuration($profile_id);
+		}
+
 		return true;
 	}
 

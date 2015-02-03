@@ -1,4 +1,17 @@
 <?php die();?>
+Akeeba Solo 1.2.2
+================================================================================
++ Added "Apply to all" button in Files and Directories Exclusion page
+# [HIGH] Missing interface options on bad hosts which disable the innocent parse_ini_file PHP function
+# [HIGH] ANGIE (restoration): Some bad hosts disable the innocent parse_ini_file PHP function resulting in translation and functional issues during the restoration
+# [MEDIUM] ANGIE for Wordpress: Site url was not replaced when moving to a different server
+# [MEDIUM] Update notification not displaying on some sites
+# [MEDIUM] Frontend check for failed backups was not working
+# [MEDIUM] Extradirs folders where not saved
+# [LOW] Clicking the Configure button in the Profiles page can lead to error 500 on hosts with GET query parameter name length limits
+# [LOW] ANGIE for Wordpress: fixed changing Admin access details while restoring
+# [LOW] Updater doesn't work properly on PHP 5.6
+
 Akeeba Solo 1.2.1
 ================================================================================
 # [LOW] Username filtering doesn't work in the Users page

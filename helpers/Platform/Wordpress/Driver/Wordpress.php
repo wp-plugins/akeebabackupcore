@@ -31,6 +31,11 @@ class Wordpress extends Object
 		$options['connection'] = $wpdb->dbh;
 		$driver = '\\Akeeba\\Engine\\Driver\\Mysql';
 
+		if (is_object($wpdb->dbh) && ($wpdb->dbh instanceof \mysqli))
+		{
+			$driver = '\\Akeeba\\Engine\\Driver\\Mysqli';
+		}
+
 		$this->dbo = new $driver($options);
 
 		// Propagate errors

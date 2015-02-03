@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.1
-Stable tag: 1.2.1.2
+Stable tag: 1.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -141,6 +141,19 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.2.2 =
+* Added "Apply to all" button in Files and Directories Exclusion page
+* [HIGH] Missing interface options on bad hosts which disable the innocent parse_ini_file PHP function
+* [HIGH] ANGIE (restoration): Some bad hosts disable the innocent parse_ini_file PHP function resulting in translation and functional issues during the restoration
+* [MEDIUM] ANGIE for Wordpress: Site url was not replaced when moving to a different server
+* [MEDIUM] Update notification not displaying on some sites (Pro)
+* [MEDIUM] Core: quote and time settings parameters are not visible in the Core release
+* [MEDIUM] Warning thrown when connecting to the database - Issue Ref gh-23
+* [LOW] Clicking the Configure button in the Profiles page can lead to error 500 on hosts with GET query parameter name length limits
+* [LOW] ANGIE for Wordpress: fixed changing Admin access details while restoring
+* [LOW] On some hosts you wouldn't get the correct installer included in the backup
+* [LOW] Pro: Updater doesn't work properly on PHP 5.6 - Issue Ref gh-22
 
 = 1.2.1.2 =
 * [HIGH] Core: the front-end backup was broken

@@ -1,4 +1,18 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.2.2
+================================================================================
++ Added "Apply to all" button in Files and Directories Exclusion page
+# [HIGH] Missing interface options on bad hosts which disable the innocent parse_ini_file PHP function
+# [HIGH] ANGIE (restoration): Some bad hosts disable the innocent parse_ini_file PHP function resulting in translation and functional issues during the restoration
+# [MEDIUM] ANGIE for Wordpress: Site url was not replaced when moving to a different server
+# [MEDIUM] Update notification not displaying on some sites (Pro)
+# [MEDIUM] Core: quote and time settings parameters are not visible in the Core release
+# [MEDIUM] Warning thrown when connecting to the database - Issue Ref gh-23
+# [LOW] Clicking the Configure button in the Profiles page can lead to error 500 on hosts with GET query parameter name length limits
+# [LOW] ANGIE for Wordpress: fixed changing Admin access details while restoring
+# [LOW] On some hosts you wouldn't get the correct installer included in the backup
+# [LOW] Pro: Updater doesn't work properly on PHP 5.6 - Issue Ref gh-22
+
 Akeeba Backup for WordPress 1.2.1.2
 ================================================================================
 # [HIGH] Core: the front-end backup was broken

@@ -138,7 +138,7 @@ class Application extends \Awf\Application\Application
 		// Show the login page if there is no logged in user and we're not in the setup or login page already
 		// and we're not using the remote (front-end backup), json (remote JSON API) views of the (S)FTP
 		// browser views (required by the session task of the setup view).
-		if (!in_array($view, array('login', 'setup', 'json', 'remote', 'ftpbrowser', 'sftpbrowser')) && !$manager->getUser()->getId())
+		if (!in_array($view, array('check', 'login', 'setup', 'json', 'remote', 'ftpbrowser', 'sftpbrowser')) && !$manager->getUser()->getId())
 		{
 			// Try to perform transparent authentication
 			$transparentAuth = new TransparentAuthentication($this->container);
