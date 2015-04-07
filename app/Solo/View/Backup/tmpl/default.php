@@ -368,7 +368,7 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 		Solo.System.params.useIFrame = <?php echo $this->useIframe ?>;
 		Solo.Backup.srpInfo = JSON.parse('<?php echo Escape::escapeJS(json_encode($this->srpInfo)) ?>');
 		Solo.Backup.default_descr = '<?php echo $this->default_descr ?>';
-		Solo.Backup.config_angiekey = '<?php echo $this->angieKey ?>';
+		Solo.Backup.config_angiekey = '<?php echo Escape::escapeJS($this->angieKey) ?>';
 		Solo.Backup.jpsKey = '<?php echo $this->jpsKey ?>';
 
 		// Auto-resume setup

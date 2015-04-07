@@ -9,10 +9,13 @@ namespace Solo\View\Manage;
 
 use Akeeba\Engine\Platform;
 use Awf\Document\Menu\Item;
+use Awf\Html\Select;
+use Awf\Mvc\Model;
 use Awf\Mvc\View;
 use Awf\Router\Router;
 use Awf\Text\Text;
 use Akeeba\Engine\Factory;
+use Solo\Model\Profiles;
 
 class Html extends \Solo\View\Html
 {
@@ -66,6 +69,27 @@ class Html extends \Solo\View\Html
 		$ordering = $this->_getOrdering();
 
 		$this->list = $model->getStatisticsListWithMeta(false, $filters, $ordering);
+
+		$containerClone = clone $this->getContainer();
+		$containerClone['mvc_config'] = array(
+			'modelTemporaryInstance' => true,
+			'modelClearState' => true,
+			'modelClearInput' => true
+		);
+
+		/** @var Profiles $profileModel */
+		$profileModel = Model::getInstance(null, 'Profiles', $containerClone);
+		$this->profiles = $profileModel->get(true);
+		$this->profileList = array();
+		$this->profileList[] = Select::option('', '&mdash;');
+
+		if (!empty($this->profiles))
+		{
+			foreach ($this->profiles as $profile)
+			{
+				$this->profileList[] = Select::option($profile->id, $profile->description);
+			}
+		}
 
 		$this->pagination = $model->getPagination($filters);
 

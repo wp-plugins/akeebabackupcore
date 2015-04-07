@@ -101,6 +101,7 @@ class Wizard extends Model
 
 		$class = "\\Awf\\Database\\Driver\\" . ucfirst($dbParams['driver']);
 
+		/** @var Driver $driver */
 		$driver = new $class($dbParams);
 		$driver->connect();
 		$driver->select($dbParams['database']);
@@ -119,12 +120,17 @@ class Wizard extends Model
 	{
 		$config = Factory::getConfiguration();
 
+		$protectedKeys = $config->getProtectedKeys();
+		$config->setProtectedKeys(array());
+
 		foreach ($siteParams as $k => $v)
 		{
 			$config->set($k, $v);
 		}
 
 		Platform::getInstance()->save_configuration();
+
+		$config->setProtectedKeys($protectedKeys);
 	}
 
 	/**

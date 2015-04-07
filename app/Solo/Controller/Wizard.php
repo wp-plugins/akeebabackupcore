@@ -48,6 +48,7 @@ class Wizard extends ControllerDefault
 
 		try
 		{
+			/** @var \Solo\Model\Wizard $model */
 			$model = $this->getModel();
 			$model->testSiteParams($siteParams);
 			$model->saveSiteParams($siteParams);

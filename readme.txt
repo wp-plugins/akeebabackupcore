@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.1
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -33,7 +33,7 @@ Features:
 * Choose between standard ZIP format, the highly efficient JPA archive format or the encrypted JPS format.
 * You can exclude specific files and folders
 * You can exclude specific database tables or just their contents
-* Unattended backup mode (CRON job scheduling), fully compatible with Webcron.org
+* Unattended backup mode (CRON job scheduling), fully compatible with WebCRON.org
 * AJAX-powered site restoration script included in the backup
 * "Kickstart" restore: restore without extracting the backup locally
 * Archives can be restored on any host. Useful for transferring your site between subdomains/hosts or even to/from your local testing server (XAMPP, WAMPServer, MAMP, Zend Server, etc).
@@ -96,17 +96,29 @@ require a subscription to provide support.
 
 = Does your software support WordPress MU (multi-sites a.k.a. blog networks)? =
 
-Not very well. Even though you can backup and restore such sites, they cannot be automatically reconfigured if you move
-them to a new server or a different location on the same server. For this reason we consider this to be an unsupported
-environment.
+Yes. We have added full WordPress multi-sites support since late 2014. You can restore backups to different servers or
+locations and things will still work.
+
+= What about serialised data? =
+
+Not a problem! You've probably used a lot of tools to try and manually replace serialised data after moving your site to
+a different domain or directory and you were worried because they don't always work very well. We have implemented our
+own tokeniser and assembler for serialised data which works the same way PHP works under the hood. Simply put, our
+solution doesn't use precarious regular expressions and isn't even the least inclined on killing your serialised data.
+
+Please note that for data replacement to work properly all of your plugins must be storing their data in UTF-8 encoding
+in the database. Some themes use a double encoding which may result in invalid data. Unfortunately that's a problem with
+these themes and we can't fix it. On the other hand these themes' developers seem to be aware of this issue and provide
+their own settings export and import. If your theme provides such a feature please use it. We can't reliably work around
+third party code not following the character encoding standards established well over twenty years ago...
 
 = What are the requirements for your plugin? =
 
-Akeeba Backup for WordPress requires PHP 5.3.4 or any later version. Older versions of PHP including PHP 4, 5.0, 5.1,
-5.2 and 5.3.0 up to and including 5.3.3 are not supported. We recommend using PHP 5.4 or later for security and
+Akeeba Backup for WordPress requires PHP 5.3.04 or any later version. Older versions of PHP including PHP 4, 5.0, 5.1,
+5.2 and 5.3.0 up to and including 5.3.03 are not supported. We recommend using PHP 5.4 or later for security and
 performance reasons: PHP 5.4 is seven times faster than PHP 5.2 according to our benchmarks.
 
-Akeeba Backup for WordPress is tested on WordPress 3.8 and later. It should work on earlier versions of WordPress but we
+Akeeba Backup for WordPress has been tested on WordPress 3.8 and later. It should work on earlier versions of WordPress but we
 cannot guarantee this.
 
 Akeeba Backup for WordPress requires at least 16Mb of PHP memory (memory_limit). We strongly suggest 64Mb or more for
@@ -141,6 +153,13 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.3.0 =
+* Warning with information and instructions when you have PHP 5.3.3 or earlier instead of crashing with a blank page
+* Warning if you have an outdated PHP version which we'll stop supporting soon
+* gh-28 Native Microsoft Live OneDrive support
+* [MEDIUM] Cancelling the creation of a new backup profile could lead to server error
+* [MEDIUM] Import from S3 didn't work correctly
 
 = 1.2.2 =
 * Added "Apply to all" button in Files and Directories Exclusion page
@@ -311,9 +330,6 @@ them but everything else is optimised for the CMS each solution is designed to r
 
 
 == Upgrade Notice ==
-
-= 1.2.0.rc1 =
-This is a RELEASE CANDIDATE version. Even though it has been extensively tested there might be something amiss. Please let us know if you spot a problem.
 
 = 1.0.2 =
 Javascript related issues affecting upgraders have been fixed.

@@ -31,18 +31,28 @@ defined('WPINC') or die;
 use Awf\Document\Document;
 use Awf\Uri\Uri;
 
-$scripts = $this->getScripts();
-$scriptDeclarations = $this->getScriptDeclarations();
-$styles = $this->getStyles();
-$styleDeclarations = $this->getStyleDeclarations();
+$scripts            = array();
+$scriptDeclarations = array();
+$styles             = array();
+$styleDeclarations  = array();
 
-// Scripts before the template ones
-if(!empty($scripts)) foreach($scripts as $url => $params)
+// Fetch the scripts only if we have a reference to $this: it could be not instantiated if an error occurs
+// while creating it
+if(isset($this))
 {
-	if($params['before'])
-	{
-		echo "\t<script type=\"{$params['mime']}\" src=\"$url\"></script>\n";
-	}
+    $scripts = $this->getScripts();
+    $scriptDeclarations = $this->getScriptDeclarations();
+    $styles = $this->getStyles();
+    $styleDeclarations = $this->getStyleDeclarations();
+
+    // Scripts before the template ones
+    if(!empty($scripts)) foreach($scripts as $url => $params)
+    {
+        if($params['before'])
+        {
+            echo "\t<script type=\"{$params['mime']}\" src=\"$url\"></script>\n";
+        }
+    }
 }
 
 $wpVersion = get_bloginfo('version', 'raw');

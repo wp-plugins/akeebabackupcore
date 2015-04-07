@@ -1,4 +1,12 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.3.0
+================================================================================
++ Warning with information and instructions when you have PHP 5.3.3 or earlier instead of crashing with a blank page
++ Warning if you have an outdated PHP version which we'll stop supporting soon
++ gh-28 Native Microsoft Live OneDrive support
+# [MEDIUM] Cancelling the creation of a new backup profile could lead to server error
+# [MEDIUM] Import from S3 didn't work correctly
+
 Akeeba Backup for WordPress 1.2.2
 ================================================================================
 + Added "Apply to all" button in Files and Directories Exclusion page

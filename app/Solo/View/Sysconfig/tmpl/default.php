@@ -170,6 +170,18 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 	<div class="tab-content">
 		<div id="sysconfigAppSetup" class="tab-pane active">
 
+            <div class="form-group">
+                <label for="timezone" class="col-sm-2 control-label">
+                    <?php echo Text::_('CONFIG_SECURITY_USEENCRYPTION_LABEL'); ?>
+                </label>
+                <div class="col-sm-10">
+                    <?php echo \Awf\Html\Select::booleanList('useencryption', array(), $config->get('useencryption', 1))?>
+                    <div class="help-block">
+                        <?php echo Text::_('CONFIG_SECURITY_USEENCRYPTION_DESCRIPTION') ?>
+                    </div>
+                </div>
+            </div>
+
 			<?php if (!$inCMS): ?>
 			<div class="form-group">
 				<label for="timezone" class="col-sm-2 control-label">

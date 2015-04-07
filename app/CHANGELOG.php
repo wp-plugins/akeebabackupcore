@@ -1,4 +1,21 @@
 <?php die();?>
+Akeeba Solo 1.3.0
+================================================================================
++ Warning with information and instructions when you have PHP 5.3.3 or earlier instead of a cryptic error message
++ Warning if you have an outdated PHP version which we'll stop supporting soon
++ Added support for uploading archives in subdirectories while using FTP post-processing engine
++ gh-28 Native Microsoft Live OneDrive support
++ gh-29 Profile description tooltip in Manage Backups page when hovering over the profile ID
++ gh-29 Profile filter in Manage Backups page
++ gh-30 Added option to enable/disable profile encryption
++ gh-31 Added page for displaying phpinfo() dump
+# [HIGH] The ANGIE script selected in Configuration Wizard is not applied to the configuration
+# [MEDIUM] Cancelling the creation of a new user account or backup profile could lead to server error
+# [LOW] Fixed javascript error while using an ANGIE password containing single quotes
+# [LOW] gh-26 Fixed white page when an error occurs and we're inside Wordpress
+# [LOW] Prevent usage of negative profile ID in CLI backups
+# [MEDIUM] Import from S3 didn't work correctly
+
 Akeeba Solo 1.2.2
 ================================================================================
 + Added "Apply to all" button in Files and Directories Exclusion page

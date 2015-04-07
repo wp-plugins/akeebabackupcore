@@ -15,6 +15,29 @@ $router = $this->container->router;
 $inCMS = $this->container->segment->get('insideCMS', false);
 
 ?>
+
+<?php
+// Obsolete PHP version check
+if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
+	$akeebaCommonDatePHP = new \Awf\Date\Date('2014-08-14 00:00:00', 'GMT');
+	$akeebaCommonDateObsolescence = new \Awf\Date\Date('2015-05-14 00:00:00', 'GMT');
+	?>
+	<div id="phpVersionCheck" class="alert alert-warning">
+		<h3><?php echo Text::_('AKEEBA_COMMON_PHPVERSIONTOOOLD_WARNING_TITLE'); ?></h3>
+		<p>
+			<?php echo Text::sprintf(
+				'AKEEBA_COMMON_PHPVERSIONTOOOLD_WARNING_BODY',
+				PHP_VERSION,
+				$akeebaCommonDatePHP->format(Text::_('DATE_FORMAT_LC1')),
+				$akeebaCommonDateObsolescence->format(Text::_('DATE_FORMAT_LC1')),
+				'5.5'
+			);
+			?>
+		</p>
+	</div>
+<?php endif; ?>
+
+
 <?php if (!empty($this->configUrl)): ?>
 <div class="alert alert-danger" id="config-readable-error" style="display: none">
 	<h4>

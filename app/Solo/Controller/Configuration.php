@@ -160,4 +160,27 @@ class Configuration extends ControllerDefault
 
 		$this->container->application->close();
 	}
-} 
+
+	/**
+	 * Runs a custom API call against the selected data processing engine
+	 *
+	 * @return  void
+	 */
+	public function dpecustomapiraw()
+	{
+		/** @var \Solo\Model\Configuration $model */
+		$model = $this->getModel();
+
+		$model->setState('engine', $this->input->get('engine', '', 'raw'));
+		$model->setState('method', $this->input->getVar('method', '', 'raw'));
+		$model->setState('params', $this->input->get('params', array(), 'array'));
+
+		@ob_end_clean();
+
+		echo $model->dpeCustomAPICall();
+
+		flush();
+
+		$this->container->application->close();
+	}
+}

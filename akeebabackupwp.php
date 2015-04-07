@@ -3,7 +3,7 @@
 Plugin Name: Akeeba Backup for WordPress
 Plugin URI: https://www.akeebabackup.com
 Description: The complete backup solution for WordPress
-Version: 1.2.2
+Version: 1.3.0
 Author: Akeeba Ltd
 Author URI: https://www.akeebabackup.com
 License: GPLv3
@@ -49,6 +49,7 @@ function akeebabackupwp_boot()
 	AkeebaBackupWP::$dirName = end($baseUrlParts);
 	AkeebaBackupWP::$fileName = basename(__FILE__);
 	AkeebaBackupWP::$absoluteFileName = __FILE__;
+	AkeebaBackupWP::$wrongPHP = version_compare(PHP_VERSION, AkeebaBackupWP::$minimumPHP, 'lt');
 
 	$aksolowpPath = plugin_dir_path(__FILE__);
 	define('AKEEBA_SOLOWP_PATH', $aksolowpPath);
@@ -68,10 +69,14 @@ if (is_admin() && (!defined('DOING_AJAX') || !DOING_AJAX))
 {
 	add_action('admin_menu', array('AkeebaBackupWP', 'adminMenu'));
 	add_action('network_admin_menu', array('AkeebaBackupWP', 'networkAdminMenu'));
-	add_action('init', array('AkeebaBackupWP', 'startSession'), 1);
-	add_action('init', array('AkeebaBackupWP', 'loadJavascript'), 1);
-	add_action('plugins_loaded', array('AkeebaBackupWP', 'fakeRequest'), 1);
-	add_action('wp_logout', array('AkeebaBackupWP', 'endSession'));
-	add_action('wp_login', array('AkeebaBackupWP', 'endSession'));
-	add_action('in_admin_footer', array('AkeebaBackupWP', 'clearBuffer'));
+
+	if (!AkeebaBackupWP::$wrongPHP)
+	{
+		add_action('init', array('AkeebaBackupWP', 'startSession'), 1);
+		add_action('init', array('AkeebaBackupWP', 'loadJavascript'), 1);
+		add_action('plugins_loaded', array('AkeebaBackupWP', 'fakeRequest'), 1);
+		add_action('wp_logout', array('AkeebaBackupWP', 'endSession'));
+		add_action('wp_login', array('AkeebaBackupWP', 'endSession'));
+		add_action('in_admin_footer', array('AkeebaBackupWP', 'clearBuffer'));
+	}
 }

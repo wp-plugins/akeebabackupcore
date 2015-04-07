@@ -300,7 +300,8 @@ HTML;
 	public function checkEngineSettingsEncryption()
 	{
 		$secretKeyFile = $this->container->basePath . Application::secretKeyRelativePath;
-		$encryptionEnabled = Platform::getInstance()->get_platform_configuration_option('useencryption', -1);
+		// We have to look inside the application config, not  the platform options
+		$encryptionEnabled = $this->container->appConfig->get('useencryption', -1);
 		$fileExists = @file_exists($secretKeyFile);
 
 		if ($fileExists && ($encryptionEnabled == 0))

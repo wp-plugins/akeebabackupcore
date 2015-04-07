@@ -5,17 +5,24 @@
  * @license     GNU GPL version 3 or later
  */
 
+// Minimum PHP version check
+$minimumPHP = '5.3.4';
+
+if (version_compare(PHP_VERSION, $minimumPHP, 'lt'))
+{
+	require_once 'wrongphp.php';
+	return;
+}
+
+unset($minimumPHP);
+
+// Include dependencies
+
 use Awf\Application\Application;
 use Awf\Autoloader\Autoloader;
 use Awf\Session;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Factory;
-
-// Makes sure we have PHP 5.3.4 or later
-if (version_compare(PHP_VERSION, '5.3.4', 'lt'))
-{
-	die(sprintf('Akeeba Solo requires PHP 5.3.4 or later but your server only has PHP %s.', PHP_VERSION));
-}
 
 // Include the autoloader
 if (false == include __DIR__ . '/Awf/Autoloader/Autoloader.php')

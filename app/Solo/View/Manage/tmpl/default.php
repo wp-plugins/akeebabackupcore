@@ -131,7 +131,9 @@ $dateFormat = !empty($dateFormat) ? $dateFormat : Text::_('DATE_FORMAT_LC4');
 				<td></td>
 				<td></td>
 				<td></td>
-				<td></td>
+				<td>
+					<?php echo \Awf\Html\Select::genericList($this->profileList, 'filter_profile', array('onchange' => "document.forms.adminForm.submit()", 'class' => 'form-control'), 'value', 'text', $this->lists->fltProfile); ?>
+				</td>
 				<td colspan="2"></td>
 			</tr>
 		</thead>
@@ -324,7 +326,19 @@ HTML;
 			</td>
 			<td class="hidden-xs"><?php echo $origin ?></td>
 			<td class="hidden-xs"><?php echo $type ?></td>
-			<td class="hidden-xs"><?php echo $record['profile_id'] ?></td>
+			<td class="hidden-xs">
+				<?php
+				$profileName = '&mdash;&mdash;&mdash;';
+				if (isset($this->profiles[$record['profile_id']]))
+				{
+					$profile = $this->profiles[$record['profile_id']];
+					$profileName = $this->profiles[$record['profile_id']]->description;
+				}
+				?>
+				<span data-toggle="tooltip" data-placement="top" title="<?php echo $profileName ?>">
+					<?php echo $record['profile_id'] ?>
+				</span>
+			</td>
 			<td class="hidden-xs"><?php echo ($record['meta'] == 'ok') ? \Solo\Helper\Format::fileSize($record['size']) : ($record['total_size'] > 0 ? "(<i>" . \Solo\Helper\Format::fileSize($record['total_size']) . "</i>)" : '&mdash;') ?></td>
 			<td class="hidden-xs"><?php echo $filename_col; ?></td>
 		</tr>
@@ -341,6 +355,10 @@ HTML;
 </form>
 
 <script type="application/javascript">
+	(function($){
+		$('[data-toggle="tooltip"]').tooltip();
+	}(akeeba.jQuery));
+
 	Solo.System.orderTable = function ()
 	{
 		table = document.getElementById("sortTable");

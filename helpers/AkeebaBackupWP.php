@@ -22,6 +22,12 @@ class AkeebaBackupWP
 	/** @var array List of all CSS files we can possibly load */
 	public static $cssFiles = array();
 
+	/** @var bool Do we have an outdated PHP version? */
+	public static $wrongPHP = false;
+
+	/** @var string Minimum PHP version */
+	public static $minimumPHP = '5.3.4';
+
 	protected static $loadedScripts = array();
 
 	/**
@@ -202,6 +208,12 @@ class AkeebaBackupWP
 	 */
 	public static function boot()
 	{
+		if (self::$wrongPHP)
+		{
+			include_once dirname(self::$absoluteFileName) . '/helpers/wrongphp.php';
+			return;
+		}
+
 		$network = is_multisite() ? 'network/' : '';
 
 		if (!defined('AKEEBA_SOLO_WP_ROOTURL'))
