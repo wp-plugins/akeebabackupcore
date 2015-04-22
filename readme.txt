@@ -3,7 +3,7 @@ Contributors: nikosdion
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=10903325
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
-Tested up to: 4.1
+Tested up to: 4.2
 Stable tag: 1.3.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
