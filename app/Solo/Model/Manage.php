@@ -205,7 +205,10 @@ class Manage extends Model
 		$allFiles = Factory::getStatistics()->get_all_filenames($stat, false);
 
 		// Remove the custom log file if necessary
-		$this->_deleteLogs($stat);
+		if (!is_null($stat))
+		{
+			$this->_deleteLogs($stat);
+		}
 
 		// Make sure we have some files
 		if (empty($allFiles))

@@ -101,7 +101,7 @@ class Html extends \Solo\View\Html
 		$this->profileid = $profileid;
 
 		// Get profile name
-		$this->profilename = Platform::getInstance()->get_profile_name($profileid);
+		$this->profilename = $this->escape(Platform::getInstance()->get_profile_name($profileid));
 
 		// Load additional Javascript
 		Template::addJs('media://js/solo/fsfilters.js', $this->container->application);

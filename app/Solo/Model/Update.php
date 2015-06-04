@@ -557,19 +557,29 @@ class Update extends Model
 	{
 		$this->load();
 
+        // The restore script expects to find the update inside the temp directory
+        $tmpDir = $this->container['temporaryPath'];
+        $tmpDir = rtrim($tmpDir, '/\\');
+        $localFilename = $tmpDir . '/update.zip';
+
 		$params = array(
 			'file'          => $this->updateInfo->get('link', ''),
 			'frag'          => $this->getState('frag', -1),
 			'totalSize'     => $this->getState('totalSize', -1),
 			'doneSize'      => $this->getState('doneSize', -1),
-			'localFilename' => 'update.zip',
+			'localFilename' => $localFilename,
 		);
 
 		$download = new Download($this->container);
 
 		if ($staggered)
 		{
-			$retArray = $download->importFromURL($params);
+            // importFromURL expects the remote URL in the 'url' index
+            $params['url'] = $params['file'];
+            $retArray = $download->importFromURL($params);
+
+            // Better it
+            unset($params['url']);
 		}
 		else
 		{
@@ -607,7 +617,7 @@ class Update extends Model
 			}
 			catch (\Exception $e)
 			{
-				$retArray['status'] = true;
+				$retArray['status'] = false;
 				$retArray['error'] = $e->getMessage();
 				$retArray['errorCode'] = $e->getCode();
 			}
@@ -649,10 +659,9 @@ class Update extends Model
 			$siteRoot = implode('/', $parts);
 		}
 
-		$tempdir = APATH_BASE . '/tmp';
-		$file = $tempdir . '/update.zip';
+        $tempdir = $this->container['temporaryPath'];
 
-		$data = "<?php\ndefined('_AKEEBA_RESTORATION') or die();\n";
+		$data  = "<?php\ndefined('_AKEEBA_RESTORATION') or die();\n";
 		$data .= '$restoration_setup = array(' . "\n";
 
 		$ftpOptions = $this->getFTPOptions();

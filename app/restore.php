@@ -278,7 +278,7 @@ if(!class_exists('Akeeba_Services_JSON'))
 	    *                                   bubble up with an error, so all return values
 	    *                                   from encode() should be checked with isError()
 	    */
-	    function Akeeba_Services_JSON($use = 0)
+	    function __construct($use = 0)
 	    {
 	        $this->use = $use;
 	    }
@@ -923,7 +923,7 @@ if(!class_exists('Akeeba_Services_JSON'))
 
     class Akeeba_Services_JSON_Error
     {
-        function Akeeba_Services_JSON_Error($message = 'unknown error', $code = null,
+        function __construct($message = 'unknown error', $code = null,
                                      $mode = null, $options = null, $userinfo = null)
         {
 
@@ -1979,6 +1979,7 @@ abstract class AKAbstractUnarchiver extends AKAbstractPart
 			$this->fp = @fopen( $this->archiveList[$this->currentPartNumber], 'rb' );
 			if($this->fp === false) {
 				debugMsg('Could not open file - crash imminent');
+				$this->setError(AKText::sprintf('ERR_COULD_NOT_OPEN_ARCHIVE_PART', $this->archiveList[$this->currentPartNumber]));
 			}
 			fseek($this->fp, 0);
 			$this->currentPartOffset = 0;
@@ -2104,10 +2105,11 @@ abstract class AKAbstractUnarchiver extends AKAbstractPart
 	 */
 	public function isIgnoredDirectory($shortFilename)
 	{
-		return false;
+		// return false;
+
 		if (substr($shortFilename, -1) == '/')
 		{
-			$check = substr($shortFilename, 0, -1);
+			$check = rtrim($shortFilename, '/');
 		}
 		else
 		{
@@ -6223,6 +6225,7 @@ class AKText extends AKAbstractObject
 		'ARCHIVE_DIRECTORY' => 'Archive directory:',
 		'RELOAD_ARCHIVES'	=> 'Reload',
 		'CONFIG_UI_SFTPBROWSER_TITLE'	=> 'SFTP Directory Browser',
+		'ERR_COULD_NOT_OPEN_ARCHIVE_PART' => 'Could not open archive part file %s for reading. Check that the file exists, is readable by the web server and is not in a directory made out of reach by chroot, open_basedir restrictions or any other restriction put in place by your host.',
 	);
 
 	/**
@@ -6781,7 +6784,7 @@ class AKFactory {
 				'restore_permissions'	=> self::get('kickstart.setup.restoreperms', 0),
 				'post_proc'				=> self::get('kickstart.procengine', 'direct'),
 				'add_path'				=> self::get('kickstart.setup.targetpath', $destdir),
-				'rename_files'			=> array('.htaccess' => 'htaccess.bak', 'php.ini' => 'php.ini.bak', 'web.config' => 'web.config.bak'),
+				'rename_files'			=> array('.htaccess' => 'htaccess.bak', 'php.ini' => 'php.ini.bak', 'web.config' => 'web.config.bak', '.user.ini' => '.user.ini.bak'),
 				'skip_files'			=> array(basename(__FILE__), 'kickstart.php', 'abiautomation.ini', 'htaccess.bak', 'php.ini.bak', 'cacert.pem'),
 				'ignoredirectories'		=> array('tmp', 'log', 'logs'),
 			);
@@ -6795,10 +6798,7 @@ class AKFactory {
 
 			if(!empty($configOverride))
 			{
-				foreach($configOverride as $key => $value)
-				{
-					$config[$key] = $value;
-				}
+				$config = array_merge($config, $configOverride);
 			}
 
 			$object->setup($config);

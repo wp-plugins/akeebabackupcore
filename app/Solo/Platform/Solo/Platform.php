@@ -297,6 +297,7 @@ class Solo extends Base
 				'database' => $conf->get('dbname'),
 				'prefix'   => $conf->get('prefix')
 			);
+
 		}
 
 		return $options;

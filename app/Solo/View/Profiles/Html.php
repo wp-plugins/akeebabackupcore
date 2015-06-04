@@ -57,7 +57,7 @@ class Html extends DataHtml
 		$this->profileid = Platform::getInstance()->get_active_profile();
 
 		// Get profile name
-		$this->profilename = Platform::getInstance()->get_profile_name($this->profileid);
+		$this->profilename = $this->escape(Platform::getInstance()->get_profile_name($this->profileid));
 
 		return parent::onBeforeBrowse();
 	}

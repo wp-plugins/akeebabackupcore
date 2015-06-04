@@ -9,6 +9,7 @@ namespace Solo\Controller;
 
 use Awf\Router\Router;
 use Awf\Text\Text;
+use Solo\Model\Profiles;
 
 /**
  * The Controller for the Configuration view
@@ -33,6 +34,24 @@ class Configuration extends ControllerDefault
 		$model->setState('engineconfig', $data);
 		$model->saveEngineConfig();
 
+		// Finally, save the profile description if it has changed
+		$profileID = \Akeeba\Engine\Platform::getInstance()->get_active_profile();
+
+		// Get profile name
+		/** @var Profiles $profileRecord */
+		$profileRecord = $this->getModel('Profiles')->getClone()->setIgnoreRequest(1);
+		$profileRecord->reset(true, true)->find($profileID);
+		$oldProfileName = $profileRecord->description;
+		$newProfileName = $this->input->getString('profilename', null);
+		$newProfileName = trim($newProfileName);
+
+		if (!empty($newProfileName) && ($newProfileName != $oldProfileName))
+		{
+			$profileRecord->save(array(
+				'description' => $newProfileName
+			));
+		}
+
 		$router = $this->container->router;
 
 		$this->setRedirect($router->route('index.php?view=configuration'), Text::_('CONFIG_SAVE_OK'));
@@ -50,6 +69,38 @@ class Configuration extends ControllerDefault
 		$router = $this->container->router;
 
 		$this->setRedirect($router->route('index.php?view=main'), Text::_('CONFIG_SAVE_OK'));
+	}
+
+	/**
+	 * Handle the save task which saves settings, creates a new backup profile, activates it and proceed to the
+	 * configuration page once more.
+	 *
+	 * @return  void
+	 */
+	public function savenew()
+	{
+		// Save the current profile
+		$this->apply();
+
+		// Create a new profile
+		/** @var Profiles $profileModel */
+		$profileModel = $this->getModel('Profiles')->getClone();
+		$profileID = \Akeeba\Engine\Platform::getInstance()->get_active_profile();
+		$profileModel->find($profileID);
+		$profileModel->id = null;
+		$profileModel->save(array(
+			'id' => 0,
+			'description' => Text::_('COM_AKEEBA_CONFIG_SAVENEW_DEFAULT_PROFILE_NAME')
+		));
+		$newProfileId = (int)($profileModel->getId());
+
+		// Activate and edit the new profile
+		$returnUrl = base64_encode($this->redirect);
+		$router = $this->container->router;
+		$token = $this->container->session->getCsrfToken()->getValue();
+		$url = $router->route('index.php?view=main&task=switchProfile&profile=' . $newProfileId .
+			'&returnurl=' . $returnUrl . '&' . $token . '=1');
+		$this->setRedirect($url);
 	}
 
 	/**

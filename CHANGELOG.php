@@ -1,4 +1,21 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.3.1
+================================================================================
+~ Updated Import from S3 to use the official Amazon AWS SDK for PHP
+~ ANGIE (restoration script): Reset OPcache after the restoration is complete (NB! Only if you use ANGIE's Remove Installation Directory feature)
++ You can set the backup profile name directly from the Configuration page
++ You can create new backup profiles from the Configuration page using the Save & New button
++ Desktop notifications for backup start, finish, warning and error on compatible browsers (Chrome, Safari, Firefox)
++ UTF8MB4 (UTF-8 multibyte) support in restoration scripts, allows you to correctly restore content using multibyte Unicode characters (Emoji, Traditional Chinese, etc)
+# [HIGH] Restoration might be impossible if your database passwords contains a double quote character
+# [MEDIUM] (Pro) Dropbox and iDriveSync: could not upload under PHP 5.6 and some versions of PHP 5.5
+# [MEDIUM] Immediate crash when the legacy MySQL driver is not available
+# [MEDIUM] (Pro) OneDrive upload could fail in CLI CRON jobs if the upload of all parts takes more than 3600 seconds
+# [MEDIUM] (Pro) Reupload from Manage Backups failed when the post-processing engine is configured to use chunked uploads
+# [MEDIUM] Sometimes, usually after updating WordPress, you'd get a 403 access denied until you cleared browser cookies
+# [LOW] White page when the ak_stats database table is broken
+# [LOW] (Pro) Wrong link to Download ID instructions page
+
 Akeeba Backup for WordPress 1.3.0
 ================================================================================
 + Warning with information and instructions when you have PHP 5.3.3 or earlier instead of crashing with a blank page

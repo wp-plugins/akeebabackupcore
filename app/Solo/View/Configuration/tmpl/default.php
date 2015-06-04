@@ -169,6 +169,22 @@ $router = $this->container->router;
 	<input type="hidden" name="task" value=""/>
 	<input type="hidden" name="token" value="<?php echo $this->container->session->getCsrfToken()->getValue() ?>"/>
 
+	<div class="well">
+		<h4>
+			<?php echo Text::_('PROFILE_LABEL_DESCRIPTION') ?>
+		</h4>
+		<div class="form-group">
+			<label class="control-label col-sm-3" for="profilename" rel="popover"
+				   data-original-title="<?php echo Text::_('PROFILE_LABEL_DESCRIPTION') ?>"
+				   data-content="<?php echo Text::_('PROFILE_LABEL_DESCRIPTION_TOOLTIP') ?>">
+				<?php echo Text::_('PROFILE_LABEL_DESCRIPTION') ?>
+			</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" name="profilename" id="profilename" value="<?php echo $this->escape($this->profileName); ?>" />
+			</div>
+		</div>
+	</div>
+
 	<!-- This div contains dynamically generated user interface elements -->
 	<div id="akeebagui">
 	</div>

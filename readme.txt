@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.2
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -14,38 +14,46 @@ Easily backup, restore and move your WordPress site with the fastest, most robus
 
 Akeeba Backup Core for WordPress is an open-source backup plugin for WordPress, quite a bit different than its
 competition. Its mission is simple: create a site backup that can be restored on any WordPress-capable server. Its
-possibilities: endless. It creates a full backup of your site in a single archive. The archive contains all the files,
+possibilities: endless.
+
+It creates a full backup of your site in a single archive. The archive contains all the files,
 a database snapshot and a web installer which is as easy to use as WordPress' famous five minute installation procedure.
-The backup and restore process is AJAX powered to avoid server timeouts, even with huge sites. Our vast experience
-(the backup engine is being continuously developed and perfected since 2006) guarantees that. Alternatively, you can
-make a backup of only your database, or only your files. If you want a reliable, easy to use, open source backup
-solution for your WordPress site, try it out.
+The backup and restore process is AJAX powered to avoid server timeouts, even with huge sites. Serialised data is
+handled automatically. Our long experience –the backup engine is being continuously developed and perfected since 2006–
+guarantees that. You can also make a backup of only your database, or only your site's files.
+
+If you want a reliable, easy to use, open source backup solution for your WordPress site, you've found it!
 
 Features:
 
 * You own your data. Hosted services hold your data only as long as you pay them a monthly fee. With Akeeba Backup you have full control over the backup archives you generate.
+* Serialised data are automatically adjusted on restoration WITHOUT third party tools and WITHOUT precarious regular expressesions which can break your site.
+* WordPress Multisite supported out of the box, today.
 * The fastest native PHP backup engine. You don't need to upload Linux executable files on your server!
 * Works on any virtually any server environment: Apache, NginX, Lightspeed, Lighttpd, IIS and more on Windows, Linux, Mac OS X, Solaris and more.
 * No more timeouts on large sites. Our renowned engine is designed for big sites in mind. Largest successfully backed up site reported so far: 110Gb (yes, Gigabytes).
 * It configures itself for optimal operation with your site. Just click on Configuration Wizard.
-* One click backup.
-* AJAX-powered backup (site and database, database only, files only or incremental files only backup)
-* Choose between standard ZIP format, the highly efficient JPA archive format or the encrypted JPS format.
-* You can exclude specific files and folders
-* You can exclude specific database tables or just their contents
-* Unattended backup mode (CRON job scheduling), fully compatible with WebCRON.org
-* AJAX-powered site restoration script included in the backup
-* "Kickstart" restore: restore without extracting the backup locally
+* One click backup with desktop notifications when it's finished. No need to stare at the screen any more.
+* AJAX-powered backup (site and database, database only, files only or incremental files only backup).
+* Choose between standard ZIP format, the highly efficient JPA archive format or the encrypted JPS format (encrypted JPS format available in paid version only).
+* You can exclude specific files and folders.
+* You can exclude specific database tables or just their contents.
+* Unattended backup mode (CRON job scheduling), fully compatible with WebCRON.org.
+* AJAX-powered site restoration script included in the backup.
+* "Kickstart" restore: restore without extracting the backup on your computer and without needing a WordPress installation on the target server.
 * Archives can be restored on any host. Useful for transferring your site between subdomains/hosts or even to/from your local testing server (XAMPP, WAMPServer, MAMP, Zend Server, etc).
 
 and much, much more!
 
 Indicative uses:
 
-* Security backups
-* Creating dev sites to test new ideas, make site redesigns or troubleshoot issues
-* Transfer a site you created locally to a live server
-* Create "template" sites and clone them to fast-track the development of your clients' sites
+* Security backups.
+* Creating development sites to test new ideas, make site redesigns or troubleshoot issues.
+* Transfer a site you created locally to a live server.
+* Create "template" sites and clone them to fast-track the development of your clients' sites.
+
+Important note. Restoring your backups requires extracting them first. We recommend using our *free of charge* Akeeba
+Kickstart software. Written instructions and video tutorials are available in the Manage Backups page of Akeeba Backup.
 
 Do not miss out the complimentary companion desktop software (Akeeba SiteDiff and Akeeba eXtract Wizard) which are
 available free of charge from our site. They make working with Akeeba Backup a breeze.
@@ -55,8 +63,9 @@ storage providers, import backups from S3, exclude files, folders and database t
 integrated restoration and much more you can subscribe to the commercial Akeeba Backup Professional for WordPress plugin
 on our site.
 
-Note: The plugin is free of charge, its support is not. You need a valid subscription on our site to request support.
-However, its documentation, the troubleshooting wizard and searching the public tickets is free of charge.
+The plugin is free of charge, its support is not. You need a valid subscription on our site to request support. However
+its documentation, video tutorials, the troubleshooting wizard and searching the public tickets on our site is free of
+charge.
 
 == Installation ==
 
@@ -112,14 +121,21 @@ these themes and we can't fix it. On the other hand these themes' developers see
 their own settings export and import. If your theme provides such a feature please use it. We can't reliably work around
 third party code not following the character encoding standards established well over twenty years ago...
 
+= WordPress moved to UTF8MB4 (UTF-8 Multibyte). Do you support it? =
+
+Yes, in full. Akeeba Backup will work no matter if your site uses UTF8MB4 or the old UTF-8 encoding. If you backup a
+site with data encoded in UTF-8 the restoration will work on a server supporting UTF8MB4. Going the opposite way will
+not work because of a MySQL restriction. If you end up with truncated text or MySQL errors on restoration that's the
+reason. In this case you will have to ask your host to update their version of MySQL to 5.5 or later.
+
 = What are the requirements for your plugin? =
 
 Akeeba Backup for WordPress requires PHP 5.3.04 or any later version. Older versions of PHP including PHP 4, 5.0, 5.1,
 5.2 and 5.3.0 up to and including 5.3.03 are not supported. We recommend using PHP 5.4 or later for security and
 performance reasons: PHP 5.4 is seven times faster than PHP 5.2 according to our benchmarks.
 
-Akeeba Backup for WordPress has been tested on WordPress 3.8 and later. It should work on earlier versions of WordPress but we
-cannot guarantee this.
+Akeeba Backup for WordPress has been tested on WordPress 3.8 and later. It should work on earlier versions of WordPress
+but we cannot guarantee this.
 
 Akeeba Backup for WordPress requires at least 16Mb of PHP memory (memory_limit). We strongly suggest 64Mb or more for
 optimal operation on large sites with hundreds of media files and hundreds of thousands of comments.
@@ -136,11 +152,12 @@ version of the license published by the Free Software Foundation. This license g
 WordPress' license; in fact, GPLv3 is simply a newer version of the same GPLv2 license WordPress is using, one which
 protects your interests even more.
 
-= I thought Akeeba Backup was a Joomla! extension? =
+= I have sites using other scripts / CMS. Can I use your software with them? =
 
-Almost. Akeeba Backup was originally only published for Joomla!, however the backup engine was CMS-agnostic. Both
-the WordPress plugin and Joomla! extension by the Akeeba Backup are developed by us. The backup engine is shared among
-them but everything else is optimised for the CMS each solution is designed to run in.
+Akeeba Backup is available in three different packages. Akeeba Backup for WordPress is designed to backup and restore
+WordPress sites. Akeeba Backup for Joomla! does the same for Joomla! sites. Akeeba Solo is our standalone backup
+software which support WordPress, Joomla!, Magento, PrestaShop, phpBB3 and many other CMS and scripts. Use the contact
+link on our site to request more information for your specific needs.
 
 == Screenshots ==
 
@@ -153,6 +170,22 @@ them but everything else is optimised for the CMS each solution is designed to r
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.3.1 =
+* Updated Import from S3 to use the official Amazon AWS SDK for PHP
+* ANGIE (restoration script): Reset OPcache after the restoration is complete (NB! Only if you use ANGIE's Remove Installation Directory feature)
+* You can set the backup profile name directly from the Configuration page
+* You can create new backup profiles from the Configuration page using the Save & New button
+* Desktop notifications for backup start, finish, warning and error on compatible browsers (Chrome, Safari, Firefox)
+* UTF8MB4 (UTF-8 multibyte) support in restoration scripts, allows you to correctly restore content using multibyte Unicode characters (Emoji, Traditional Chinese, etc)
+* [HIGH] Restoration might be impossible if your database passwords contains a double quote character
+* [MEDIUM] (Pro) Dropbox and iDriveSync: could not upload under PHP 5.6 and some versions of PHP 5.5
+* [MEDIUM] Immediate crash when the legacy MySQL driver is not available
+* [MEDIUM] (Pro) OneDrive upload could fail in CLI CRON jobs if the upload of all parts takes more than 3600 seconds
+* [MEDIUM] (Pro) Reupload from Manage Backups failed when the post-processing engine is configured to use chunked uploads
+* [MEDIUM] Sometimes, usually after updating WordPress, you'd get a 403 access denied until you cleared browser cookies
+* [LOW] White page when the ak_stats database table is broken
+* [LOW] (Pro) Wrong link to Download ID instructions page
 
 = 1.3.0 =
 * Warning with information and instructions when you have PHP 5.3.3 or earlier instead of crashing with a blank page

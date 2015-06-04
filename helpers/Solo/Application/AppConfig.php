@@ -42,6 +42,8 @@ class AppConfig extends Configuration
 		$clone->set('dbuser', null);
 		$clone->set('dbpass', null);
 		$clone->set('dbname', null);
+		$clone->set('dbselect', null);
+		$clone->set('connection', null);
 		$clone->set('prefix', null);
 		$clone->set('live_site', null);
 		$clone->set('base_url', null);
@@ -92,11 +94,31 @@ class AppConfig extends Configuration
 			}
 		}
 
-		$this->set('dbdriver', 'Mysql'); // WordPress is using the ancient driver...
-		$this->set('dbhost', DB_HOST);
-		$this->set('dbuser', DB_USER);
-		$this->set('dbpass', DB_PASSWORD);
-		$this->set('dbname', DB_NAME);
+
+		$driver = 'Mysqli';
+
+		if (!isset($wpdb) || !is_object($wpdb->dbh) || !($wpdb->dbh instanceof \mysqli))
+		{
+			$driver = function_exists('mysql_connect') ? 'Mysql' : 'Mysqli';
+		}
+
+		$this->set('dbdriver', $driver);
+
+		if (isset($wpdb))
+		{
+			$this->set('connection', $wpdb->dbh);
+		}
+		$this->set('dbselect', false);
+
+		if (!isset($wpdb) || empty($wpdb->dbh))
+		{
+			$this->set('dbhost', DB_HOST);
+			$this->set('dbuser', DB_USER);
+			$this->set('dbpass', DB_PASSWORD);
+			$this->set('dbname', DB_NAME);
+			$this->set('dbselect', true);
+		}
+
 		$this->set('prefix', $table_prefix);
 
 		if (defined('AKEEBA_SOLO_WP_SITEURL'))

@@ -42,7 +42,15 @@ class SiteDatabase extends FilterBase
 			'database' => $configuration->get('akeeba.platform.dbname', ''),
 			'prefix'   => $configuration->get('akeeba.platform.dbprefix', ''),
 		);
-		$driver = '\\Akeeba\\Engine\\Driver\\' . ucfirst($configuration->get('akeeba.platform.dbdriver', 'mysqli'));
+
+		$dbdriver = $configuration->get('akeeba.platform.dbdriver', 'mysqli');
+
+		if (($dbdriver == 'mysql') && !function_exists('mysql_connect'))
+		{
+			$dbdriver = 'mysqli';
+		}
+
+		$driver = '\\Akeeba\\Engine\\Driver\\' . ucfirst($dbdriver);
 
 		$host = $options['host'];
 		$port = array_key_exists('port', $options) ? $options['port'] : null;

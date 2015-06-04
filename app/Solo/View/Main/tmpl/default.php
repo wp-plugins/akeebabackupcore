@@ -61,7 +61,11 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 
 <?php if ($this->needsDownloadId): ?>
 	<div class="alert alert-warning">
-		<?php echo Text::sprintf('COM_AKEEBA_LBL_CPANEL_NEEDSDLID','https://www.akeebabackup.com/instructions/1539-akeeba-solo-download-id.html'); ?>
+		<?php if ($inCMS): ?>
+		<?php echo Text::sprintf('COM_AKEEBA_LBL_CPANEL_NEEDSDLID','https://www.akeebabackup.com/instructions/1557-akeeba-solo-download-id-2.html'); ?>
+		<?php else: ?>
+			<?php echo Text::sprintf('COM_AKEEBA_LBL_CPANEL_NEEDSDLID','https://www.akeebabackup.com/instructions/1539-akeeba-solo-download-id.html'); ?>
+		<?php endif; ?>
 	</div>
 <?php elseif ($this->warnCoreDownloadId): ?>
 	<div class="alert alert-danger">

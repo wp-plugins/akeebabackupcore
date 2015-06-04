@@ -68,7 +68,7 @@ $model = $this->getModel();
 			<?php
 			$check = \Awf\Html\Grid::id(++$i, $profile->id);
 			$link = $router->route('index.php?&view=profiles&task=edit&id=' . $profile->id);
-			$exportBaseName = \Awf\Utils\String::toSlug($profile->description);
+			$exportBaseName = \Awf\Utils\StringHandling::toSlug($profile->description);
 			?>
 		<tr>
 			<td>
@@ -90,7 +90,7 @@ $model = $this->getModel();
 			</td>
 			<td>
 				<a href="<?php echo $link; ?>">
-					<?php echo $profile->description; ?>
+					<?php echo $this->escape($profile->description); ?>
 				</a>
 			</td>
 		</tr>

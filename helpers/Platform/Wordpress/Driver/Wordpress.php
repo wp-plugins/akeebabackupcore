@@ -29,11 +29,12 @@ class Wordpress extends Object
 		global $wpdb;
 
 		$options['connection'] = $wpdb->dbh;
-		$driver = '\\Akeeba\\Engine\\Driver\\Mysql';
+		$driver = '\\Akeeba\\Engine\\Driver\\Mysqli';
 
-		if (is_object($wpdb->dbh) && ($wpdb->dbh instanceof \mysqli))
+		if (!is_object($wpdb->dbh) || !($wpdb->dbh instanceof \mysqli))
 		{
-			$driver = '\\Akeeba\\Engine\\Driver\\Mysqli';
+			$driver = '\\Akeeba\\Engine\\Driver\\' .
+				(function_exists('mysql_connect') ? 'Mysql' : 'Mysqli');
 		}
 
 		$this->dbo = new $driver($options);

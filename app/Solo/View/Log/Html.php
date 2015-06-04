@@ -35,7 +35,7 @@ class Html extends \Solo\View\Html
 
 		// Get profile ID and name
 		$this->profileid = Platform::getInstance()->get_active_profile();;
-		$this->profilename = Platform::getInstance()->get_profile_name($this->profileid);
+		$this->profilename = $this->escape(Platform::getInstance()->get_profile_name($this->profileid));
 
 		return true;
 	}

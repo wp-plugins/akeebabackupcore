@@ -36,7 +36,14 @@ class UserManager extends Manager
 				{
 					$defaultId = 0;
 				}
+
 				$id = $this->container->segment->get('user_id', $defaultId);
+
+				if ($id == 0)
+				{
+					$id = $defaultId;
+					$this->container->segment->set('user_id', $defaultId);
+				}
 
 				// Load the current user
 				$this->currentUser = $this->getUser($id);

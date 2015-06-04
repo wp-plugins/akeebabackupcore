@@ -384,9 +384,20 @@ Solo.loadScripts[Solo.loadScripts.length] = function () {
 		akeeba_comment_editor_save = function() {
 		}
 
+		// Push the icon URL
+		Solo.System.notification.iconURL = '<?php echo Escape::escapeJS(\Awf\Uri\Uri::base(false, $this->container) . '/media/logo/solo-96.png'); ?>';
+
 		// Push translations
 		Solo.Backup.translations['UI-LASTRESPONSE']			= '<?php echo Escape::escapeJS(Text::_('BACKUP_TEXT_LASTRESPONSE')) ?>';
 		Solo.Backup.translations['UI-STW-CONTINUE']			= '<?php echo Escape::escapeJS(Text::_('STW_MSG_CONTINUE')) ?>';
+
+		Solo.Backup.translations['UI-BACKUPSTARTED']		= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPSTARTED')) ?>';
+		Solo.Backup.translations['UI-BACKUPFINISHED']		= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPFINISHED')) ?>';
+		Solo.Backup.translations['UI-BACKUPHALT']			= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPHALT')) ?>';
+		Solo.Backup.translations['UI-BACKUPRESUME']			= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPRESUME')) ?>';
+		Solo.Backup.translations['UI-BACKUPHALT_DESC']		= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPHALT_DESC')) ?>';
+		Solo.Backup.translations['UI-BACKUPFAILED']			= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPFAILED')) ?>';
+		Solo.Backup.translations['UI-BACKUPWARNING']		= '<?php echo Escape::escapeJS(Text::_('COM_AKEEBA_BACKUP_TEXT_BACKUPWARNING')) ?>';
 
 		<?php if (!$this->unwritableOutput && ($this->autoStart || (isset($this->srpInfo['tag']) && ($this->srpInfo['tag'] == 'restorepoint')))):?>
 		Solo.Backup.start();

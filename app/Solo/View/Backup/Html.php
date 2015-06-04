@@ -54,7 +54,7 @@ class Html extends \Solo\View\Html
 
 		// Push the profile ID and name
 		$this->profileId = Platform::getInstance()->get_active_profile();
-		$this->profileName = Platform::getInstance()->get_profile_name($this->profileId);
+		$this->profileName = $this->escape(Platform::getInstance()->get_profile_name($this->profileId));
 
 		// If a return URL is set *and* the profile's name is "Site Transfer
 		// Wizard", we are running the Site Transfer Wizard

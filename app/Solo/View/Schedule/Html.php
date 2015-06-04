@@ -17,7 +17,7 @@ class Html extends \Solo\View\Html
 		$this->profileid = Platform::getInstance()->get_active_profile();
 
 		// Get profile name
-		$profileName = Platform::getInstance()->get_profile_name($this->profileid);
+		$this->profileName = $this->escape(Platform::getInstance()->get_profile_name($this->profileid));
 
 		// Get the CRON paths
 		$this->croninfo  = $this->getModel()->getPaths();

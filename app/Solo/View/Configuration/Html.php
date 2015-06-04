@@ -33,7 +33,7 @@ class Html extends \Solo\View\Html
 		$this->profileId = Platform::getInstance()->get_active_profile();
 
 		// Push the profile name
-		$this->profileName = Platform::getInstance()->get_profile_name($this->profileId);
+		$this->profileName = $this->escape(Platform::getInstance()->get_profile_name($this->profileId));
 
 		// Are the settings secured?
 		if (Platform::getInstance()->get_platform_configuration_option('useencryption', -1) == 0)
@@ -75,6 +75,12 @@ class Html extends \Solo\View\Html
 				'class' => 'btn-default',
 				'onClick' => 'Solo.System.submitForm(\'adminForm\', \'apply\')',
 				'icon' => 'glyphicon glyphicon-ok'
+			),
+			array(
+				'title' => 'SOLO_BTN_SAVENEW',
+				'class' => 'btn-default',
+				'onClick' => 'Solo.System.submitForm(\'adminForm\', \'savenew\')',
+				'icon' => 'glyphicon glyphicon-floppy-saved'
 			),
 			array(
 				'title' => 'SOLO_BTN_CANCEL',

@@ -40,6 +40,9 @@ class Factory
 	/** @var   array  A list of instantiated objects which will NOT persist after serialisation / unserialisation */
 	protected $temporaryObjectList = array();
 
+    /** @var  string  The absolute path to Akeeba Engine's installation   */
+    private static $root;
+
 	/** Private constructor makes sure we can't directly instantiate the class */
 	private function __construct()
 	{
@@ -839,14 +842,12 @@ class Factory
 	 */
 	public static function getAkeebaRoot()
 	{
-		static $root = null;
-
-		if (empty($root))
+		if (empty(self::$root))
 		{
-			$root = __DIR__;
+			self::$root = __DIR__;
 		}
 
-		return $root;
+		return self::$root;
 	}
 
 	// ========================================================================

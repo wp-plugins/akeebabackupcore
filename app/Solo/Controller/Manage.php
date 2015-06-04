@@ -444,7 +444,8 @@ class Manage extends ControllerDefault
 		$statistic['description'] = $description;
 		$statistic['comment'] = $comment;
 
-		$result = Platform::getInstance()->set_or_update_statistics($id, $statistic, $self);
+		$dummy = null;
+		$result = Platform::getInstance()->set_or_update_statistics($id, $statistic, $dummy);
 
 		if ($result !== false)
 		{
