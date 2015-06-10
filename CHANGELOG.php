@@ -1,4 +1,8 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.3.3
+================================================================================
+! Packaging error leading to immediate backup failure
+
 Akeeba Backup for WordPress 1.3.2
 ================================================================================
 + Push notifications with Pushbullet

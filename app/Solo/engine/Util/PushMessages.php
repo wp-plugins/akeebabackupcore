@@ -78,6 +78,11 @@ class PushMessages
 	 */
 	public function message($subject, $details = null)
 	{
+		if (!$this->enabled)
+		{
+			return;
+		}
+
 		try
 		{
 			$this->connector->pushNote('', $subject, $details);
@@ -101,6 +106,11 @@ class PushMessages
 	 */
 	public function link($url, $subject, $details = null)
 	{
+		if (!$this->enabled)
+		{
+			return;
+		}
+
 		try
 		{
 			$this->connector->pushLink('', $subject, $url, $details);

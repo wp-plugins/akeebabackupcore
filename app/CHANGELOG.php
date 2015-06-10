@@ -1,4 +1,8 @@
 <?php die();?>
+Akeeba Solo 1.3.3
+================================================================================
+! Packaging error leading to immediate backup failure
+
 Akeeba Solo 1.3.2
 ================================================================================
 + Push notifications with Pushbullet
