@@ -15,6 +15,7 @@ namespace Akeeba\Engine;
 defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Core\Database;
+use Akeeba\Engine\Util\PushMessages;
 use Psr\Log\LogLevel;
 
 // Try to kill errors display
@@ -829,6 +830,16 @@ class Factory
 	public static function &getTempFiles()
 	{
 		return self::getTempObjectInstance('\\Akeeba\\Engine\\Util\\TemporaryFiles');
+	}
+
+	/**
+	 * Get the connector object for push messages
+	 *
+	 * @return  PushMessages
+	 */
+	public static function &getPush()
+	{
+		return self::getObjectInstance('Akeeba\\Engine\\Util\\PushMessages');
 	}
 
 	// ========================================================================

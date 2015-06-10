@@ -1,4 +1,9 @@
 <?php die();?>
+Akeeba Solo 1.3.2
+================================================================================
++ Push notifications with Pushbullet
+# [HIGH] ANGIE: Restoration may fail or corrupt text on some servers due to UTF8MB4 support
+
 Akeeba Solo 1.3.1
 ================================================================================
 ~ Updated Import from S3 to use the official Amazon AWS SDK for PHP

@@ -28,6 +28,7 @@ class Backup extends Model
 
 		switch ($ajaxTask)
 		{
+			// Start a new backup
 			case 'start':
 				$description = $this->getState('description');
 				$comment = $this->getState('comment');
@@ -105,6 +106,7 @@ class Backup extends Model
 				Factory::saveState($tag, $backupId);
 				break;
 
+			// Step through a backup
 			case 'step':
 				Factory::loadState($tag, $backupId);
 				$kettenrad = Factory::getKettenrad();
@@ -126,6 +128,17 @@ class Backup extends Model
 
 					Factory::getFactoryStorage()->reset($tempVarsTag);
 				}
+				break;
+
+			// Send a push notification for backup failure
+			case 'pushFail':
+				Factory::loadState($tag, $backupId);
+				$errorMessage = $this->getState('errorMessage');
+				$platform    = Platform::getInstance();
+				$pushSubject = sprintf($platform->translate('COM_AKEEBA_PUSH_ENDBACKUP_FAIL_SUBJECT'), $platform->get_site_name(), $platform->get_host());
+				$key = empty($errorMessage) ? 'COM_AKEEBA_PUSH_ENDBACKUP_FAIL_BODY' : 'COM_AKEEBA_PUSH_ENDBACKUP_FAIL_BODY_WITH_MESSAGE';
+				$pushDetails = sprintf($platform->translate($key), $platform->get_site_name(), $platform->get_host(), $errorMessage);
+				Factory::getPush()->message($pushSubject, $pushDetails);
 				break;
 
 			default:

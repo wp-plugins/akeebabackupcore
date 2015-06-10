@@ -143,6 +143,12 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 				<?php echo Text::_('SOLO_SYSCONFIG_FRONTEND') ?>
 			</a>
 		</li>
+		<li>
+			<a href="#sysconfigPushNotifications" data-toggle="tab">
+				<span class="glyphicon glyphicon-comment"></span>
+				<?php echo Text::_('SOLO_SYSCONFIG_PUSH') ?>
+			</a>
+		</li>
 		<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
 		<li>
 			<a href="#sysconfigUpdate" data-toggle="tab">
@@ -666,6 +672,37 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 					<textarea rows="10" class="form-control" name="options[frontend_email_body]" id="frontend_email_body" ><?php echo $config->get('options.frontend_email_body')?></textarea>
 					<div class="help-block">
 						<?php echo Text::_('CONFIG_FEEMAILBODY_DESC') ?>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div id="sysconfigPushNotifications" class="tab-pane">
+			<div class="form-group">
+				<label for="push_preference" class="col-sm-2 control-label">
+					<?php echo Text::_('COM_AKEEBA_CONFIG_PUSH_PREFERENCE_LABEL'); ?>
+				</label>
+				<div class="col-sm-10">
+					<div style="height: 2em">
+						<input type="hidden" name="options[push_preference]" value="0">
+						<input type="checkbox" name="options[push_preference]" value="1" <?php echo $config->get('options.push_preference', 1) ? 'checked' : '' ?>
+							   class="toggleSwitch" data-on-color="success" data-off-color="danger">
+					</div>
+					<div class="help-block">
+						<?php echo Text::_('COM_AKEEBA_CONFIG_PUSH_PREFERENCE_DESC') ?>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="push_apikey" class="col-sm-2 control-label">
+					<?php echo Text::_('COM_AKEEBA_CONFIG_PUSH_APIKEY_LABEL'); ?>
+				</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" name="options[push_apikey]" id="push_apikey" placeholder="<?php echo Text::_('COM_AKEEBA_CONFIG_PUSH_APIKEY_LABEL'); ?>" value="<?php echo $config->get('options.push_apikey')?>">
+					<div class="help-block">
+						<?php echo Text::_('COM_AKEEBA_CONFIG_PUSH_APIKEY_DESC') ?>
 					</div>
 				</div>
 			</div>

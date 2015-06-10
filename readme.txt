@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, restore, migrate, move
 Requires at least: 3.8.0
 Tested up to: 4.2
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -21,6 +21,15 @@ a database snapshot and a web installer which is as easy to use as WordPress' fa
 The backup and restore process is AJAX powered to avoid server timeouts, even with huge sites. Serialised data is
 handled automatically. Our long experience –the backup engine is being continuously developed and perfected since 2006–
 guarantees that. You can also make a backup of only your database, or only your site's files.
+
+EXTREMELY IMPORTANT CLARIFICATION:
+Restoring backups is NOT performed from within the Akeeba Backup plugin. You need to use our <em>completely free
+of charge</em> <a href="https://www.akeebabackup.com/download/akeeba-kickstart.html">Akeeba Kickstart</a> standalone script.
+For reasons beyond our control we can NOT host this file in wordpress.org, hence the link to our site. Unlike the other
+software on our site you <b>DO NOT</b> need to pay or give us your personal information. Follow the link above and
+download it. Wnhy not restore from the plugin itself? Using Akeeba Kickstart lets you restore your WordPress site
+anywhere, anytime even when your site is so destroyed you can't even log in to wp-admin, i.e. exactly when you'll
+desperately need to restore your site.
 
 If you want a reliable, easy to use, open source backup solution for your WordPress site, you've found it!
 
@@ -58,14 +67,19 @@ Kickstart software. Written instructions and video tutorials are available in th
 Do not miss out the complimentary companion desktop software (Akeeba SiteDiff and Akeeba eXtract Wizard) which are
 available free of charge from our site. They make working with Akeeba Backup a breeze.
 
+START OF COMMERCIAL INFORMATION: THE FOLLOWING TWO PARAGRAPHS REFER TO WHAT YOU GET WHEN YOU PAY US (MONEY CHANGING HANDS INVOLVED)
+
 If you want advanced features, such as uploading your backup archive to Amazon S3, Dropbox, Box.com and 40+ other cloud
 storage providers, import backups from S3, exclude files, folders and database tables using regular expressions,
 integrated restoration and much more you can subscribe to the commercial Akeeba Backup Professional for WordPress plugin
-on our site.
+on our site. Clarification: you need to pay us actual money to get access to cloud storage and the other features
+mentioned in this paragraph.
 
 The plugin is free of charge, its support is not. You need a valid subscription on our site to request support. However
 its documentation, video tutorials, the troubleshooting wizard and searching the public tickets on our site is free of
-charge.
+charge. Clarification: you need to pay us actual money to request support on our site (akeebabackup.com).
+
+END OF COMMERCIAL INFORMATION.
 
 == Installation ==
 
@@ -170,6 +184,10 @@ link on our site to request more information for your specific needs.
 7. Want to automate your backups? Akeeba Backup will give you step by step instructions, specific to your site.
 
 == Changelog ==
+
+= 1.3.2 =
+* Push notifications with Pushbullet
+* [HIGH] ANGIE: Restoration may fail or corrupt text on some servers due to UTF8MB4 support
 
 = 1.3.1 =
 * Updated Import from S3 to use the official Amazon AWS SDK for PHP
