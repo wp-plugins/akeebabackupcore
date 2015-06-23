@@ -42,6 +42,12 @@ class PushMessages
 		$pushPreference = Platform::getInstance()->get_platform_configuration_option('push_preference', '0');
 		$apiKey = Platform::getInstance()->get_platform_configuration_option('push_apikey', '');
 
+		// No API key? No push messages are enabled, so no point continuing really...
+		if (empty($apiKey))
+		{
+			$pushPreference = 0;
+		}
+
 		// We use a switch in case we add support for more push APIs in the future. The push_preference platform
 		// option will tell us which service to use. In that case we'll have to refactor this class, but the public
 		// API will remain the same.

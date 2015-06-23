@@ -150,9 +150,7 @@ class Html extends \Solo\View\Html
 
 		if (!AKEEBA_PRO)
 		{
-			unset($buttons['discover']);
 			unset($buttons['s3import']);
-			unset($buttons['restore']);
 		}
 
 		$toolbar = $document->getToolbar();

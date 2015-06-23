@@ -1,4 +1,21 @@
 <?php die(); ?>
+Akeeba Backup for WordPress 1.3.4
+================================================================================
+~ ANGIE: Improve memory efficiency of the database engine
+~ Switching the default log level to All Information and Debug
++ CORE version; ALICE, automated backup issue resolution
++ CORE version; CLI scripts to schedule backups and check for failed scheduled backups
++ CORE version; Import backups already on the server
++ CORE version; Additional archivers; Direct FTP, Direct SFTP, JPS, ZIP (via ZipArchive)
++ CORE version; Additional fine-tuning options
++ CORE version; Integrated restoration
++ CORE version; Send archives by Email, FTP, SFTP
++ Support utf8mb4 in CRON jobs
+# [LOW] Desktop notifications for backup resume showed "%d" instead of the time to wait before resume
+# [LOW] Push notifications should not be enabled by default
+# [MEDIUM] Dropbox integration would not work under many PHP 5.5 and 5.6 servers due to a PHP issue. Workaround applied.
+# [HIGH] Restoring on MySQL would be impossible unless you used the MySQL PDO driver
+
 Akeeba Backup for WordPress 1.3.3
 ================================================================================
 ! Packaging error leading to immediate backup failure

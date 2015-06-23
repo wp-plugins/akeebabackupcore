@@ -50,10 +50,6 @@ class PostUpgradeScript
 	 * @var array Files to remove from Core
 	 */
 	protected $removeFilesCore = array(
-		'Solo/Controller/Alice.php',
-		'Solo/Model/Alice.php',
-		'Solo/Controller/Discover.php',
-		'Solo/Model/Discover.php',
 		'Solo/Controller/Extradirs.php',
 		'Solo/Model/Extradirs.php',
 		'Solo/Controller/Multidb.php',
@@ -62,12 +58,8 @@ class PostUpgradeScript
 		'Solo/Model/Regexdbfilters.php',
 		'Solo/Controller/Regexfsfilters.php',
 		'Solo/Model/Regexfsfilters.php',
-		'Solo/Controller/Remotefiles.php',
-		'Solo/Model/Remotefiles.php',
 		'Solo/Controller/S3import.php',
 		'Solo/Model/S3import.php',
-		'Solo/Controller/Upload.php',
-		'Solo/Model/Upload.php',
 	);
 
 	/**
@@ -95,17 +87,11 @@ class PostUpgradeScript
 	 * @var array Folders to remove from Core
 	 */
 	protected $removeFoldersCore = array(
-		'Solo/alice',
-		'Solo/View/Alice',
-		'Solo/View/Discover',
 		'Solo/View/Extradirs',
 		'Solo/View/Multidb',
 		'Solo/View/Regexdbfilters',
 		'Solo/View/Regexfsfilters',
-		'Solo/View/Remote',
-		'Solo/View/Remotefiles',
 		'Solo/View/S3import',
-		'Solo/View/Upload',
 	);
 
 	/**

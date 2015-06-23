@@ -17,7 +17,6 @@ use Awf\Text\Text;
 <fieldset>
     <legend><?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_CLICRON') ?></legend>
 
-    <?php if(AKEEBA_PRO): ?>
         <p class="alert alert-info">
             <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_CLICRON_INFO') ?>
             <br/>
@@ -36,22 +35,11 @@ use Awf\Text\Text;
             <span class="label label-danger"><?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_CLIGENERICIMPROTANTINFO'); ?></span>
             <?php echo Text::sprintf('COM_AKEEBA_SCHEDULE_LBL_CLIGENERICINFO', $this->croninfo->info->php_path); ?>
         </p>
-
-    <?php else: ?>
-        <div class="alert alert-warning">
-            <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_UPGRADETOPRO') ?>
-            <br/>
-            <a class="btn btn-primary" href="https://www.akeebabackup.com/subscribe.html" target="_blank">
-                <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_UPGRADENOW') ?>
-            </a>
-        </div>
-    <?php endif; ?>
 </fieldset>
 
 <fieldset>
     <legend><?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_ALTCLICRON') ?></legend>
 
-    <?php if(AKEEBA_PRO): ?>
         <p class="alert alert-info">
             <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_ALTCLICRON_INFO') ?>
             <br/>
@@ -80,16 +68,6 @@ use Awf\Text\Text;
                 <?php echo Text::sprintf('COM_AKEEBA_SCHEDULE_LBL_CLIGENERICINFO', $this->checkinfo->info->php_path); ?>
             </p>
         <?php endif; ?>
-
-    <?php else: ?>
-        <div class="alert alert-warning">
-            <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_UPGRADETOPRO') ?>
-            <br/>
-            <a class="btn btn-primary" href="https://www.akeebabackup.com/subscribe.html" target="_blank">
-                <?php echo Text::_('COM_AKEEBA_SCHEDULE_LBL_UPGRADENOW') ?>
-            </a>
-        </div>
-    <?php endif; ?>
 </fieldset>
 
 <fieldset>

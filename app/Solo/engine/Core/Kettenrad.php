@@ -159,7 +159,7 @@ class Kettenrad extends Part
 		$platform    = Platform::getInstance();
 		$timeStamp = date($platform->translate('DATE_FORMAT_LC2'));
 		$pushSubject = sprintf($platform->translate('COM_AKEEBA_PUSH_STARTBACKUP_SUBJECT'), $platform->get_site_name(), $platform->get_host());
-		$pushDetails = sprintf($platform->translate('COM_AKEEBA_PUSH_STARTBACKUP_BODY'), $platform->get_site_name(), $platform->get_host(), $timeStamp, $platform->get_active_profile(), $this->getLogTag());
+		$pushDetails = sprintf($platform->translate('COM_AKEEBA_PUSH_STARTBACKUP_BODY'), $platform->get_site_name(), $platform->get_host(), $timeStamp, $this->getLogTag());
 		Factory::getPush()->message($pushSubject, $pushDetails);
 
 		//restore_error_handler();

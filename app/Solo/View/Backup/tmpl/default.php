@@ -23,6 +23,23 @@ $formstyle = $this->hasErrors ? 'style="display: none"' : '';
 $configuration = Factory::getConfiguration();
 
 ?>
+<?php if (!AKEEBA_PRO && (rand(0, 9) == 0)): ?>
+	<div style="border: thick solid green; border-radius: 10pt; padding: 1em; background-color: #f0f0ff; color: #333; font-weight: bold; text-align: center; margin: 1em 0">
+		<p><?php echo Text::_('SOLO_MAIN_LBL_SUBSCRIBE_TEXT') ?></p>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin: 0px;">
+			<input type="hidden" name="cmd" value="_s-xclick" />
+			<input type="hidden" name="hosted_button_id" value="3NTKQ3M2DYPYW" />
+			<button onclick="this.form.submit(); return false;" class="btn btn-success">
+				<img src="https://www.paypal.com/en_GB/i/btn/btn_donate_LG.gif" border="0">
+				Donate via PayPal
+			</button>
+			<a class="small" style="font-weight: normal; color: #666" href="https://www.akeebabackup.com/subscribe/new/backupwp.html?layout=default">
+				<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE_UNOBTRUSIVE'); ?>
+			</a>
+		</form>
+	</div>
+<?php endif; ?>
+
 <div id="backup-setup">
 	<h3>
 		<?php echo Text::_('BACKUP_HEADER_STARTNEW') ?>
@@ -138,7 +155,7 @@ $configuration = Factory::getConfiguration();
 			</div>
 		</div>
 
-		<?php if($this->showJPSKey): ?>
+		<?php if ($this->showJPSKey): ?>
 			<div class="form-group">
 				<label class="control-label col-sm-3" for="jpskey">
 					<?php echo Text::_('CONFIG_JPS_KEY_TITLE'); ?>
@@ -150,7 +167,7 @@ $configuration = Factory::getConfiguration();
 				</div>
 			</div>
 		<?php endif; ?>
-		<?php if(AKEEBA_PRO && $this->showANGIEKey): ?>
+		<?php if ($this->showANGIEKey): ?>
 			<div class="form-group">
 				<label class="control-label col-sm-3" for="angiekey">
 					<?php echo Text::_('CONFIG_ANGIE_KEY_TITLE'); ?>
@@ -269,21 +286,13 @@ $configuration = Factory::getConfiguration();
 			<p id="backup-error-message">
 			</p>
 
-			<?php if(AKEEBA_PRO):?>
-				<p>
-					<?php echo Text::_('BACKUP_TEXT_READLOGFAILPRO') ?>
-				</p>
-			<?php else: ?>
-				<p>
-					<?php echo Text::_('BACKUP_TEXT_READLOGFAIL') ?>
-				</p>
-			<?php endif; ?>
+			<p>
+				<?php echo Text::_('BACKUP_TEXT_READLOGFAILPRO') ?>
+			</p>
 
 			<div class="alert alert-block alert-info">
 				<p>
-					<?php if(AKEEBA_PRO):?>
-						<?php echo Text::_('BACKUP_TEXT_RTFMTOSOLVEPRO') ?>
-					<?php endif; ?>
+					<?php echo Text::_('BACKUP_TEXT_RTFMTOSOLVEPRO') ?>
 					<?php echo Text::sprintf('BACKUP_TEXT_RTFMTOSOLVE', 'https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorlink') ?>
 				</p>
 				<p>
@@ -296,30 +305,18 @@ $configuration = Factory::getConfiguration();
 				</p>
 			</div>
 
-			<?php if(AKEEBA_PRO):?>
-				<button class="btn btn-lg btn-primary" onclick="window.location='<?php echo $router->route('index.php?view=alice') ?>'; return false;">
-					<span class="fa fa-fire-extinguisher"></span>
-					<?php echo Text::_('BACKUP_ANALYSELOG') ?>
-				</button>
-				<button class="btn btn-default btn-sm" onclick="window.location='https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorbutton'; return false;">
-					<span class="fa fa-share"></span>
-					<?php echo Text::_('BACKUP_TROUBLESHOOTINGDOCS') ?>
-				</button>
-				<button class="btn btn-default btn-sm" onclick="window.location='<?php echo $router->route('index.php?view=log') ?>'; return false;">
-					<span class="fa fa-edit"></span>
-					<?php echo Text::_('VIEWLOG'); ?>
-				</button>
-
-			<?php else: ?>
-				<a class="btn btn-lg btn-primary" href="https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorbuttonsolo">
-					<span class="fa fa-share"></span>
-					<?php echo Text::_('BACKUP_TROUBLESHOOTINGDOCS') ?>
-				</a>
-				<a class="btn btn-default btn-sm" id="ab-viewlog-error" href="<?php echo $router->route('index.php?view=log') ?>">
-					<span class="fa fa-edit"></span>
-					<?php echo Text::_('VIEWLOG'); ?>
-				</a>
-			<?php endif; ?>
+			<button class="btn btn-lg btn-primary" onclick="window.location='<?php echo $router->route('index.php?view=alice') ?>'; return false;">
+				<span class="fa fa-fire-extinguisher"></span>
+				<?php echo Text::_('BACKUP_ANALYSELOG') ?>
+			</button>
+			<button class="btn btn-default btn-sm" onclick="window.location='https://www.akeebabackup.com/documentation/troubleshooter/abbackup.html?utm_source=akeeba_backup&utm_campaign=backuperrorbutton'; return false;">
+				<span class="fa fa-share"></span>
+				<?php echo Text::_('BACKUP_TROUBLESHOOTINGDOCS') ?>
+			</button>
+			<button class="btn btn-default btn-sm" onclick="window.location='<?php echo $router->route('index.php?view=log') ?>'; return false;">
+				<span class="fa fa-edit"></span>
+				<?php echo Text::_('VIEWLOG'); ?>
+			</button>
 		</div>
 	</div>
 </div>

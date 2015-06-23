@@ -102,32 +102,21 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 			</div>
 		</div>
 
-		<?php if (!AKEEBA_PRO): ?>
-		<div class="panel-group" id="coreaccordion">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h4 class="panel-title">
-						<a data-toggle="collapse" data-parent="#coreaccordion" href="#collapseOne">
-							<span class="glyphicon glyphicon-info-sign" ></span>
-							<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
-						</a>
-					</h4>
-				</div>
-				<div id="collapseOne" class="panel-collapse collapse">
-					<div class="panel-body">
-						<p class="text-muted">
-							<?php echo Text::_('SOLO_MAIN_LBL_WHYSUBSCRIBE'); ?>
-						</p>
-						<p style="text-align: center;">
-							<a class="btn btn-lg btn-danger" href="https://www.akeebabackup.com/subscribe.html">
-								<span class="glyphicon glyphicon-shopping-cart"></span>
-								<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
-							</a>
-						</p>
-					</div>
-				</div>
+		<?php if (!AKEEBA_PRO && (rand(0, 9) == 0)): ?>
+			<div style="border: thick solid green; border-radius: 10pt; padding: 1em; background-color: #f0f0ff; color: #333; font-weight: bold; text-align: center; margin: 1em 0">
+				<p><?php echo Text::_('SOLO_MAIN_LBL_SUBSCRIBE_TEXT') ?></p>
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin: 0px;">
+					<input type="hidden" name="cmd" value="_s-xclick" />
+					<input type="hidden" name="hosted_button_id" value="3NTKQ3M2DYPYW" />
+					<button onclick="this.form.submit(); return false;" class="btn btn-success">
+						<img src="https://www.paypal.com/en_GB/i/btn/btn_donate_LG.gif" border="0">
+						Donate via PayPal
+					</button>
+					<a class="small" style="font-weight: normal; color: #666" href="https://www.akeebabackup.com/subscribe/new/backupwp.html?layout=default">
+						<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE_UNOBTRUSIVE'); ?>
+					</a>
+				</form>
 			</div>
-		</div>
 		<?php endif; ?>
 
 		<div class="panel panel-default">
@@ -156,18 +145,20 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 					<span class="ak-icon ak-icon-viewlog"></span>
 					<span class="title"><?php echo Text::_('VIEWLOG') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=alice') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-alice <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('AKEEBA_ALICE') ?></span>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=alice')?>">
+					<span class="ak-icon ak-icon-alice"></span>
+					<span class="title"><?php echo Text::_('AKEEBA_ALICE') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=discover') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-import <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('DISCOVER') ?></span>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=discover') ?>">
+					<span class="ak-icon ak-icon-import"></span>
+					<span class="title small-text"><?php echo Text::_('DISCOVER') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=s3import') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-import-from-s3 <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('S3IMPORT') ?></span>
+				<?php if (defined('AKEEBA_PRO') && AKEEBA_PRO): ?>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=s3import') ?>">
+					<span class="ak-icon ak-icon-import-from-s3"></span>
+					<span class="title small-text"><?php echo Text::_('S3IMPORT') ?></span>
 				</a>
+				<?php endif; ?>
 
 				<?php if (!$inCMS || (defined('AKEEBA_PRO') && AKEEBA_PRO)): ?>
 				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=update') ?>">
@@ -186,22 +177,26 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 				<?php endif; ?>
 			</div>
 		</div>
+
+		<?php if (defined('AKEEBA_PRO') && AKEEBA_PRO): ?>
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<span class="fa fa-plus-square"></span>
 				<?php echo Text::_('CPANEL_HEADER_INCLUSION'); ?>
 			</div>
 			<div class="panel-body">
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=multidb') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-multidb <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('MULTIDB') ?></span>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=multidb') ?>">
+					<span class="ak-icon ak-icon-multidb"></span>
+					<span class="title small-text"><?php echo Text::_('MULTIDB') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=extradirs') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-extradirs <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('EXTRADIRS') ?></span>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=extradirs') ?>">
+					<span class="ak-icon ak-icon-extradirs"></span>
+					<span class="title small-text"><?php echo Text::_('EXTRADIRS') ?></span>
 				</a>
 			</div>
 		</div>
+		<?php endif; ?>
+
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<span class="fa fa-minus-square"></span>
@@ -216,14 +211,16 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 					<span class="ak-icon ak-icon-dbfilter"></span>
 					<span class="title small-text"><?php echo Text::_('DBEF') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexfsfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-regexfiles <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXFSFILTERS') ?></span>
+				<?php if (defined('AKEEBA_PRO') && AKEEBA_PRO): ?>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=regexfsfilters')?>">
+					<span class="ak-icon ak-icon-regexfiles"></span>
+					<span class="title small-text"><?php echo Text::_('REGEXFSFILTERS') ?></span>
 				</a>
-				<a class="btn btn-default cpanel-icon" href="<?php echo AKEEBA_PRO ? $router->route('index.php?view=regexdbfilters') : 'javascript:soloFeatureNotInCore();' ?>">
-					<span class="ak-icon ak-icon-regexdb <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"></span>
-					<span class="title small-text <?php echo AKEEBA_PRO ? '' : 'text-muted' ?>"><?php echo Text::_('REGEXDBFILTERS') ?></span>
+				<a class="btn btn-default cpanel-icon" href="<?php echo $router->route('index.php?view=regexdbfilters')?>">
+					<span class="ak-icon ak-icon-regexdb"></span>
+					<span class="title small-text"><?php echo Text::_('REGEXDBFILTERS') ?></span>
 				</a>
+				<?php endif; ?>
 			</div>
 		</div>
 		<div class="panel panel-default">
@@ -267,22 +264,16 @@ if (version_compare(PHP_VERSION, '5.4.0', 'lt')):
 					<?php echo (strlen(Text::_('SOLO_APP_TITLE')) > 14) ? '<br/>' : '' ?>
 					<button class="btn btn-xs btn-info <?php echo (strlen(Text::_('SOLO_APP_TITLE')) > 14) ? '' : 'pull-right' ?>" data-toggle="modal" data-target="#changelogModal">Changelog</button>
 				</p>
+
 				<?php if (!AKEEBA_PRO): ?>
-				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin-top: 40px;">
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin: 0px;">
 					<input type="hidden" name="cmd" value="_s-xclick" />
-					<input type="hidden" name="hosted_button_id" value="10903325" />
-					<button onclick="this.form.submit(); return false;" class="btn btn-default">
+					<input type="hidden" name="hosted_button_id" value="3NTKQ3M2DYPYW" />
+					<button onclick="this.form.submit(); return false;" class="btn btn-success">
 						<img src="https://www.paypal.com/en_GB/i/btn/btn_donate_LG.gif" border="0">
 						Donate via PayPal
 					</button>
 				</form>
-				<br/>
-				<p style="text-align: center">
-					<a class="btn btn btn-danger" href="https://www.akeebabackup.com/subscribe.html">
-						<span class="glyphicon glyphicon-shopping-cart"></span>
-						<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
-					</a>
-				</p>
 				<?php endif; ?>
 			</div>
 		</div>

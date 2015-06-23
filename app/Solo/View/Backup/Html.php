@@ -89,27 +89,11 @@ class Html extends \Solo\View\Html
 		$this->bias = $config->get('akeeba.tuning.run_time_bias', 75);
 		$this->useIframe = $config->get('akeeba.basic.useiframe', 0) ? 'true' : 'false';
 
-		if (AKEEBA_PRO && $config->get('akeeba.advanced.archiver_engine', 'jpa') == 'jps')
-		{
-			$this->showJPSKey = 1;
-			$this->jpsKey = $config->get('engine.archiver.jps.key', '');
-		}
-		else
-		{
-			$this->showJPSKey = 0;
-			$this->jpsKey = '';
-		}
+		$this->showJPSKey = 1;
+		$this->jpsKey = $config->get('engine.archiver.jps.key', '');
 
-		if (AKEEBA_PRO)
-		{
-			$this->showANGIEKey = 1;
-			$this->angieKey = $config->get('engine.installer.angie.key', '');
-		}
-		else
-		{
-			$this->showANGIEKey = 0;
-			$this->angieKey = '';
-		}
+		$this->showANGIEKey = 1;
+		$this->angieKey = $config->get('engine.installer.angie.key', '');
 
 		$this->autoStart = $model->getState('autostart', 0);
 

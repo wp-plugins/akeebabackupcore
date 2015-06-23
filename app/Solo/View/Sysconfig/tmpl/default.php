@@ -27,6 +27,22 @@ $this->container->application->getDocument()->addScriptDeclaration($headJavascri
 $inCMS = $this->container->segment->get('insideCMS', false);
 ?>
 
+<?php if (!AKEEBA_PRO && (rand(0, 9) == 0)): ?>
+	<div style="border: thick solid green; border-radius: 10pt; padding: 1em; background-color: #f0f0ff; color: #333; font-weight: bold; text-align: center; margin: 1em 0">
+		<p><?php echo Text::_('SOLO_MAIN_LBL_SUBSCRIBE_TEXT') ?></p>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin: 0px;">
+			<input type="hidden" name="cmd" value="_s-xclick" />
+			<input type="hidden" name="hosted_button_id" value="3NTKQ3M2DYPYW" />
+			<button onclick="this.form.submit(); return false;" class="btn btn-success">
+				<img src="https://www.paypal.com/en_GB/i/btn/btn_donate_LG.gif" border="0">
+				Donate via PayPal
+			</button>
+			<a class="small" style="font-weight: normal; color: #666" href="https://www.akeebabackup.com/subscribe/new/backupwp.html?layout=default">
+				<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE_UNOBTRUSIVE'); ?>
+			</a>
+		</form>
+	</div>
+<?php endif; ?>
 
 <div class="modal fade" id="ftpdialog" tabindex="-1" role="dialog" aria-labelledby="ftpdialogLabel" aria-hidden="true">
 	<div class="modal-dialog">
@@ -686,7 +702,7 @@ $inCMS = $this->container->segment->get('insideCMS', false);
 				<div class="col-sm-10">
 					<div style="height: 2em">
 						<input type="hidden" name="options[push_preference]" value="0">
-						<input type="checkbox" name="options[push_preference]" value="1" <?php echo $config->get('options.push_preference', 1) ? 'checked' : '' ?>
+						<input type="checkbox" name="options[push_preference]" value="1" <?php echo $config->get('options.push_preference', 0) ? 'checked' : '' ?>
 							   class="toggleSwitch" data-on-color="success" data-off-color="danger">
 					</div>
 					<div class="help-block">

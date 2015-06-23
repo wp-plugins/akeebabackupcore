@@ -1,4 +1,14 @@
 <?php die();?>
+Akeeba Solo 1.3.4
+================================================================================
+~ ANGIE: Improve memory efficiency of the database engine
+~ Switching the default log level to All Information and Debug
++ Support utf8mb4 in CRON jobs
+# [LOW] Desktop notifications for backup resume showed "%d" instead of the time to wait before resume
+# [LOW] Push notifications should not be enabled by default
+# [MEDIUM] Dropbox integration would not work under many PHP 5.5 and 5.6 servers due to a PHP issue. Workaround applied.
+# [HIGH] Restoring on MySQL would be impossible unless you used the MySQL PDO driver
+
 Akeeba Solo 1.3.3
 ================================================================================
 ! Packaging error leading to immediate backup failure

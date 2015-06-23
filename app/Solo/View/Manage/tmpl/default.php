@@ -21,33 +21,29 @@ $dateFormat = !empty($dateFormat) ? $dateFormat : Text::_('DATE_FORMAT_LC4');
 
 ?>
 
-<?php if (!AKEEBA_PRO): ?>
-	<div class="well">
-		<p class="text-danger">
-			<?php echo Text::_('SOLO_MAIN_LBL_WHYSUBSCRIBE'); ?>
-		</p>
-		<p style="text-align: center;">
-			<a class="btn btn-lg btn-danger" href="https://www.akeebabackup.com/subscribe.html">
-				<span class="glyphicon glyphicon-shopping-cart"></span>
-				<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE'); ?>
+<?php if (!AKEEBA_PRO && (rand(0, 9) == 0)): ?>
+	<div style="border: thick solid green; border-radius: 10pt; padding: 1em; background-color: #f0f0ff; color: #333; font-weight: bold; text-align: center; margin: 1em 0">
+		<p><?php echo Text::_('SOLO_MAIN_LBL_SUBSCRIBE_TEXT') ?></p>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="text-align: center; margin: 0px;">
+			<input type="hidden" name="cmd" value="_s-xclick" />
+			<input type="hidden" name="hosted_button_id" value="3NTKQ3M2DYPYW" />
+			<button onclick="this.form.submit(); return false;" class="btn btn-success">
+				<img src="https://www.paypal.com/en_GB/i/btn/btn_donate_LG.gif" border="0">
+				Donate via PayPal
+			</button>
+			<a class="small" style="font-weight: normal; color: #666" href="https://www.akeebabackup.com/subscribe/new/backupwp.html?layout=default">
+				<?php echo Text::_('SOLO_MAIN_BTN_SUBSCRIBE_UNOBTRUSIVE'); ?>
 			</a>
-		</p>
-	</div>
-
-	<div class="alert alert-info">
-		<button class="close" data-dismiss="alert">×</button>
-		<h4 class="alert-heading"><?php echo Text::_('BUADMIN_LABEL_HOWDOIRESTORE_LEGEND') ?></h4>
-
-		<p><?php echo Text::sprintf('SOLO_MANAGE_LBL_HOWDOIRESTORE_CORE', 'https://www.akeebabackup.com/documentation/akeeba-solo/restoring-backups.html') ?></p>
-	</div>
-<?php else: ?>
-	<div class="alert alert-info">
-		<button class="close" data-dismiss="alert">×</button>
-		<h4 class="alert-heading"><?php echo Text::_('BUADMIN_LABEL_HOWDOIRESTORE_LEGEND') ?></h4>
-
-		<p><?php echo Text::sprintf('SOLO_MANAGE_LBL_HOWDOIRESTORE_PRO', 'https://www.akeebabackup.com/documentation/akeeba-solo/restoring-backups.html') ?></p>
+		</form>
 	</div>
 <?php endif; ?>
+
+<div class="alert alert-info">
+	<button class="close" data-dismiss="alert">×</button>
+	<h4 class="alert-heading"><?php echo Text::_('BUADMIN_LABEL_HOWDOIRESTORE_LEGEND') ?></h4>
+
+	<p><?php echo Text::sprintf('SOLO_MANAGE_LBL_HOWDOIRESTORE_PRO', 'https://www.akeebabackup.com/documentation/akeeba-solo/restoring-backups.html') ?></p>
+</div>
 
 <form action="<?php echo $router->route('index.php?view=manage')?>" method="post" name="adminForm" id="adminForm" role="form">
 	<input type="hidden" name="boxchecked" id="boxchecked" value="0">
@@ -184,7 +180,7 @@ $dateFormat = !empty($dateFormat) ? $dateFormat : Text::_('DATE_FORMAT_LC4');
 
 			$filename_col = '';
 
-			if (!empty($record['remote_filename']) && (AKEEBA_PRO == 1))
+			if (!empty($record['remote_filename']))
 			{
 				// If we have a remote filename we allow for remote file management in the Pro release
 				$remoteManagementLabel = Text::_('STATS_LABEL_REMOTEFILEMGMT');
@@ -201,7 +197,7 @@ HTML;
 					$filename_col .= '<hr/>' . Text::_('REMOTEFILES_LBL_LOCALFILEHEADER');
 				}
 			}
-			elseif (@empty($record['remote_filename']) && ($this->enginesPerProfile[$record['profile_id']] != 'none') && ($record['meta'] != 'obsolete') && (AKEEBA_PRO == 1))
+			elseif (@empty($record['remote_filename']) && ($this->enginesPerProfile[$record['profile_id']] != 'none') && ($record['meta'] != 'obsolete'))
 			{
 				$postProcEngine = $this->enginesPerProfile[$record['profile_id']];
 

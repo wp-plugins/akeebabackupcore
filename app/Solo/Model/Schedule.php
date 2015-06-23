@@ -64,30 +64,24 @@ class Schedule extends Model
 		$ret->info->root_url = rtrim(Platform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
 
 		// Get information for CLI CRON script
-		if (AKEEBA_PRO)
-		{
-			$ret->cli->supported = true;
-			$ret->cli->path = $absolute_root . DIRECTORY_SEPARATOR . 'cli' . DIRECTORY_SEPARATOR . 'backup.php';
+		$ret->cli->supported = true;
+		$ret->cli->path = $absolute_root . DIRECTORY_SEPARATOR . 'cli' . DIRECTORY_SEPARATOR . 'backup.php';
 
-			if ($profileid != 1)
-			{
-				$ret->cli->path .= ' --profile=' . $profileid;
-			}
+		if ($profileid != 1)
+		{
+			$ret->cli->path .= ' --profile=' . $profileid;
 		}
 
 		// Get information for alternative CLI CRON script
-		if (AKEEBA_PRO)
+		$ret->altcli->supported = true;
+
+		if (trim($ret->info->secret) && $ret->info->feenabled)
 		{
-			$ret->altcli->supported = true;
+			$ret->altcli->path = $absolute_root . DIRECTORY_SEPARATOR . 'cli' . DIRECTORY_SEPARATOR . 'altbackup.php';
 
-			if (trim($ret->info->secret) && $ret->info->feenabled)
+			if ($profileid != 1)
 			{
-				$ret->altcli->path = $absolute_root . DIRECTORY_SEPARATOR . 'cli' . DIRECTORY_SEPARATOR . 'altbackup.php';
-
-				if ($profileid != 1)
-				{
-					$ret->altcli->path .= ' --profile=' . $profileid;
-				}
+				$ret->altcli->path .= ' --profile=' . $profileid;
 			}
 		}
 
@@ -155,21 +149,15 @@ class Schedule extends Model
         $ret->info->root_url = rtrim(Platform::getInstance()->get_platform_configuration_option('siteurl', ''), '/');
 
         // Get information for CLI CRON script
-        if(AKEEBA_PRO)
-        {
-            $ret->cli->supported = true;
-            $ret->cli->path = $absolute_root.DIRECTORY_SEPARATOR.'cli'.DIRECTORY_SEPARATOR.'check-failed.php';
-        }
+		$ret->cli->supported = true;
+		$ret->cli->path = $absolute_root.DIRECTORY_SEPARATOR.'cli'.DIRECTORY_SEPARATOR.'check-failed.php';
 
         // Get information for alternative CLI CRON script
-        if(AKEEBA_PRO)
-        {
-            $ret->altcli->supported = true;
-            if(trim($ret->info->secret) && $ret->info->feenabled)
-            {
-                $ret->altcli->path = $absolute_root.DIRECTORY_SEPARATOR.'cli'.DIRECTORY_SEPARATOR.'altcheck-failed.php';
-            }
-        }
+		$ret->altcli->supported = true;
+		if(trim($ret->info->secret) && $ret->info->feenabled)
+		{
+			$ret->altcli->path = $absolute_root.DIRECTORY_SEPARATOR.'cli'.DIRECTORY_SEPARATOR.'altcheck-failed.php';
+		}
 
         // Get information for front-end backup
         $ret->frontend->supported = true;
